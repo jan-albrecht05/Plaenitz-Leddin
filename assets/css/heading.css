@@ -1,0 +1,112 @@
+#heading{
+    display: flex;
+    justify-content: space-between;
+    background-color: var(--bg-color);
+    align-items: center;
+    padding-inline: 5%;
+    height: 4rem;
+    box-shadow: var(--shadow);
+    font-size: 120%;
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+#heading #right{
+    display: flex;
+    gap: 20px;
+    width: auto;
+    align-items: center;
+}
+#heading #left a img{
+    height: 3rem !important;
+    width: auto;
+}
+#heading a{
+    text-decoration: none;
+    color: var(--text-color);
+}
+#heading button{
+    background-color: var(--primary-color);
+    border: none;
+    color: white;
+    padding: 10px 20px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+#heading .link{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    margin-top: 7px;
+}
+#heading .line{
+    height: 2px;
+    background-color: var(--text-color);
+    width: 0;
+    transition: width 0.3s;
+}
+#heading .link:hover > .line{
+    width: 100%;
+}
+a.icon {
+    display: none;
+}
+@media screen and (max-width: 600px) {
+    #heading{
+        flex-direction: column;
+        height: 2rem;
+        padding: 10px 0;
+        gap: 10px;
+    }
+    #heading .icon {
+        display: block;
+        z-index: 15;
+    }    
+    #heading #left{
+        width: 85%;
+        height: 2rem;
+        padding: 0;
+        margin-top: -5px;
+        z-index: 10;
+        background-color: var(--bg-color);
+        height: 100%;
+    }
+    #heading #left a img{
+        height: 2.5rem !important;
+        width: auto;
+    }
+    #heading #right{
+        flex-direction: column;
+        width: 100%;
+        transform: translateY(-150%);
+        transition: transform 0.3s ease-in-out;
+        background-color: var(--bg-color);
+        height: auto;
+        padding-top: 20px;
+        z-index: 5;
+        padding-bottom: 20px;
+    }
+    #heading #right.responsive{
+        display: flex;
+        transform: translateY(0);
+        box-shadow: var(--shadow);
+    }
+    #heading .link{
+        margin-top: 0;
+        z-index: 6;
+    }
+    a.icon {
+        display: block;
+        position: absolute;
+        top: 0;
+        right: 0;
+        padding: 10px;
+        cursor: pointer;
+    }
+}

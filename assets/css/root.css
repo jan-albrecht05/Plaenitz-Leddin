@@ -1,0 +1,15 @@
+:root,
+[data-theme="light"]{
+    --bg-color: #fff;
+    --text-color: #000;
+    --primary-color: #009e05;
+    --shadow-color: rgba(0, 0, 0, 0.1);
+    --shadow: 0 5px 5px var(--shadow-color);
+}
+[data-theme="dark"]{
+    --bg-color: #262626;
+    --text-color: #e0e0e0;
+    --primary-color: #00b300;
+    --shadow-color: rgba(0, 0, 0, 0.7);
+    --shadow: 0 5px 5px var(--shadow-color);
+}

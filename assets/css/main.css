@@ -1,0 +1,86 @@
+html{
+    scroll-behavior: smooth;
+    scrollbar-width: thin;
+}
+body{
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    font-family: Arial, Helvetica, sans-serif;
+    margin: 0;
+    padding: 0;
+}
+.banner{
+    background-image: url('../images/gras.JPG');
+    background-size: cover;
+    background-attachment: fixed;
+    background-position: 60% 30%;
+    height: 300px;
+    display: flex;
+    align-items: center;
+    z-index: 2;
+    color: white;
+    text-shadow: var(--shadow);
+    font-size: 200%;
+    padding-left: 15%;
+}
+.center{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+img{
+    width: 100%;
+    height: auto;
+}
+a{
+    text-decoration: none;
+}
+#main{
+    width: 50%;
+    margin-inline: auto;
+    margin-top: 5rem;
+}
+.section{
+    font-size: 120%;
+    margin-bottom: 5rem;
+    line-height: 1.6;
+    padding-bottom: 3rem;
+    border-bottom: 1px solid var(--shadow-color);
+}
+.section:last-child{
+    border-bottom: none;
+}
+.section a.button{
+    margin-top: 1rem;
+    padding: 10px 20px;
+    background-color: var(--primary-color);
+    color: white;
+    border-radius: 5px;
+    width: 14rem;
+}
+.section a.button:hover span{
+    transform: translateX(5px);
+    transition: transform 0.3s;   
+}
+.einrück{
+    margin-left: 2rem;
+}
+li{
+    list-style-type: '→  ';
+}
+@media screen and (max-width: 900px) {
+    #main{
+        width: 90%;
+        margin-top: 3rem;
+    }
+    .section{
+        font-size: 110%;
+        margin-bottom: 3rem;
+    }
+    .banner{
+        font-size: 150%;
+        background-position: 50% 20%;
+        height: 200px;
+        padding-left: 5%;
+    }
+}
