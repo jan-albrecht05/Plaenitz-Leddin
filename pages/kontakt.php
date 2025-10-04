@@ -3,17 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Veranstaltungen | Plänitz-Leddin</title>
+    <title>Kontakt | Plänitz-Leddin</title>
     <link rel="stylesheet" href="../assets/css/root.css">
     <link rel="stylesheet" href="../assets/css/main.css">
     <link rel="stylesheet" href="../assets/css/heading.css">
     <link rel="stylesheet" href="../assets/css/footer.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" />
     <style>
-        #veranstaltungen a{
+        #kontakt a{
             color: var(--primary-color);
         }
-        #veranstaltungen .line{
+        #kontakt .line{
             background-color: var(--primary-color);
             width: 100%;
         }
@@ -36,11 +36,11 @@
                 <span class="line"></span>
             </div>
             <div class="link" id="veranstaltungen">
-                <a href="#">Veranstaltungen</a>
+                <a href="../pages/veranstaltungen.php">Veranstaltungen</a>
                 <span class="line"></span>
             </div>
             <div class="link" id="kontakt">
-                <a href="../pages/kontakt.php">Kontakt</a>
+                <a href="#">Kontakt</a>
                 <span class="line"></span>
             </div>
             <button id="mitglied-werden" onclick="location.href='../pages/mitglied-werden.php'">Mitglied werden</button>

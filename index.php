@@ -69,10 +69,10 @@
                 // get Veranstaltungen from SQL database
                 ?>
                 <ul>
-                    <li>Osterfeuer - 20. April 2024</li>
-                    <li>Sommerfest - 15. Juni 2024</li>
-                    <li>Herbstmarkt - 10. Oktober 2024</li>
-                    <li>Weihnachtsmarkt - 5. Dezember 2024</li>
+                    <li>Osterfeuer - 20. April 2026</li>
+                    <li>Sommerfest - 15. Juni 2026</li>
+                    <li>Herbstmarkt - 10. Oktober 2026</li>
+                    <li>Weihnachtsmarkt - 5. Dezember 2026</li>
                 </ul>
             </div>
             <a href="pages/veranstaltungen.php" class="button center">Alle Veranstaltungen<span class="material-symbols-outlined center">chevron_right</span></a>
@@ -82,6 +82,17 @@
             <p>Werden Sie Teil unserer Gemeinschaft und unterstützen Sie unsere Arbeit durch eine Mitgliedschaft im Verein. Als Mitglied profitieren Sie von zahlreichen Vorteilen und können aktiv an der Gestaltung des Dorflebens teilnehmen.</p>
             <p>Die Mitgliedschaft ist einfach und unkompliziert. Füllen Sie unser Online-Formular aus oder kontaktieren Sie uns direkt, um mehr über die Vorteile und den Ablauf zu erfahren.</p>
             <a href="pages/mitglied-werden.php" class="button center">Jetzt Mitglied werden<span class="material-symbols-outlined center">chevron_right</span></a>
+        </div>
+    </div>
+    <div id="cookie-banner">
+        <div id="cookie-img">
+            <img src="assets/icons/Omi.png" alt="Cookie Icon">
+        </div>
+        <div id="cookie-text">
+            <h2>Mit Liebe serviert.</h2>
+            <p>Unsere Website verwendet Cookies, um Ihnen das bestmögliche Erlebnis zu bieten. Durch die Nutzung unserer Website stimmen Sie der Verwendung von Cookies zu. Weitere Informationen finden Sie in unserer <a href="pages/datenschutz.php">Datenschutzerklärung</a>.</p>
+            <button id="accept-cookies" onclick="acceptCookies()">Cookies akzeptieren</button>
+            <script src="assets/js/cookies.js"></script>
         </div>
     </div>
     <div id="footer" class="center">
@@ -98,12 +109,13 @@
             <a href="pages/internes/admin.php">Admin-Anmeldung<span class="material-symbols-outlined">open_in_new</span></a>
         </div>
         <div id="middle">
-             <p>&copy; 2024 Plänitz-Leddin. Alle Rechte vorbehalten.</p>
+            <span>&copy; 2025 Plänitz-Leddin. Alle Rechte vorbehalten.</span>
+            <span>Version 0.5</span>
         </div>
         <div id="right">
+            <a href="pages/kontakt.php">Kontakt<span class="material-symbols-outlined">open_in_new</span></a>
             <a href="pages/datenschutz.php">Datenschutz<span class="material-symbols-outlined">open_in_new</span></a>
             <a href="pages/impressum.php">Impressum<span class="material-symbols-outlined">open_in_new</span></a>
-            <a href="pages/kontakt.php">Kontakt<span class="material-symbols-outlined">open_in_new</span></a>
         </div>
     </div>
 </body>
