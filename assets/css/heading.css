@@ -62,7 +62,7 @@ a.icon {
     cursor: pointer;
 }
 #admin-button span.material-symbols-outlined,
- #notifications-button span.material-symbols-outlined {
+#notifications-button span.material-symbols-outlined {
     font-size: 150% !important;
 }
 #admin-button{

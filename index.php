@@ -67,7 +67,7 @@ if(isset($_SESSION['user_id'])) {
                             <span class="material-symbols-outlined">notifications</span>
                             <span id="notification-indicator"></span>
                         </a>
-                      </div>';
+                    </div>';
             }
             ?>
         </div>
