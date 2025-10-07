@@ -57,6 +57,29 @@
 a.icon {
     display: none;
 }
+#admin-button, #notifications-button {
+    position: relative;
+    cursor: pointer;
+}
+#admin-button span.material-symbols-outlined,
+ #notifications-button span.material-symbols-outlined {
+    font-size: 150% !important;
+}
+#admin-button{
+    margin-right: .5rem;
+}
+span#notification-indicator {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 10px;
+    height: 10px;
+    background-color: orange;
+    border-radius: 50%;
+    border: 2px solid var(--bg-color);
+    margin-right: 20%;
+    margin-top: 14%;
+}
 @media screen and (max-width: 600px) {
     #heading{
         flex-direction: column;

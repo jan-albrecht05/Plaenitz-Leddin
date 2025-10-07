@@ -1,3 +1,15 @@
+<?php
+session_start();
+if(isset($_SESSION['user_id'])) {
+    // User is logged in
+    $user_id = $_SESSION['user_id'];
+    $is_admin = $_SESSION['is_admin'] ?? false;
+} else {
+    // User is not logged in
+    $user_id = null;
+    $is_admin = false;
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -44,6 +56,20 @@
                 <span class="line"></span>
             </div>
             <button id="mitglied-werden" onclick="location.href='pages/mitglied-werden.php'">Mitglied werden</button>
+            <?php
+            $is_admin = true;
+            if($is_admin) {
+                echo '<div id="admin-buttons">
+                        <a id="admin-button" onclick="location.href=\'pages/internes/admin.php\'">
+                            <span class="material-symbols-outlined">admin_panel_settings</span>
+                        </a>
+                        <a id="notifications-button" onclick="showNotifications()">
+                            <span class="material-symbols-outlined">notifications</span>
+                            <span id="notification-indicator"></span>
+                        </a>
+                      </div>';
+            }
+            ?>
         </div>
         <script src="assets/js/navbar.js"></script>
         <a href="javascript:void(0);" style="font-size:15px;" class="icon" onclick="dreibalkensymbol()">&#9776;</a>
