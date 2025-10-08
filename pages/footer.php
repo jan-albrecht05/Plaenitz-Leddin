@@ -1,4 +1,4 @@
-<div id="left">
+        <div id="left">
             <div id="mode-toggle">
                 <span class="material-symbols-outlined">light_mode</span>
                 <label class="switch">
@@ -8,7 +8,13 @@
                 <span class="material-symbols-outlined">dark_mode</span>
                 <script src="../assets/js/mode.js"></script>
             </div>
-            <a href="../pages/internes/admin.php">Admin-Anmeldung<span class="material-symbols-outlined">open_in_new</span></a>
+            <?php
+            if($is_admin){
+                echo '<a href="pages/internes/admin.php">Admin-Anmeldung<span class="material-symbols-outlined">open_in_new</span></a>';
+            }else{
+                echo '<a href="pages/internes/dashboard.php">Admin-Anmeldung<span class="material-symbols-outlined">open_in_new</span></a>';
+            }
+            ?>
         </div>
         <div id="middle">
             <span>&copy; 2025 Plänitz-Leddin. Alle Rechte vorbehalten.</span>
