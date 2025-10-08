@@ -4,11 +4,41 @@ if(isset($_SESSION['user_id'])) {
     // User is logged in
     $user_id = $_SESSION['user_id'];
     $is_admin = $_SESSION['is_admin'] ?? false;
+    $is_vorstand = $_SESSION['is_vorstand'] ?? false;
 } else {
     // User is not logged in
     $user_id = null;
     $is_admin = false;
+    $is_vorstand = false;
 }
+// connect to events database
+// Resolve absolute path to the DB (robust against working-directory differences)
+// index.php sits in the project root; the DB is in the `db/` folder at project root
+$dbPath = __DIR__ . '/assets/db/veranstaltungen.db';
+// Basic existence/readability checks so we can log a helpful error instead of a fatal exception
+if (!file_exists($dbPath)) {
+    error_log("index.php: database file not found: $dbPath");
+    $events = [];
+} elseif (!is_readable($dbPath)) {
+    error_log("index.php: database file not readable by PHP process: $dbPath");
+    $events = [];
+} else {
+    try {
+        // Use PDO with sqlite for safer, consistent parameter binding and exceptions
+        $pdo = new PDO('sqlite:' . $dbPath);
+        $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
+        $stmt = $pdo->query('SELECT * FROM veranstaltungen ORDER BY datum ASC LIMIT 2');
+        $events = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        if ($events === false) {
+            $events = []; // no rows found
+        }
+    } catch (Exception $e) {
+        error_log('index.php: DB error - ' . $e->getMessage());
+        $events = [];
+    }
+}
+
 ?>
 <!DOCTYPE html>
 <html lang="de">
@@ -57,8 +87,7 @@ if(isset($_SESSION['user_id'])) {
             </div>
             <button id="mitglied-werden" onclick="location.href='pages/mitglied-werden.php'">Mitglied werden</button>
             <?php
-            $is_admin = true;
-            if($is_admin) {
+            if($is_admin || $is_vorstand) {
                 echo '<div id="admin-buttons">
                         <a id="admin-button" onclick="location.href=\'pages/internes/admin.php\'">
                             <span class="material-symbols-outlined">admin_panel_settings</span>
@@ -92,14 +121,20 @@ if(isset($_SESSION['user_id'])) {
             <div class="einrück">
                 <h2>Nächste Veranstaltungen:</h2>
                 <?php
-                // get Veranstaltungen from SQL database
-                ?>
-                <ul>
-                    <li>Osterfeuer - 20. April 2026</li>
-                    <li>Sommerfest - 15. Juni 2026</li>
-                    <li>Herbstmarkt - 10. Oktober 2026</li>
-                    <li>Weihnachtsmarkt - 5. Dezember 2026</li>
-                </ul>
+                // only show future events IMPORTANT
+                if (!empty($events)) {
+                    foreach ($events as $event) {
+                        echo '<div class="event">
+                                <span class="event-title">' . htmlspecialchars($event['titel']) . '</span>
+                                <span class="date">' . htmlspecialchars((new DateTime($event['datum']))->format('d.h.Y')) . '</span>
+                                <span class="location">' . htmlspecialchars($event['ort']) . '</span>
+                                <a href="pages/event.php?id=' . urlencode($event['id']) . '" class="more-info" title="Mehr erfahren"><span class="material-symbols-outlined">arrow_right_alt</span></a>
+                              </div>';
+                    }
+                } else {
+                    echo '<p>Keine bevorstehenden Veranstaltungen.</p>';
+                }
+                ?>                
             </div>
             <a href="pages/veranstaltungen.php" class="button center">Alle Veranstaltungen<span class="material-symbols-outlined center">chevron_right</span></a>
         </div>

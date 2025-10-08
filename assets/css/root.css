@@ -5,11 +5,13 @@
     --primary-color: #009e05;
     --shadow-color: rgba(0, 0, 0, 0.1);
     --shadow: 0 5px 5px var(--shadow-color);
+    --lightgrey: #979797;
 }
 [data-theme="dark"]{
     --bg-color: #262626;
     --text-color: #e0e0e0;
     --primary-color: #00b300;
-    --shadow-color: rgba(0, 0, 0, 0.7);
+    --shadow-color: rgba(0, 0, 0, 0.3);
     --shadow: 0 5px 5px var(--shadow-color);
+    --lightgrey: #444;
 }

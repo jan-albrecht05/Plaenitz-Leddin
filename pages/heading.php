@@ -23,7 +23,7 @@
             </div>
             <button id="mitglied-werden" onclick="location.href='../pages/mitglied-werden.php'">Mitglied werden</button>
             <?php
-            $is_admin = true;
+            $is_admin = false;
             if($is_admin) {
                 echo '<div id="admin-buttons">
                         <a id="admin-button" onclick="location.href=\'internes/admin.php\'">

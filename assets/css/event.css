@@ -1,0 +1,122 @@
+#back-button{
+    margin-bottom: 1rem;
+    margin-left: 1rem;
+    text-decoration: underline;
+    width: fit-content;
+    cursor: pointer;
+}
+#back-button span.material-symbols-outlined{
+    font-size: 120%;
+    vertical-align: middle;
+    margin-right: .2rem;
+}
+.info{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-direction: row;
+    margin-bottom: 1rem;
+    margin-top: 3rem;
+    color: var(--lightgrey);
+    border-bottom: 1px solid var(--lightgrey);
+    padding-bottom: .5rem;
+    padding-inline: 1rem;
+}
+.info span.material-symbols-outlined{
+    font-size: 120%;
+    vertical-align: middle;
+    margin-right: .2rem;
+}
+.info div{
+    display: flex;
+    align-items: center;
+    gap: .3rem;
+}
+.titel{
+    margin-bottom: 2rem;
+    font-size: 300%;
+}
+.zeit, .ort{
+    font-size: 150%;
+    margin-bottom: 1rem;
+}
+#description{
+    margin-top: 2rem;
+    line-height: 1.6;
+    font-size: 120%;
+    margin-bottom: 2rem;
+}
+.row{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-direction: row;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    color: var(--lightgrey);
+}
+.row span.material-symbols-outlined{
+    font-size: 120%;
+    vertical-align: middle;
+    margin-right: .2rem;
+}
+form,
+.form{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 3rem;
+    width: 100%;
+}
+#participate-button,
+#edit-event-button{
+    background-color: var(--primary-color);
+    border: none;
+    color: white;
+    padding: 10px 20px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+#edit-event-button{
+    background-color: grey;
+}
+#participate-button span.material-symbols-outlined,
+#edit-event-button span.material-symbols-outlined{
+    font-size: 120%;
+    vertical-align: middle;
+    margin-right: .2rem;
+}
+#participate-button:disabled{
+    background-color: grey;
+    cursor: not-allowed;
+}
+
+@media (max-width: 600px) {
+    #back-button{
+        margin-left: 0;
+    }
+    .info{
+        padding-inline: 0;
+        margin-top: 1rem;
+    }
+    h1.titel{
+        font-size: 200%;
+    }
+    h3.untertitel{
+        font-size: 100%;
+        margin-bottom: 1rem;
+    }
+    .zeit, .ort{
+        font-size: 120%;
+    }
+    form{
+        flex-direction: column;
+        gap: .5rem;
+    }
+    
+}

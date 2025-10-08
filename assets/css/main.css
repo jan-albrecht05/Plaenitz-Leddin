@@ -35,6 +35,10 @@ img{
 a{
     text-decoration: none;
 }
+::selection{
+    background: var(--primary-color);
+    color: white;
+}
 #main{
     width: 50%;
     margin-inline: auto;
@@ -57,6 +61,7 @@ a{
     color: white;
     border-radius: 5px;
     width: 14rem;
+    user-select: none;
 }
 .section a.button:hover span{
     transform: translateX(5px);
@@ -64,9 +69,6 @@ a{
 }
 .einrück{
     margin-left: 2rem;
-}
-li{
-    list-style-type: '→  ';
 }
 #cookie-banner{
     position: fixed;
@@ -102,6 +104,41 @@ li{
     height: 300px;
     margin-right: 20px;
 }
+.event{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--shadow-color);
+    padding: 10px;
+    margin-bottom: 10px;
+}
+.event:last-child{
+    border-bottom: none;
+    margin-bottom: 2rem;
+}
+.event span.event-title{
+    font-weight: bold;
+    font-size: 120%;
+    width: 45%;
+}
+.event span.date{
+    width: 25%;
+    text-align: right;
+}
+.event span.location{
+    width: 30%;
+    text-align: right;
+}
+.event a{
+    color: var(--primary-color);
+    transition: filter 0.2s;
+    width: 10%;
+    text-align: right;
+    vertical-align: middle;
+}
+.event a:hover{
+    filter: drop-shadow(0 0 5px var(--primary-color));
+}
 @media screen and (max-width: 900px) {
     #main{
         width: 90%;
@@ -129,5 +166,21 @@ li{
         width: 100%;
         height: auto;
         margin: 0 0 20px 0;
+    }
+    .einrück{
+        margin-left: 1rem;
+    }
+    .event span.event-title{
+        font-size: 100%;
+        width: 50%;
+    }
+    .event span.location{
+        display: none;
+    }
+    .event span.date{
+        width: 40%;
+    }
+    .event a{
+        width: 15%;
     }
 }
