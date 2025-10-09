@@ -16,3 +16,6 @@ Eine Website für meine Dorfgemeinschaft
 ## Logs DB
  - timecode
  - action (login, new event, new Vorstand)
+
+## member DB
+ - last_login (wenn null, dann PW-Change[first login])
