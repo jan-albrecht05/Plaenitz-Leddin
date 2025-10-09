@@ -137,6 +137,15 @@ $event_title = $event['titel'] ?? 'Veranstaltung';
             <h1 class="titel">
                 <?php echo htmlspecialchars($event['titel'] ?? 'Veranstaltung'); ?>
             </h1>
+            <?php
+                if ($event && !empty($event['bildpfad']) && file_exists(__DIR__ . '/../' . $event['bildpfad'])) {
+                    echo '<div class="cover-image">';
+                        echo '<img src="../' . htmlspecialchars($event['bildpfad']) . '" alt="' . htmlspecialchars($event['titel'] ?? 'Veranstaltung') . '">';
+                    echo '</div>';
+                } else {
+                    echo '';
+                }
+            ?>
             <h3 class="untertitel">
                 <?php echo htmlspecialchars($event['beschreibung'] ?? ''); ?>
             </h3>
