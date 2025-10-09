@@ -23,8 +23,14 @@
             </div>
             <button id="mitglied-werden" onclick="location.href='../pages/mitglied-werden.php'">Mitglied werden</button>
             <?php
+<<<<<<< Updated upstream
             $is_admin = false;
             if($is_admin) {
+=======
+            $is_admin = true;
+            $is_vorstand = false;
+            if($is_admin || $is_vorstand){
+>>>>>>> Stashed changes
                 echo '<div id="admin-buttons">
                         <a id="admin-button" onclick="location.href=\'internes/admin.php\'">
                             <span class="material-symbols-outlined">admin_panel_settings</span>
