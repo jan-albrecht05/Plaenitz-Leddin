@@ -1,20 +1,41 @@
 <?php
     session_start();
+    
+    // Include database helper functions
+    require_once '../../includes/db_helper.php';
+    
     if(isset($_SESSION['user_id'])) {
         header("Location: dashboard.php");
         exit();
     }
 
     if($_SERVER['REQUEST_METHOD'] === 'POST') {
-        $username = $_POST['username'];
-        $password = $_POST['password'];
+        $fullname = trim($_POST['fullname'] ?? '');
+        $password = $_POST['password'] ?? '';
 
-        // Dummy credentials for demonstration purposes
-        $valid_username = 'Admin';
-        $valid_password = 'admin';
+        if ($fullname === '') {
+            $error = "Bitte geben Sie Vor- und Nachname ein.";
+            header("Location: login.php?error=" . urlencode($error));
+            exit();
+        }
 
-        if($username === $valid_username && $password === $valid_password) {
-            $_SESSION['user_id'] = 1; // Set a dummy user ID
+        // Split fullname into name and nachname: last token = nachname, rest = name
+        $parts = preg_split('/\s+/', $fullname);
+        if (count($parts) < 2) {
+            $error = "Bitte geben Sie Vor- und Nachname (z. B. 'Max Mustermann') ein.";
+            header("Location: login.php?error=" . urlencode($error));
+            exit();
+        }
+
+        $nachname = array_pop($parts);
+        $name = implode(' ', $parts);
+
+        // Authenticate user against database
+        $user = authenticateUser($name, $nachname, $password);
+
+        if($user) {
+            // Store only user ID in session, roles will be checked from database
+            $_SESSION['user_id'] = $user['id'];
             header("Location: dashboard.php");
             exit();
         } else {
@@ -50,8 +71,8 @@
         <form action="login.php" method="post">
             <h1>Login</h1>
             <div class="form-group">
-                <label for="username">Benutzername:</label>
-                <input type="text" id="username" name="username" required>
+                <label for="fullname">Name (Vorname Nachname):</label>
+                <input type="text" id="fullname" name="fullname" placeholder="Max Mustermann" required>
             </div>
             <div class="form-group">
                 <label for="password">Passwort:</label>

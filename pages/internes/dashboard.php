@@ -1,8 +1,21 @@
 <?php
 session_start();
-if(!isset($_SESSION['user_id'])) {
-    //user needs to have role "admin" or "vorstand"
+
+// Include database helper functions
+require_once '../../includes/db_helper.php';
+
+// Check if user is logged in
+if (!isset($_SESSION['user_id'])) {
     header("Location: login.php");
+    exit();
+}
+
+// Check if user has admin or vorstand role by querying the database
+$userId = $_SESSION['user_id'];
+if (!hasAdminOrVorstandRole($userId)) {
+    // User doesn't have required role, redirect to login
+    session_destroy();
+    header("Location: login.php?error=" . urlencode("Sie haben keine Berechtigung für diese Seite."));
     exit();
 }
 ?>
