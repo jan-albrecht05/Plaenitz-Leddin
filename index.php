@@ -32,7 +32,7 @@ if (!file_exists($dbPath)) {
         $pdo = new PDO('sqlite:' . $dbPath);
         $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-        $stmt = $pdo->query('SELECT * FROM veranstaltungen ORDER BY datum ASC LIMIT 2');
+        $stmt = $pdo->query('SELECT * FROM veranstaltungen ORDER BY datum ASC LIMIT 4');
         $events = $stmt->fetchAll(PDO::FETCH_ASSOC);
         if ($events === false) {
             $events = []; // no rows found

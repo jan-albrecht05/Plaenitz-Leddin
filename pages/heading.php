@@ -10,7 +10,7 @@
                 <span class="line"></span>
             </div>
             <div class="link" id="uber-uns">
-                <a href="#">Über uns</a>
+                <a href="../pages/uber-uns.php">Über uns</a>
                 <span class="line"></span>
             </div>
             <div class="link" id="veranstaltungen">
@@ -23,14 +23,9 @@
             </div>
             <button id="mitglied-werden" onclick="location.href='../pages/mitglied-werden.php'">Mitglied werden</button>
             <?php
-<<<<<<< Updated upstream
-            $is_admin = false;
-            if($is_admin) {
-=======
             $is_admin = true;
             $is_vorstand = false;
             if($is_admin || $is_vorstand){
->>>>>>> Stashed changes
                 echo '<div id="admin-buttons">
                         <a id="admin-button" onclick="location.href=\'internes/admin.php\'">
                             <span class="material-symbols-outlined">admin_panel_settings</span>

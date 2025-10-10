@@ -81,32 +81,7 @@ $event_title = $event['titel'] ?? 'Veranstaltung';
 </head>
 <body>
     <div id="heading">
-        <div id="left">
-            <a href="../index.php">
-                <img src="../assets/icons/logo.png" alt="Plänitz-Leddin Logo">
-            </a>
-        </div>
-        <div id="right">
-            <div class="link" id="startseite">
-                <a href="../index.php">Startseite</a>
-                <span class="line"></span>
-            </div>
-            <div class="link" id="uber-uns">
-                <a href="../pages/uber-uns.php">Über uns</a>
-                <span class="line"></span>
-            </div>
-            <div class="link" id="veranstaltungen">
-                <a href="../pages/veranstaltungen.php">Veranstaltungen</a>
-                <span class="line"></span>
-            </div>
-            <div class="link" id="kontakt">
-                <a href="../pages/kontakt.php">Kontakt</a>
-                <span class="line"></span>
-            </div>
-            <button id="mitglied-werden" onclick="location.href='../pages/mitglied-werden.php'">Mitglied werden</button>
-        </div>
-        <script src="../assets/js/navbar.js"></script>
-        <a href="javascript:void(0);" style="font-size:15px;" class="icon" onclick="dreibalkensymbol()">&#9776;</a>
+        <?php include '../pages/heading.php'; ?>
     </div>
     <div class="banner">
         <h1>Zwei Dörfer, eine Gemeinschaft</h1>
@@ -138,9 +113,9 @@ $event_title = $event['titel'] ?? 'Veranstaltung';
                 <?php echo htmlspecialchars($event['titel'] ?? 'Veranstaltung'); ?>
             </h1>
             <?php
-                if ($event && !empty($event['bildpfad']) && file_exists(__DIR__ . '/../' . $event['bildpfad'])) {
+                if ($event && !empty($event['cover_image_name']) && file_exists(__DIR__ . '/../' . $event['cover_image_name'])) {
                     echo '<div class="cover-image">';
-                        echo '<img src="../' . htmlspecialchars($event['bildpfad']) . '" alt="' . htmlspecialchars($event['titel'] ?? 'Veranstaltung') . '">';
+                        echo '<img src="../' . htmlspecialchars($event['cover_image_name']) . '" alt="' . htmlspecialchars($event['titel'] ?? 'Veranstaltung') . '">';
                     echo '</div>';
                 } else {
                     echo '';
@@ -154,6 +129,12 @@ $event_title = $event['titel'] ?? 'Veranstaltung';
             </h2>
             <h2 class="ort">
                 Wo? <span><?php echo htmlspecialchars($event['ort'] ?? ''); ?></span>
+            </h2>
+            <h2 class="kosten">
+                Eintritt: <span><?php echo htmlspecialchars($event['cost'] ?? ''); ?></span>
+            </h2>
+            <h2 class="zielgruppe">
+                Für wen? <span><?php echo htmlspecialchars($event['zielgruppe'] ?? ''); ?></span>
             </h2>
             <?php
             if (!$event) {
