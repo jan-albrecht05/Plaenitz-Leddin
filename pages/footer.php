@@ -1,3 +1,6 @@
+        <div id="footer-gif">
+            <img src="../assets/GIFs/snowman.gif" alt="">
+        </div>
         <div id="left">
             <div id="mode-toggle">
                 <span class="material-symbols-outlined">light_mode</span>

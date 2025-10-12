@@ -78,6 +78,15 @@ input:checked + .slider {
 input:checked + .slider:before {
     transform: translateX(20px);
 }
+#footer-gif{
+    position: relative;
+    left: 20px;
+    bottom: 70px;
+    width: 100px;
+    height: auto;
+    border-radius: 50px;
+    background-image: radial-gradient(var(--shadow-white), #ffffff00 60%);
+}
 @media (max-width: 900px) {
     #footer{
         gap: 1rem;
@@ -88,4 +97,11 @@ input:checked + .slider:before {
         width: 30%;
         border-right: none;
     }   
+    #footer-gif{
+        left: 0;
+        bottom: 80px;
+        width: 80px;
+        position: fixed;
+        z-index: 15;
+    }
 }

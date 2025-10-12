@@ -6,6 +6,7 @@
     --shadow-color: rgba(0, 0, 0, 0.1);
     --shadow: 0 5px 5px var(--shadow-color);
     --lightgrey: #979797;
+    --shadow-white: rgba(255, 255, 255) 40%;
 }
 [data-theme="dark"]{
     --bg-color: #262626;
@@ -14,4 +15,5 @@
     --shadow-color: rgba(0, 0, 0, 0.3);
     --shadow: 0 5px 5px var(--shadow-color);
     --lightgrey: #444;
+    --shadow-white: #ccc 20%;
 }
