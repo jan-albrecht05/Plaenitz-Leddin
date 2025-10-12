@@ -15,6 +15,32 @@ if(isset($_SESSION['user_id'])) {
     $is_admin = false;
     $is_vorstand = false;
 }
+// compute notification indicator (new members since last_viewed_notification)
+$hasNewNotifications = false;
+// Use UTC consistently for comparisons
+$utc = new DateTimeZone('UTC');
+if (($is_admin || $is_vorstand) && $user_id !== null) {
+    try {
+        $memberPdo = function_exists('getMemberDbConnection') ? getMemberDbConnection() : null;
+        if ($memberPdo) {
+            $stmt = $memberPdo->prepare('SELECT last_viewed_notification FROM mitglieder WHERE id = :id LIMIT 1');
+            $stmt->bindValue(':id', (int)$user_id, PDO::PARAM_INT);
+            $stmt->execute();
+            $row = $stmt->fetch(PDO::FETCH_ASSOC);
+            // Default to Unix epoch in UTC if empty
+            $lastViewed = $row && !empty($row['last_viewed_notification']) ? $row['last_viewed_notification'] : (new DateTime('1970-01-01 00:00:00', $utc))->format('Y-m-d H:i:s');
+
+            $stmt2 = $memberPdo->prepare('SELECT COUNT(*) AS c FROM mitglieder WHERE join_date > :lv AND id != :me');
+            $stmt2->bindValue(':lv', $lastViewed, PDO::PARAM_STR);
+            $stmt2->bindValue(':me', (int)$user_id, PDO::PARAM_INT);
+            $stmt2->execute();
+            $count = (int)($stmt2->fetchColumn() ?: 0);
+            $hasNewNotifications = $count > 0;
+        }
+    } catch (Exception $e) {
+        error_log('index.php: indicator check failed - ' . $e->getMessage());
+    }
+}
 // connect to events database
 // Resolve absolute path to the DB (robust against working-directory differences)
 // index.php sits in the project root; the DB is in the `db/` folder at project root
@@ -91,21 +117,101 @@ if (!file_exists($dbPath)) {
             </div>
             <button id="mitglied-werden" onclick="location.href='pages/mitglied-werden.php'">Mitglied werden</button>
             <?php
-            if($is_admin || $is_vorstand) {
-                echo '<div id="admin-buttons">
-                        <a id="admin-button" onclick="location.href=\'pages/internes/admin.php\'">
-                            <span class="material-symbols-outlined">admin_panel_settings</span>
-                        </a>
-                        <a id="notifications-button" onclick="showNotifications()">
-                            <span class="material-symbols-outlined">notifications</span>
-                            <span id="notification-indicator"></span>
-                        </a>
-                    </div>';
+            if ($is_admin || $is_vorstand) {
+                echo '<div id="admin-buttons">'
+                    . '<a id="admin-button" onclick="location.href=\'pages/internes/admin.php\'">'
+                        . '<span class="material-symbols-outlined">admin_panel_settings</span>'
+                    . '</a>'
+                    . '<a id="notifications-button" onclick="showNotifications()">'
+                        . '<span class="material-symbols-outlined">notifications</span>'
+                        . '<span id="notification-indicator"' . ($hasNewNotifications ? '' : ' style="display:none"') . '></span>'
+                    . '</a>'
+                . '</div>';
             }
             ?>
         </div>
         <script src="assets/js/navbar.js"></script>
         <a href="javascript:void(0);" style="font-size:15px;" class="icon" onclick="dreibalkensymbol()">&#9776;</a>
+        <div id="notifications-popup" class="hidden">
+            <div id="notifications-header">
+                <span>Benachrichtigungen</span>
+                <span id="close-notifications" onclick="hideNotifications()">&times;</span>
+            </div>
+            <div id="notifications-content">
+                <?php
+                // Show notifications for admins / vorstand: members who joined after the admin's last_viewed_notification
+                if ($is_admin || $is_vorstand) {
+                    // Attempt to get PDO connection from helper
+                    $memberPdo = null;
+                    if (function_exists('getMemberDbConnection')) {
+                        $memberPdo = getMemberDbConnection();
+                    }
+
+                    // Fallback: try project-root db/member.db
+                    if (!$memberPdo) {
+                        $memberDbPath = __DIR__ . '/assets/db/member.db';
+                        if (file_exists($memberDbPath) && is_readable($memberDbPath)) {
+                            try {
+                                $memberPdo = new PDO('sqlite:' . $memberDbPath);
+                                $memberPdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+                            } catch (Exception $ex) {
+                                error_log('notifications: fallback member DB connection failed - ' . $ex->getMessage());
+                                $memberPdo = null;
+                            }
+                        }
+                    }
+
+                    if (!$memberPdo) {
+                        echo '<p>Fehler: Keine Verbindung zur Mitglieder-Datenbank.</p>';
+                    } else {
+                        try {
+                            // Get this user's last_viewed_notification (expect ISO date string)
+                            $stmt = $memberPdo->prepare('SELECT last_viewed_notification FROM mitglieder WHERE id = :id LIMIT 1');
+                            $stmt->bindValue(':id', (int)$user_id, PDO::PARAM_INT);
+                            $stmt->execute();
+                            $row = $stmt->fetch(PDO::FETCH_ASSOC);
+                            $lastViewed = $row && !empty($row['last_viewed_notification']) ? $row['last_viewed_notification'] : null;
+
+                            // If lastViewed is null, set to very old date so everyone is considered new
+                            if (!$lastViewed) {
+                                $lastViewed = '1970-01-01';
+                            }
+
+                            // Find members who joined AFTER lastViewed
+                            $stmt2 = $memberPdo->prepare('SELECT id, name, nachname, join_date FROM mitglieder WHERE join_date > :lastViewed AND id != :me ORDER BY join_date ASC');
+                            $stmt2->bindValue(':lastViewed', $lastViewed, PDO::PARAM_STR);
+                            $stmt2->bindValue(':me', (int)$user_id, PDO::PARAM_INT);
+                            $stmt2->execute();
+                            $newMembers = $stmt2->fetchAll(PDO::FETCH_ASSOC);
+
+                            if (empty($newMembers)) {
+                                echo '<p>Keine neuen Benachrichtigungen.</p>';
+                            } else {
+                                echo '<ul class="notifications-list">';
+                                foreach ($newMembers as $m) {
+                                    $displayName = htmlspecialchars(trim(($m['name'] ?? '') . ' ' . ($m['nachname'] ?? '')));
+                                    $joinDate = !empty($m['join_date']) ? htmlspecialchars((new DateTime($m['join_date']))->format('d.m.Y')) : '-';
+                                    echo '<li class="notification-item">';
+                                    echo '<strong>' . $displayName . '</strong> — Beigetreten am ' . $joinDate;
+                                    echo '</li>';
+                                }
+                                echo '</ul>';
+                                    echo '<button id="mark-read" data-user-id="' . htmlspecialchars((string)$user_id) . '" data-endpoint="pages/internes/mark_notifications_read.php">Als gelesen markieren</button>';
+                            }
+                            // set new date for last_viewed_notification in member.db when "mark-read" is clicked
+                                // inline script removed; handled by assets/js/notifications.js
+                        } catch (Exception $e) {
+                            error_log('notifications: DB query failed - ' . $e->getMessage());
+                            echo '<p>Fehler beim Lesen der Benachrichtigungen.</p>';
+                        }
+                    }
+                } else {
+                    echo '<p>Keine Berechtigung für Benachrichtigungen.</p>';
+                }
+                ?>
+            </div>
+        </div>
+        <script src="assets/js/notifications.js"></script>
     </div>
     <div class="banner">
         <h1>Zwei Dörfer, eine Gemeinschaft</h1>
