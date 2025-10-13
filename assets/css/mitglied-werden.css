@@ -1,0 +1,176 @@
+form{
+    max-width: 800px;
+    margin: 0 auto 4rem auto;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: var(--shadow);
+    margin-top: 5rem;
+    border: 1px solid var(--lightgrey);
+    user-select: none;
+}
+h2{
+    margin-top: 3rem;
+}
+.row{
+    display: flex;
+    margin-bottom: 2rem;
+    flex-direction: column;
+}
+.no-flex{
+    flex-direction: row !important;
+    gap: 20px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+.no-flex label{
+    margin-bottom: 0 !important;
+}
+.no-flex .half label{
+    margin-bottom: 8px !important;
+}
+label{
+    display: flex;
+    margin-bottom: 8px;
+    font-weight: bold;
+    color: var(--text-color);
+    align-items: center;
+}
+label .material-symbols-outlined{
+    font-size: 18px;
+    margin-right: 6px;
+}
+.stern{
+    color: red;
+    margin-right: 4px;
+}
+input[type="text"], 
+input[type="email"], 
+input[type="tel"], 
+input[type="date"], 
+textarea{
+    padding: 10px;
+    border: 2px solid var(--text-color);
+    border-radius: 5px;
+    width: 100%;
+    box-sizing: border-box;
+    font-size: large;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+}
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="tel"]:focus,
+input[type="date"]:focus,
+textarea:focus{
+    border-color: var(--primary-color);
+    outline: none;
+}
+.half{
+    flex: 1;
+    min-width: 200px;
+}
+p a{
+    color: var(--primary-color);
+    text-decoration: none;
+}
+input[type="radio"]{
+    accent-color: var(--primary-color);
+    margin-right: 0;
+}
+.hausnummer{
+    max-width: 100px;
+}
+.plz{
+    max-width: 150px;
+}
+#auto-fill-address{
+    background: none;
+    border: none;
+    color: var(--lightgrey);
+    cursor: pointer;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    transition: all .2s;
+}
+#auto-fill-address .material-symbols-outlined{
+    margin-right: 8px;
+    text-decoration: none;
+}
+#auto-fill-address .info-text{
+    text-decoration: underline;
+}
+#auto-fill-address:hover{
+    color: var(--primary-color);
+}
+#form-buttons{
+    display: flex;
+    width: 100%;
+    justify-content: space-between;
+    margin-top: 2rem;
+}
+#form-buttons button{
+    width: 48%;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: large;
+    font-weight: bold;
+    box-shadow: var(--shadow);
+    transition: all .2s;
+    user-select: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+#form-buttons button .material-symbols-outlined{
+    margin-right: 8px;
+}
+#submit-button{
+    background-color: var(--primary-color);
+    color: white;
+}
+#reset-button{
+    background-color: var(--lightgrey);
+    color: white;
+}
+form a{
+    color: var(--primary-color);
+    text-decoration: none;
+    margin-inline: 5px;
+}
+input[type="checkbox"]{
+    accent-color: var(--primary-color);
+}
+
+/* Input field checkmark styling */
+        .input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+        
+        .input-checkmark {
+            position: absolute;
+            right: 10px;
+            color: var(--success-color);
+            font-size: 18px;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+            pointer-events: none;
+            z-index: 1;
+        }
+        
+        .input-wrapper input.filled + .input-checkmark {
+            opacity: 1;
+        }
+        
+        .input-wrapper input {
+            padding-right: 35px;
+        }
+        
+        /* Radio button group styling - no checkmark needed */
+        .row.no-flex input[type="radio"] {
+            margin-right: 5px;
+        }

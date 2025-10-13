@@ -12,6 +12,17 @@
                 <script src="../assets/js/mode.js"></script>
             </div>
             <?php
+            if(isset($_SESSION['user_id'])) {
+                // User is logged in, check roles from database
+                $user_id = $_SESSION['user_id'];
+                $is_admin = hasAdminRole($user_id);
+                $is_vorstand = hasVorstandRole($user_id);
+            } else {
+                // User is not logged in
+                $user_id = null;
+                $is_admin = false;
+                $is_vorstand = false;
+                }
             if($is_admin){
                 echo '<a href="../pages/internes/admin.php">Admin-Anmeldung<span class="material-symbols-outlined">open_in_new</span></a>';
             }else{

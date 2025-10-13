@@ -6,6 +6,7 @@
     <title>Mitglied werden | Plänitz-Leddin</title>
     <link rel="stylesheet" href="../assets/css/root.css">
     <link rel="stylesheet" href="../assets/css/main.css">
+    <link rel="stylesheet" href="../assets/css/mitglied-werden.css">
     <link rel="stylesheet" href="../assets/css/heading.css">
     <link rel="stylesheet" href="../assets/css/footer.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" />
@@ -43,10 +44,165 @@
         <h1>Zwei Dörfer, eine Gemeinschaft</h1>
     </div>
     <div id="main">
-
+        <div class="content">
+            <h1>Mitglied werden</h1>
+            <p>Wir freuen uns über Ihr Interesse, Mitglied in unserem Verein zu werden! Um den Beitrittsprozess so einfach wie möglich zu gestalten, haben wir ein online-Formular für Sie erstellt</p>
+            <p>Bitte füllen Sie das folgende Formular aus, um Ihre Mitgliedschaft zu beantragen. Nach dem Absenden des Formulars wird sich ein Vorstandsmitglied mit Ihnen in Verbindung setzen, um den weiteren Ablauf zu besprechen.</p>
+            <p>Falls Sie Fragen zum Beitrittsprozess oder zu unserem Verein haben, zögern Sie nicht, uns über das <a href="../pages/kontakt.php">Kontaktformular</a> zu erreichen.</p>
+            <p>Wir freuen uns darauf, Sie als neues Mitglied in unserer Gemeinschaft willkommen zu heißen!</p>
+        </div>
+        <form id="member-form">
+            <h2>Grunddaten:</h2>
+            <div class="row no-flex">
+                <label for="anrede">Anrede:</label>
+                <input type="radio" id="herr" name="anrede" value="Herr" required>
+                <label for="herr">Herr</label>
+                <input type="radio" id="frau" name="anrede" value="Frau" required>
+                <label for="frau">Frau</label>
+                <input type="radio" id="divers" name="anrede" value="Divers" required>
+                <label for="divers">Divers</label>
+            </div>
+            <div class="row no-flex">
+                <div class="half">
+                    <label for="titel">Titel:</label>
+                    <div class="input-wrapper">
+                        <input type="text" id="titel" name="titel">
+                        <span class="input-checkmark material-symbols-outlined">check</span>
+                    </div>
+                </div>
+                <div class="half">
+                    <label for="vorname"><span class="stern">*</span>Vorname:</label>
+                    <div class="input-wrapper">
+                        <input type="text" id="vorname" name="vorname" required>
+                        <span class="input-checkmark material-symbols-outlined">check</span>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <label for="nachname"><span class="stern">*</span>Nachname:</label>
+                <div class="input-wrapper">
+                    <input type="text" id="nachname" name="nachname" required>
+                    <span class="input-checkmark material-symbols-outlined">check</span>
+                </div>
+            </div>
+            <h2>Adresse:</h2>
+            <div class="location-section">
+                <button id="auto-fill-address" type="button" onclick="autoFillAddress()" class="location-button">
+                    <span class="material-symbols-outlined">distance</span>
+                    <span class="info-text">Meinen Standort verwenden</span>
+                </button>
+            </div>
+            <div class="row no-flex">
+                <div class="half">
+                    <label for="strasse"><span class="stern">*</span>Straße:</label>
+                    <div class="input-wrapper">
+                        <input type="text" id="strasse" name="strasse" required>
+                        <span class="input-checkmark material-symbols-outlined">check</span>
+                    </div>
+                </div>
+                <div class="half hausnummer">
+                    <label for="hausnummer"><span class="stern">*</span>Hausnummer:</label>
+                    <div class="input-wrapper">
+                        <input type="text" id="hausnummer" name="hausnummer" required>
+                        <span class="input-checkmark material-symbols-outlined">check</span>
+                    </div>
+                </div>
+            </div>
+            <div class="row no-flex">
+                <div class="half plz">
+                    <label for="plz"><span class="stern">*</span>PLZ:</label>
+                    <div class="input-wrapper">
+                        <input type="text" id="plz" name="plz" required>
+                        <span class="input-checkmark material-symbols-outlined">check</span>
+                    </div>
+                </div>
+                <div class="half">
+                    <label for="ort"><span class="stern">*</span>Ort:</label>
+                    <div class="input-wrapper">
+                        <input type="text" id="ort" name="ort" required>
+                        <span class="input-checkmark material-symbols-outlined">check</span>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <label for="zusatz">Adresszusatz:</label>
+                <div class="input-wrapper">
+                    <input type="text" id="zusatz" name="zusatz">
+                    <span class="input-checkmark material-symbols-outlined">check</span>
+                </div>
+            </div>
+            <h2>Kontaktdaten:</h2>
+            <div class="row">
+                <label for="email">E-Mail:</label>
+                <div class="input-wrapper">
+                    <input type="email" id="email" name="email">
+                    <span class="input-checkmark material-symbols-outlined">check</span>
+                </div>
+            </div>
+            <div class="row">
+                <label for="telefon"></span>Festnetz:</label>
+                <div class="input-wrapper">
+                    <input type="tel" id="telefon" name="telefon">
+                    <span class="input-checkmark material-symbols-outlined">check</span>
+                </div>
+            </div>
+            <div class="row">
+                <label for="mobil">Mobil:</label>
+                <div class="input-wrapper">
+                    <input type="tel" id="mobil" name="mobil" value="+49 ">
+                    <span class="input-checkmark material-symbols-outlined">check</span>
+                </div>
+            </div>
+            <h3><span class="stern">*</span>Wie können wie Sie am besten erreichen?</h3>
+            <div class="row no-flex">
+                <input type="radio" id="kontakt-email" name="kontakt" value="email">
+                <label for="kontakt-email">
+                    <span class="material-symbols-outlined">mail</span>
+                    E-Mail</label>
+                <input type="radio" id="kontakt-telefon" name="kontakt" value="telefon">
+                <label for="kontakt-telefon">
+                    <span class="material-symbols-outlined">phone</span>
+                    Festnetz</label>
+                <input type="radio" id="kontakt-mobil" name="kontakt" value="mobil">
+                <label for="kontakt-mobil">
+                    <span class="material-symbols-outlined">smartphone</span>
+                    Mobil</label>
+                <input type="radio" id="post" name="kontakt" value="post">
+                <label for="post">
+                    <span class="material-symbols-outlined">markunread_mailbox</span>
+                    Post</label>
+            </div>
+            <h2>Möchten Sie und noch etwas mitteilen?</h2>
+            <div class="row">
+                <div class="input-wrapper">
+                    <textarea id="nachricht" name="nachricht" rows="4" placeholder="Ihre Nachricht..."></textarea>
+                    <span class="input-checkmark material-symbols-outlined">check</span>
+                </div>
+            </div>
+            <div class="row no-flex">
+                <input type="checkbox" id="datenschutz" name="datenschutz" required>
+                <label for="datenschutz">
+                    <span class="stern">*</span>
+                    Ich habe die <a href="../pages/datenschutz.php" target="_blank" rel="noopener noreferrer">Datenschutzerklärung </a> gelesen und akzeptiere sie.</label>
+            </div>
+            <div class="row no-flex" id="form-buttons">
+                <button type="reset" id="reset-button" onclick="resetForm()">
+                    <span class="material-symbols-outlined">refresh</span>
+                    Formular zurücksetzen
+                </button>
+                <button type="submit" id="submit-button">
+                    <span class="material-symbols-outlined">send</span>
+                    Formular absenden
+                </button>
+                <span id="form-status"></span>
+            </div>
+            <span class="stern">*</span> Pflichtfelder
+        </form>
     </div>
     <div id="footer" class="center">
         <?php include '../pages/footer.php'; ?>
     </div>
+    <script src="../assets/js/GPS2Adress.js"></script>
+    <script src="../assets/js/ticks.js"></script>
 </body>
 </html>
