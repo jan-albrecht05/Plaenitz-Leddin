@@ -1,5 +1,5 @@
         <div id="footer-gif">
-            <img src="../assets/GIFs/snowman.gif" alt="">
+            <img src="../assets/GIFs/autumn.gif" alt="">
         </div>
         <div id="left">
             <div id="mode-toggle">

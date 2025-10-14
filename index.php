@@ -268,7 +268,7 @@ if (!file_exists($dbPath)) {
     </div>
     <div id="footer" class="center">
         <div id="footer-gif">
-            <img src="assets/GIFs/snowman.gif" alt="">
+            <img src="assets/GIFs/autumn.gif" alt="">
         </div>
         <div id="left">
             <div id="mode-toggle">
