@@ -133,7 +133,7 @@ function createUser($name, $nachname, $password, $role = 'member', $email = '') 
     }
 
     // Validate role
-    $validRoles = ['admin', 'vorstand', 'member'];
+    $validRoles = ['admin', 'vorstand', 'Mitglied'];
     if (!in_array(strtolower($role), $validRoles)) {
         return ['success' => false, 'error' => 'Ungültige Rolle'];
     }
@@ -183,6 +183,31 @@ function createUser($name, $nachname, $password, $role = 'member', $email = '') 
     } catch (Exception $e) {
         error_log('createUser: DB error - ' . $e->getMessage());
         return ['success' => false, 'error' => 'Datenbankfehler: ' . $e->getMessage()];
+    }
+}
+
+/**
+ * Update last visited date for user
+ * @param int $userId
+ * @return bool Returns true on success, false on failure
+ */
+function updateLastVisitedDate($userId) {
+    $pdo = getMemberDbConnection();
+    if (!$pdo) {
+        return false;
+    }
+
+    try {
+        // Set last_visited_date to current UTC timestamp
+        $stmt = $pdo->prepare('UPDATE mitglieder SET last_visited_date = :last_visited_date WHERE id = :id');
+        $stmt->bindValue(':last_visited_date', gmdate('Y-m-d H:i:s'), PDO::PARAM_STR);
+        $stmt->bindValue(':id', $userId, PDO::PARAM_INT);
+        $stmt->execute();
+
+        return true;
+    } catch (Exception $e) {
+        error_log('updateLastVisitedDate: DB error - ' . $e->getMessage());
+        return false;
     }
 }
 ?>

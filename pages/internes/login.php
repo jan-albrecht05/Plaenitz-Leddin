@@ -36,6 +36,8 @@
         if($user) {
             // Store only user ID in session, roles will be checked from database
             $_SESSION['user_id'] = $user['id'];
+            // Update last visited date in UTC format
+            updateLastVisitedDate($user['id']);
             header("Location: dashboard.php");
             exit();
         } else {

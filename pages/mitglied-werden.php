@@ -49,9 +49,18 @@
             <p>Wir freuen uns über Ihr Interesse, Mitglied in unserem Verein zu werden! Um den Beitrittsprozess so einfach wie möglich zu gestalten, haben wir ein online-Formular für Sie erstellt</p>
             <p>Bitte füllen Sie das folgende Formular aus, um Ihre Mitgliedschaft zu beantragen. Nach dem Absenden des Formulars wird sich ein Vorstandsmitglied mit Ihnen in Verbindung setzen, um den weiteren Ablauf zu besprechen.</p>
             <p>Falls Sie Fragen zum Beitrittsprozess oder zu unserem Verein haben, zögern Sie nicht, uns über das <a href="../pages/kontakt.php">Kontaktformular</a> zu erreichen.</p>
-            <p>Wir freuen uns darauf, Sie als neues Mitglied in unserer Gemeinschaft willkommen zu heißen!</p>
+            <h2>Ihre Vorteile im Verein</h2>
+            <p>Als Mitglied unseres Vereins profitieren Sie von zahlreichen Vorteilen:</p>
+            <ul>
+                <li>Teilnahme an exklusiven Veranstaltungen und Workshops</li>
+                <li>Regelmäßige Informationen über Neuigkeiten und Entwicklungen im Verein</li>
+                <li>Unterstützung bei Ihren Projekten und Ideen</li>
+            </ul>
+            <h2>Kosten</h2>
+            <p>Die Mitgliedschaft in unserem Verein ist kostenlos.</p>
+            <br><h3>Wir freuen uns darauf, Sie als neues Mitglied in unserer Gemeinschaft willkommen zu heißen!</h3>
         </div>
-        <form id="member-form">
+        <form id="member-form" method="post">
             <h2>Grunddaten:</h2>
             <div class="row no-flex">
                 <label for="anrede">Anrede:</label>
@@ -198,6 +207,69 @@
             </div>
             <span class="stern">*</span> Pflichtfelder
         </form>
+        <?php
+        // PHP code to handle form submission
+        if ($_SERVER["REQUEST_METHOD"] === "POST") {
+            // Sanitize and validate input data
+            $titel = filter_input(INPUT_POST, 'titel', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
+            $anrede = filter_input(INPUT_POST, 'anrede', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
+            $vorname = filter_input(INPUT_POST, 'vorname', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
+            $nachname = filter_input(INPUT_POST, 'nachname', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
+            $strasse = filter_input(INPUT_POST, 'strasse', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
+            $hausnummer = filter_input(INPUT_POST, 'hausnummer', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
+            $ort = filter_input(INPUT_POST, 'ort', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
+            $plz = filter_input(INPUT_POST, 'plz', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
+            $zusatz = filter_input(INPUT_POST, 'zusatz', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
+            $email = filter_input(INPUT_POST, 'email', FILTER_SANITIZE_EMAIL);
+            $telefon = filter_input(INPUT_POST, 'telefon', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
+            $mobil = filter_input(INPUT_POST, 'mobil', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
+            $kontakt = filter_input(INPUT_POST, 'kontakt', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
+            $nachricht = filter_input(INPUT_POST, 'nachricht', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
+            $date = date('Y-m-d H:i:s');
+
+            // Check if required fields are filled
+            if (true) {
+                try {
+                    // Save to member.db
+                    $db = new SQLite3('../assets/db/member.db');
+                    
+                    $stmt = $db->prepare('INSERT INTO mitglieder (anrede, titel, name, nachname, strasse, hausnummer, ort, plz, adresszusatz, e_mail, festnetz, mobilnummer, info, bevorzugte_kommunikation, join_date) 
+                                         VALUES (:anrede, :titel, :vorname, :nachname, :strasse, :hausnummer, :ort, :plz, :zusatz, :email, :telefon, :mobil, :nachricht, :kontakt, :date)');
+                    
+                    // Bind parameters
+                    $stmt->bindValue(':anrede', $anrede, SQLITE3_TEXT);
+                    $stmt->bindValue(':titel', $titel, SQLITE3_TEXT);
+                    $stmt->bindValue(':vorname', $vorname, SQLITE3_TEXT);
+                    $stmt->bindValue(':nachname', $nachname, SQLITE3_TEXT);
+                    $stmt->bindValue(':strasse', $strasse, SQLITE3_TEXT);
+                    $stmt->bindValue(':hausnummer', $hausnummer, SQLITE3_TEXT);
+                    $stmt->bindValue(':ort', $ort, SQLITE3_TEXT);
+                    $stmt->bindValue(':plz', $plz, SQLITE3_TEXT);
+                    $stmt->bindValue(':zusatz', $zusatz, SQLITE3_TEXT);
+                    $stmt->bindValue(':email', $email, SQLITE3_TEXT);
+                    $stmt->bindValue(':telefon', $telefon, SQLITE3_TEXT);
+                    $stmt->bindValue(':mobil', $mobil, SQLITE3_TEXT);
+                    $stmt->bindValue(':nachricht', $nachricht, SQLITE3_TEXT);
+                    $stmt->bindValue(':kontakt', $kontakt, SQLITE3_TEXT);
+                    $stmt->bindValue(':date', $date, SQLITE3_TEXT);
+                    // Execute the statement
+                    $result = $stmt->execute();
+                    // positive feedback
+                    if ($result) {
+                        echo '<div class="success-message"><p>Vielen Dank für Ihre Mitgliedschaftsanfrage! Ein Vorstandsmitglied wird sich bald bei Ihnen melden.</p></div>';
+                    } else {
+                        echo '<div class="error-message"><p>Es gab einen Fehler beim Speichern Ihrer Daten. Bitte versuchen Sie es erneut.</p></div>';
+                    }
+                    $db->close();
+                } catch (Exception $e) {
+                    error_log("Database error in mitglied-werden.php: " . $e->getMessage());
+                    echo '<div class="error-message"><p>Es gab einen technischen Fehler. Bitte versuchen Sie es später erneut oder kontaktieren Sie uns direkt.</p></div>';
+                }
+            } /*else {
+                echo '<div class="error-message"><p>Bitte füllen Sie alle Pflichtfelder aus.</p></div>';
+            }*/
+        }
+        ?>
     </div>
     <div id="footer" class="center">
         <?php include '../pages/footer.php'; ?>
