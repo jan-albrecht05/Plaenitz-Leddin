@@ -143,7 +143,12 @@ form a{
 input[type="checkbox"]{
     accent-color: var(--primary-color);
 }
-
+label[for="datenschutz"]{
+        display: block;
+    }
+nobr{
+    display: inline-block;
+}
 /* Input field checkmark styling */
         .input-wrapper {
             position: relative;
@@ -174,3 +179,35 @@ input[type="checkbox"]{
         .row.no-flex input[type="radio"] {
             margin-right: 5px;
         }
+@media (max-width:600px) {
+    #main{
+        width: 90%;
+        margin: 0 auto;
+    }
+    form {
+        margin: 2rem auto 4rem auto;
+        padding: 15px;
+        border-radius: 10px;
+        box-shadow: var(--shadow);
+        margin-top: 3rem;
+        border: 1px solid var(--lightgrey);
+    }
+    #form-buttons{
+        flex-direction: column;
+        gap: 10px;
+    }
+    .half{
+        min-width: 100%;
+    }
+    input[type="text"]{
+        font-size: medium;
+        width: 100%;
+    }
+    
+    #form-buttons button{
+        width: 100%;
+    }
+    #radios{
+        display: flex;
+    }
+}

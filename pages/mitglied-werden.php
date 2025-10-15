@@ -163,23 +163,23 @@
                 </div>
             </div>
             <h3><span class="stern">*</span>Wie können wie Sie am besten erreichen?</h3>
-            <div class="row no-flex">
+            <div class="row no-flex" id="radios">
                 <input type="radio" id="kontakt-email" name="kontakt" value="email">
-                <label for="kontakt-email">
+                <nobr><label for="kontakt-email">
                     <span class="material-symbols-outlined">mail</span>
-                    E-Mail</label>
+                    E-Mail</label></nobr>
                 <input type="radio" id="kontakt-telefon" name="kontakt" value="telefon">
-                <label for="kontakt-telefon">
+                <nobr><label for="kontakt-telefon">
                     <span class="material-symbols-outlined">phone</span>
-                    Festnetz</label>
+                    Festnetz</label></nobr>
                 <input type="radio" id="kontakt-mobil" name="kontakt" value="mobil">
-                <label for="kontakt-mobil">
+                <nobr><label for="kontakt-mobil">
                     <span class="material-symbols-outlined">smartphone</span>
-                    Mobil</label>
+                    Mobil</label></nobr>
                 <input type="radio" id="post" name="kontakt" value="post">
-                <label for="post">
+                <nobr><label for="post">
                     <span class="material-symbols-outlined">markunread_mailbox</span>
-                    Post</label>
+                    Post</label></nobr>
             </div>
             <h2>Möchten Sie und noch etwas mitteilen?</h2>
             <div class="row">

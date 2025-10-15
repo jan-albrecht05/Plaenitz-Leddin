@@ -8,6 +8,7 @@
     --shadow: 0 5px 5px var(--shadow-color);
     --lightgrey: #979797;
     --shadow-white: rgba(255, 255, 255) 40%;
+    --orange: #ff6600;
 }
 [data-theme="dark"]{
     --bg-color: #262626;
@@ -18,4 +19,5 @@
     --shadow: 0 5px 5px var(--shadow-color);
     --lightgrey: #444;
     --shadow-white: #ccc 20%;
+    --orange: #ff6600;
 }

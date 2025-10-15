@@ -45,9 +45,165 @@ if (!hasAdminOrVorstandRole($userId)) {
             </a>
         </div>
     </div>
-    <div id="dashboard-container">
+    <div id="dashboard-container" class="banner">
         <h1>Willkommen zum Dashboard</h1>
-        <p>Hier können Sie interne Informationen und Funktionen verwalten.</p>
+    </div>
+    <div id="main">
+        <div id="member-output">
+            <div id="member-output-heading">
+                <button class="member-button ganzer-name">Name</button>
+                <button class="member-button role">Rolle</button>
+                <span class="status">Status</span>
+                <span class="edit-button"></span>
+            </div>
+            <div class="member ">
+                <div class="member-top">
+                    <div class="ganzer-name">
+                        <h2 class="nachname">Nachname,</h2>
+                        <h2 class="name">Name</h2>
+                    </div>
+                    <div class="role admin center">
+                        <span class="material-symbols-outlined role-symbol">admin_panel_settings</span> 
+                        <span class="role-text">Admin</span>
+                    </div>
+                    <div class="status aktiv center">
+                        <span class="material-symbols-outlined status-symbol">verified</span> 
+                        <span class="status-text">Aktiv</span>
+                    </div>
+
+                    <button class="edit-button">
+                        <span class="material-symbols-outlined">more_vert</span>
+                    </button>
+                </div>
+                <div class="member-bottom">
+                    <div class="left">
+                        <div class="address center">
+                            <span class="material-symbols-outlined address-symbol">home</span>
+                            <div class="flex-column">
+                                <span class="address-text">Musterstraße 1,</span>
+                                <span class="address-text">12345 Musterstadt</span>
+                            </div>
+                        </div>
+                        <div class="join-date center">
+                            <span class="material-symbols-outlined join-date-symbol">event</span> 
+                            <span class="join-date-text">01.01.2020</span>
+                        </div>
+                    </div>
+                    <div class="right">
+                        <div class="phone">
+                            <span class="material-symbols-outlined phone-symbol">phone</span> 
+                            <span class="phone-text">01234 567890</span>
+                        </div>
+                        <div class="mobile">
+                            <span class="material-symbols-outlined mobile-symbol">smartphone</span> 
+                            <span class="mobile-text">01234 567890</span>
+                        </div>
+                        <div class="email">
+                            <span class="material-symbols-outlined email-symbol">email</span> 
+                            <span class="email-text">email@example.com</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="member open">
+                <div class="member-top">
+                    <div class="ganzer-name">
+                        <h2 class="nachname">Nachname,</h2>
+                        <h2 class="name">Name</h2>
+                    </div>
+                    <div class="role member center">
+                        <span class="material-symbols-outlined role-symbol">person</span> 
+                        <span class="role-text">Mitglied</span>
+                    </div>
+                    <div class="status aktiv center">
+                        <span class="material-symbols-outlined status-symbol">verified</span> 
+                        <span class="status-text">Aktiv</span>
+                    </div>
+
+                    <button class="edit-button">
+                        <span class="material-symbols-outlined">more_vert</span>
+                    </button>
+                </div>
+                <div class="member-bottom">
+                    <div class="left">
+                        <div class="address center">
+                            <span class="material-symbols-outlined address-symbol">home</span>
+                            <div class="flex-column">
+                                <span class="address-text">Musterstraße 1,</span>
+                                <span class="address-text">12345 Musterstadt</span>
+                            </div>
+                        </div>
+                        <div class="join-date center">
+                            <span class="material-symbols-outlined join-date-symbol">event</span> 
+                            <span class="join-date-text">01.01.2020</span>
+                        </div>
+                    </div>
+                    <div class="right">
+                        <div class="phone">
+                            <span class="material-symbols-outlined phone-symbol">phone</span> 
+                            <span class="phone-text">01234 567890</span>
+                        </div>
+                        <div class="mobile">
+                            <span class="material-symbols-outlined mobile-symbol">smartphone</span> 
+                            <span class="mobile-text">01234 567890</span>
+                        </div>
+                        <div class="email">
+                            <span class="material-symbols-outlined email-symbol">email</span> 
+                            <span class="email-text">email@example.com</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="member ">
+                <div class="member-top">
+                    <div class="ganzer-name">
+                        <h2 class="nachname">Nachname,</h2>
+                        <h2 class="name">Name</h2>
+                    </div>
+                    <div class="role vorstand center">
+                        <span class="material-symbols-outlined role-symbol">admin_panel_settings</span> 
+                        <span class="role-text">Vorstand</span>
+                    </div>
+                    <div class="status aktiv center">
+                        <span class="material-symbols-outlined status-symbol">verified</span> 
+                        <span class="status-text">Aktiv</span>
+                    </div>
+
+                    <button class="edit-button">
+                        <span class="material-symbols-outlined">more_vert</span>
+                    </button>
+                </div>
+                <div class="member-bottom">
+                    <div class="left">
+                        <div class="address center">
+                            <span class="material-symbols-outlined address-symbol">home</span>
+                            <div class="flex-column">
+                                <span class="address-text">Musterstraße 1,</span>
+                                <span class="address-text">12345 Musterstadt</span>
+                            </div>
+                        </div>
+                        <div class="join-date center">
+                            <span class="material-symbols-outlined join-date-symbol">event</span> 
+                            <span class="join-date-text">01.01.2020</span>
+                        </div>
+                    </div>
+                    <div class="right">
+                        <div class="phone">
+                            <span class="material-symbols-outlined phone-symbol">phone</span> 
+                            <span class="phone-text">01234 567890</span>
+                        </div>
+                        <div class="mobile">
+                            <span class="material-symbols-outlined mobile-symbol">smartphone</span> 
+                            <span class="mobile-text">01234 567890</span>
+                        </div>
+                        <div class="email">
+                            <span class="material-symbols-outlined email-symbol">email</span> 
+                            <span class="email-text">email@example.com</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
     <div id="footer" class="center">
         <?php include '../../pages/internes/footer.php'; ?>
