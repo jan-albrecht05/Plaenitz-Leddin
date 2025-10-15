@@ -56,153 +56,157 @@ if (!hasAdminOrVorstandRole($userId)) {
                 <span class="status">Status</span>
                 <span class="edit-button"></span>
             </div>
-            <div class="member ">
-                <div class="member-top">
-                    <div class="ganzer-name">
-                        <h2 class="nachname">Nachname,</h2>
-                        <h2 class="name">Name</h2>
-                    </div>
-                    <div class="role admin center">
-                        <span class="material-symbols-outlined role-symbol">admin_panel_settings</span> 
-                        <span class="role-text">Admin</span>
-                    </div>
-                    <div class="status aktiv center">
-                        <span class="material-symbols-outlined status-symbol">verified</span> 
-                        <span class="status-text">Aktiv</span>
-                    </div>
-
-                    <button class="edit-button">
-                        <span class="material-symbols-outlined">more_vert</span>
-                    </button>
-                </div>
-                <div class="member-bottom">
-                    <div class="left">
-                        <div class="address center">
-                            <span class="material-symbols-outlined address-symbol">home</span>
-                            <div class="flex-column">
-                                <span class="address-text">Musterstraße 1,</span>
-                                <span class="address-text">12345 Musterstadt</span>
+            <?php
+            // Database connection for members
+            $dbPath = __DIR__ . '/../../assets/db/member.db';
+            
+            if (!file_exists($dbPath)) {
+                echo '<div class="member"><p>Datenbankdatei nicht gefunden: ' . htmlspecialchars($dbPath) . '</p></div>';
+            } else {
+                try {
+                    // Connect to database
+                    $pdo = new PDO('sqlite:' . $dbPath);
+                    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+                    
+                    // Get all members
+                    $stmt = $pdo->prepare('SELECT id, name, nachname, strasse, plz, ort, festnetz, mobilnummer, e_mail, rolle, status, join_date FROM mitglieder ORDER BY nachname ASC, name ASC');
+                    $stmt->execute();
+                    $members = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                    
+                    if ($members && count($members) > 0) {
+                        foreach ($members as $member) {
+                            // Determine role class and display text
+                            $roleClass = '';
+                            $roleIcon = 'person';
+                            $roleText = 'Mitglied';
+                            
+                            if ($member['rolle']) {
+                                $roleLower = strtolower(trim($member['rolle']));
+                                if ($roleLower === 'admin') {
+                                    $roleClass = 'admin';
+                                    $roleIcon = 'admin_panel_settings';
+                                    $roleText = 'Admin';
+                                } elseif ($roleLower === 'vorstand') {
+                                    $roleClass = 'vorstand';
+                                    $roleIcon = 'shield_person';
+                                    $roleText = 'Vorstand';
+                                } elseif ($roleLower === 'mitglied') {
+                                    $roleClass = 'member';
+                                    $roleIcon = 'person';
+                                    $roleText = 'Mitglied';
+                                }
+                            }
+                            
+                            // Determine status class and display text
+                            $statusClass = 'aktiv';
+                            $statusIcon = 'verified';
+                            $statusText = 'Aktiv';
+                            
+                            if ($member['status']) {
+                                $statusLower = strtolower(trim($member['status']));
+                                if ($statusLower === 'inaktiv') {
+                                    $statusClass = 'inaktiv';
+                                    $statusIcon = 'cancel';
+                                    $statusText = 'Inaktiv';
+                                } elseif ($statusLower === 'pending' || $statusLower === 'ausstehend') {
+                                    $statusClass = 'pending';
+                                    $statusIcon = 'pending';
+                                    $statusText = 'Ausstehend';
+                                }
+                            }
+                            
+                            // Format join date
+                            $joinDateFormatted = '';
+                            if (!empty($member['join_date'])) {
+                                try {
+                                    $date = new DateTime($member['join_date']);
+                                    $joinDateFormatted = $date->format('d.m.Y');
+                                } catch (Exception $e) {
+                                    $joinDateFormatted = '';
+                                }
+                            }
+                            
+                            // Format address
+                            $address1 = !empty($member['strasse']) ? htmlspecialchars($member['strasse']) . ',' : '';
+                            $address2 = (!empty($member['plz']) ? htmlspecialchars($member['plz']) . ' ' : '') . 
+                                        (!empty($member['ort']) ? htmlspecialchars($member['ort']) : '');
+                            
+                            $hasAddress = !empty($address1) || !empty($address2);
+                            ?>
+                            <div class="member">
+                                <div class="member-top">
+                                    <div class="ganzer-name">
+                                        <h2 class="nachname"><?php echo htmlspecialchars($member['nachname']); ?>,</h2>
+                                        <h2 class="name"><?php echo htmlspecialchars($member['name']); ?></h2>
+                                    </div>
+                                    <div class="role <?php echo $roleClass; ?> center">
+                                        <span class="material-symbols-outlined role-symbol"><?php echo $roleIcon; ?></span>
+                                        <span class="role-text"><?php echo $roleText; ?></span>
+                                    </div>
+                                    <div class="status <?php echo $statusClass; ?> center">
+                                        <span class="material-symbols-outlined status-symbol"><?php echo $statusIcon; ?></span>
+                                        <span class="status-text"><?php echo $statusText; ?></span>
+                                    </div>
+                                    <button class="edit-button">
+                                        <span class="material-symbols-outlined">more_vert</span>
+                                    </button>
+                                </div>
+                                <div class="member-bottom">
+                                    <div class="left">
+                                        <?php if ($hasAddress): ?>
+                                        <div class="address center">
+                                            <span class="material-symbols-outlined address-symbol">home</span>
+                                            <div class="flex-column">
+                                                <?php if (!empty($address1)): ?>
+                                                <span class="address-text"><?php echo $address1; ?></span>
+                                                <?php endif; ?>
+                                                <?php if (!empty($address2)): ?>
+                                                <span class="address-text"><?php echo $address2; ?></span>
+                                                <?php endif; ?>
+                                            </div>
+                                        </div>
+                                        <?php endif; ?>
+                                        <?php if (!empty($joinDateFormatted)): ?>
+                                        <div class="join-date center">
+                                            <span class="material-symbols-outlined join-date-symbol">event</span>
+                                            <span class="join-date-text"><?php echo $joinDateFormatted; ?></span>
+                                        </div>
+                                        <?php endif; ?>
+                                    </div>
+                                    <div class="right">
+                                        <?php if (!empty($member['telefon'])): ?>
+                                        <div class="phone">
+                                            <span class="material-symbols-outlined phone-symbol">phone</span>
+                                            <span class="phone-text"><?php echo htmlspecialchars($member['telefon']); ?></span>
+                                        </div>
+                                        <?php endif; ?>
+                                        <?php if (!empty($member['mobil'])): ?>
+                                        <div class="mobile">
+                                            <span class="material-symbols-outlined mobile-symbol">smartphone</span>
+                                            <span class="mobile-text"><?php echo htmlspecialchars($member['mobil']); ?></span>
+                                        </div>
+                                        <?php endif; ?>
+                                        <?php if (!empty($member['e_mail'])): ?>
+                                        <div class="email">
+                                            <span class="material-symbols-outlined email-symbol">email</span>
+                                            <span class="email-text"><?php echo htmlspecialchars($member['e_mail']); ?></span>
+                                        </div>
+                                        <?php endif; ?>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                        <div class="join-date center">
-                            <span class="material-symbols-outlined join-date-symbol">event</span> 
-                            <span class="join-date-text">01.01.2020</span>
-                        </div>
-                    </div>
-                    <div class="right">
-                        <div class="phone">
-                            <span class="material-symbols-outlined phone-symbol">phone</span> 
-                            <span class="phone-text">01234 567890</span>
-                        </div>
-                        <div class="mobile">
-                            <span class="material-symbols-outlined mobile-symbol">smartphone</span> 
-                            <span class="mobile-text">01234 567890</span>
-                        </div>
-                        <div class="email">
-                            <span class="material-symbols-outlined email-symbol">email</span> 
-                            <span class="email-text">email@example.com</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="member open">
-                <div class="member-top">
-                    <div class="ganzer-name">
-                        <h2 class="nachname">Nachname,</h2>
-                        <h2 class="name">Name</h2>
-                    </div>
-                    <div class="role member center">
-                        <span class="material-symbols-outlined role-symbol">person</span> 
-                        <span class="role-text">Mitglied</span>
-                    </div>
-                    <div class="status aktiv center">
-                        <span class="material-symbols-outlined status-symbol">verified</span> 
-                        <span class="status-text">Aktiv</span>
-                    </div>
-
-                    <button class="edit-button">
-                        <span class="material-symbols-outlined">more_vert</span>
-                    </button>
-                </div>
-                <div class="member-bottom">
-                    <div class="left">
-                        <div class="address center">
-                            <span class="material-symbols-outlined address-symbol">home</span>
-                            <div class="flex-column">
-                                <span class="address-text">Musterstraße 1,</span>
-                                <span class="address-text">12345 Musterstadt</span>
-                            </div>
-                        </div>
-                        <div class="join-date center">
-                            <span class="material-symbols-outlined join-date-symbol">event</span> 
-                            <span class="join-date-text">01.01.2020</span>
-                        </div>
-                    </div>
-                    <div class="right">
-                        <div class="phone">
-                            <span class="material-symbols-outlined phone-symbol">phone</span> 
-                            <span class="phone-text">01234 567890</span>
-                        </div>
-                        <div class="mobile">
-                            <span class="material-symbols-outlined mobile-symbol">smartphone</span> 
-                            <span class="mobile-text">01234 567890</span>
-                        </div>
-                        <div class="email">
-                            <span class="material-symbols-outlined email-symbol">email</span> 
-                            <span class="email-text">email@example.com</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="member ">
-                <div class="member-top">
-                    <div class="ganzer-name">
-                        <h2 class="nachname">Nachname,</h2>
-                        <h2 class="name">Name</h2>
-                    </div>
-                    <div class="role vorstand center">
-                        <span class="material-symbols-outlined role-symbol">admin_panel_settings</span> 
-                        <span class="role-text">Vorstand</span>
-                    </div>
-                    <div class="status aktiv center">
-                        <span class="material-symbols-outlined status-symbol">verified</span> 
-                        <span class="status-text">Aktiv</span>
-                    </div>
-
-                    <button class="edit-button">
-                        <span class="material-symbols-outlined">more_vert</span>
-                    </button>
-                </div>
-                <div class="member-bottom">
-                    <div class="left">
-                        <div class="address center">
-                            <span class="material-symbols-outlined address-symbol">home</span>
-                            <div class="flex-column">
-                                <span class="address-text">Musterstraße 1,</span>
-                                <span class="address-text">12345 Musterstadt</span>
-                            </div>
-                        </div>
-                        <div class="join-date center">
-                            <span class="material-symbols-outlined join-date-symbol">event</span> 
-                            <span class="join-date-text">01.01.2020</span>
-                        </div>
-                    </div>
-                    <div class="right">
-                        <div class="phone">
-                            <span class="material-symbols-outlined phone-symbol">phone</span> 
-                            <span class="phone-text">01234 567890</span>
-                        </div>
-                        <div class="mobile">
-                            <span class="material-symbols-outlined mobile-symbol">smartphone</span> 
-                            <span class="mobile-text">01234 567890</span>
-                        </div>
-                        <div class="email">
-                            <span class="material-symbols-outlined email-symbol">email</span> 
-                            <span class="email-text">email@example.com</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
+                            <?php
+                        }
+                    } else {
+                        echo '<div class="member"><p>Keine Mitglieder gefunden.</p></div>';
+                    }
+                    
+                } catch (Exception $e) {
+                    error_log('Dashboard: DB error - ' . $e->getMessage());
+                    echo '<div class="member"><p>Fehler beim Laden der Mitglieder: ' . htmlspecialchars($e->getMessage()) . '</p></div>';
+                }
+            }
+            ?>
         </div>
     </div>
     <div id="footer" class="center">
