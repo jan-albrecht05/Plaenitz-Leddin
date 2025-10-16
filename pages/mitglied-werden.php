@@ -232,6 +232,8 @@
                 try {
                     // Save to member.db
                     $db = new SQLite3('../assets/db/member.db');
+                    // Set UTF-8 encoding for proper handling of special characters (ß, ä, ö, ü, etc.)
+                    $db->exec("PRAGMA encoding = 'UTF-8'");
                     
                     $stmt = $db->prepare('INSERT INTO mitglieder (anrede, titel, name, nachname, strasse, hausnummer, ort, plz, adresszusatz, e_mail, festnetz, mobilnummer, info, bevorzugte_kommunikation, join_date) 
                                          VALUES (:anrede, :titel, :vorname, :nachname, :strasse, :hausnummer, :ort, :plz, :zusatz, :email, :telefon, :mobil, :nachricht, :kontakt, :date)');

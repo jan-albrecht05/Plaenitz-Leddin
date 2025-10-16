@@ -56,6 +56,7 @@ if (!hasAdminOrVorstandRole($userId)) {
                 <span class="status">Status</span>
                 <span class="edit-button"></span>
             </div>
+            <script src="../../assets/js/dashboard.js" defer></script>
             <?php
             // Database connection for members
             $dbPath = __DIR__ . '/../../assets/db/member.db';
@@ -67,21 +68,28 @@ if (!hasAdminOrVorstandRole($userId)) {
                     // Connect to database
                     $pdo = new PDO('sqlite:' . $dbPath);
                     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+                    // Set UTF-8 encoding for proper display of special characters (ß, ä, ö, ü, etc.)
+                    $pdo->exec("PRAGMA encoding = 'UTF-8'");
                     
                     // Get all members
-                    $stmt = $pdo->prepare('SELECT id, name, nachname, strasse, plz, ort, festnetz, mobilnummer, e_mail, rolle, status, join_date FROM mitglieder ORDER BY nachname ASC, name ASC');
+                    $stmt = $pdo->prepare('SELECT id, name, nachname, strasse, hausnummer, plz, ort, festnetz, mobilnummer, e_mail, rolle, status, join_date FROM mitglieder ORDER BY id ASC, name ASC');
                     $stmt->execute();
                     $members = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     
                     if ($members && count($members) > 0) {
                         foreach ($members as $member) {
-                            // Determine role class and display text
-                            $roleClass = '';
+                            // Defaults for role and status to ensure variables are always set
+                            $roleClass = 'member';
                             $roleIcon = 'person';
                             $roleText = 'Mitglied';
-                            
-                            if ($member['rolle']) {
-                                $roleLower = strtolower(trim($member['rolle']));
+
+                            $statusClass = 'pending';
+                            $statusIcon = 'schedule';
+                            $statusText = 'Ausstehend';
+
+                            // Determine role class and display text
+                            if (!empty($member['rolle'])) {
+                                $roleLower = strtolower(trim((string)$member['rolle']));
                                 if ($roleLower === 'admin') {
                                     $roleClass = 'admin';
                                     $roleIcon = 'admin_panel_settings';
@@ -96,25 +104,40 @@ if (!hasAdminOrVorstandRole($userId)) {
                                     $roleText = 'Mitglied';
                                 }
                             }
-                            
-                            // Determine status class and display text
-                            $statusClass = 'aktiv';
-                            $statusIcon = 'verified';
-                            $statusText = 'Aktiv';
-                            
-                            if ($member['status']) {
-                                $statusLower = strtolower(trim($member['status']));
-                                if ($statusLower === 'inaktiv') {
-                                    $statusClass = 'inaktiv';
-                                    $statusIcon = 'cancel';
-                                    $statusText = 'Inaktiv';
-                                } elseif ($statusLower === 'pending' || $statusLower === 'ausstehend') {
-                                    $statusClass = 'pending';
-                                    $statusIcon = 'pending';
-                                    $statusText = 'Ausstehend';
-                                }
+
+                            // Normalize and map status value (accepts 0/1/2 as int or string)
+                            $statusInt = isset($member['status']) && is_numeric($member['status']) ? (int)$member['status'] : null;
+                            if ($statusInt === 1) {
+                                $statusClass = 'aktiv';
+                                $statusIcon = 'verified';
+                                $statusText = 'Aktiv';
+                            } elseif ($statusInt === 2) {
+                                $statusClass = 'inaktiv';
+                                $statusIcon = 'do_not_disturb_on';
+                                $statusText = 'Inaktiv';
+                                $roleClass = 'hidden';
+                            } elseif ($statusInt === 0) {
+                                $statusClass = 'pending';
+                                $statusIcon = 'schedule';
+                                $statusText = 'Ausstehend';
+                                $roleClass = 'hidden';
                             }
-                            
+
+                            // Prepare contact values supporting both column name variants
+                            $telefonVal = '';
+                            if (!empty($member['festnetz'])) {
+                                $telefonVal = $member['festnetz'];
+                            } elseif (!empty($member['telefon'])) {
+                                $telefonVal = $member['telefon'];
+                            }
+
+                            $mobilVal = '';
+                            if (!empty($member['mobilnummer'])) {
+                                $mobilVal = $member['mobilnummer'];
+                            } elseif (!empty($member['mobil'])) {
+                                $mobilVal = $member['mobil'];
+                            }
+
                             // Format join date
                             $joinDateFormatted = '';
                             if (!empty($member['join_date'])) {
@@ -127,8 +150,8 @@ if (!hasAdminOrVorstandRole($userId)) {
                             }
                             
                             // Format address
-                            $address1 = !empty($member['strasse']) ? htmlspecialchars($member['strasse']) . ',' : '';
-                            $address2 = (!empty($member['plz']) ? htmlspecialchars($member['plz']) . ' ' : '') . 
+                            $address1 = !empty($member['strasse']) ? htmlspecialchars($member['strasse']) . ', ' . htmlspecialchars($member['hausnummer']) : '';
+                            $address2 = (!empty($member['PLZ']) ? htmlspecialchars($member['PLZ']) . ' ' : '') . 
                                         (!empty($member['ort']) ? htmlspecialchars($member['ort']) : '');
                             
                             $hasAddress = !empty($address1) || !empty($address2);
@@ -174,16 +197,16 @@ if (!hasAdminOrVorstandRole($userId)) {
                                         <?php endif; ?>
                                     </div>
                                     <div class="right">
-                                        <?php if (!empty($member['telefon'])): ?>
+                                        <?php if (!empty($telefonVal)): ?>
                                         <div class="phone">
                                             <span class="material-symbols-outlined phone-symbol">phone</span>
-                                            <span class="phone-text"><?php echo htmlspecialchars($member['telefon']); ?></span>
+                                            <span class="phone-text"><?php echo htmlspecialchars($telefonVal); ?></span>
                                         </div>
                                         <?php endif; ?>
-                                        <?php if (!empty($member['mobil'])): ?>
+                                        <?php if (!empty($mobilVal)): ?>
                                         <div class="mobile">
                                             <span class="material-symbols-outlined mobile-symbol">smartphone</span>
-                                            <span class="mobile-text"><?php echo htmlspecialchars($member['mobil']); ?></span>
+                                            <span class="mobile-text"><?php echo htmlspecialchars($mobilVal); ?></span>
                                         </div>
                                         <?php endif; ?>
                                         <?php if (!empty($member['e_mail'])): ?>
