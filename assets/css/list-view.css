@@ -1,0 +1,55 @@
+#veranstaltungen{
+    display: flex;
+    flex-direction: column;
+    margin-top: 2rem;
+}
+.event{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--shadow-color);
+    max-height: 5rem;
+}
+.flex-column{
+    display: flex;
+    flex-direction: column;
+    min-width: 50%;
+}
+.name{
+    width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+h2.name,
+h4.date{
+    margin: 0;
+}
+.days-left{
+    color: var(--lightgrey);
+    font-weight: normal;
+}
+.line{
+    display: none;
+}
+
+@media (max-width: 1500px){
+    a span.text{
+        display: none;
+    }
+    a.more-info{
+        width: 2%;
+        margin: 0;
+    }
+    .days-left{
+        width: 15%;
+        margin-left: auto;
+        margin-right: 0;
+    }
+    .description{
+        width: 30%;
+        margin-right: 5%;
+        margin-left: auto;
+    }
+}

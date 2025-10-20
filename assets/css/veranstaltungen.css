@@ -1,0 +1,78 @@
+#controls{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    background-color: var(--background-color);
+    border-bottom: 1px solid var(--border-color);
+}
+#controls a{
+    text-decoration: none;
+    color: var(--bg-color);
+    font-weight: bold;
+    background-color: var(--primary-color);
+    padding: 0.5rem 1rem;
+    border-radius: 5px;
+}
+#suchfeld{
+    display: flex;
+    align-items: center;
+    border: 2px solid var(--lightgrey);
+    border-radius: 5px;
+    min-width: 250px;
+    width: 50%;
+}
+#suchfeld-input{
+    border: none;
+    outline: none;
+    padding: 0.5rem;
+    font-size: 1rem;
+    width: 100%;
+    background-color: transparent;
+    color: var(--text-color);
+}
+#suchfeld-input::placeholder{
+    color: var(--lightgrey);
+}
+#suchfeld button{
+    border: none;
+    background-color: transparent;
+    cursor: pointer;
+    padding: 0.5rem;
+    color: var(--text-color);
+}
+#suchfeld button:hover > span{
+    color: var(--primary-color);
+}
+#suchfeld span{
+    color: var(--lightgrey);
+    font-size: 1.5rem;
+}
+#buttons{
+    display: flex;
+    gap: 0rem;
+    align-items: center;
+}
+#buttons button{
+    border: 2px solid var(--lightgrey);
+    cursor: pointer;
+    padding: .3rem;
+    color: var(--text-color);
+    background-color: var(--bg-color);
+    transition: all 0.3s ease;
+}
+#buttons button:hover,
+#buttons button:focus,
+#buttons button.active{
+    background-color: var(--shadow-color);
+}
+#buttons button:first-child{
+    border-radius: 5px 0px 0px 5px;
+}
+#buttons button:first-child{
+    border-radius: 5px 0px 0px 5px;
+    border-right: none;
+}
+#buttons button:last-child{
+    border-radius: 0px 5px 5px 0px;
+}
