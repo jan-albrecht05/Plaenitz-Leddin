@@ -1,0 +1,94 @@
+.person{
+    display: flex;
+    flex-direction: row;
+    border-bottom: 1px solid var(--lightgrey);
+    margin-top: 2rem;
+}
+.info{
+    color: var(--lightgrey);
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+.info .material-symbols-outlined{
+    margin-inline: 1rem;
+}
+.person:last-child{
+    border-bottom: none;
+    margin-bottom: 0;
+}
+.person .textseite{
+    width: 60%;
+    padding: 2rem;
+}
+.person .bildseite{
+    width: 40%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 1rem;
+}
+
+/* Blobs */
+.wrapper{
+    width: 100%;
+}
+.blob{
+    filter: blur(5px);
+    z-index: -1;
+    width: 100%;
+    aspect-ratio: 16/9;
+    border-radius: 70% 60% 90% 100%;
+    animation: blobMove 15s ease-in-out infinite;
+    transform-origin: center center;
+}
+/* Morphing animation - changes blob shape */
+@keyframes blobMove {
+    0%, 100% {
+        border-radius: 70% 60% 90% 100%;
+        background-position: 0% 50%;
+    }
+    20% {
+        border-radius: 55% 75% 85% 95%;
+        background-position: 50% 100%;
+    }
+    40% {
+        border-radius: 65% 85% 70% 80%;
+        background-position: 100% 50%;
+    }
+    60% {
+        border-radius: 90% 100% 70% 60%;
+        background-position: 50% 0%;
+    }
+    80% {
+        border-radius: 100% 65% 95% 75%;
+        background-position: 0% 50%;
+    }
+}
+
+/* Gradient background animation */
+.blob.pink{
+    background: linear-gradient(135deg, 
+        rgb(255, 0, 212) 0%, 
+        rgb(255, 100, 190) 25%,
+        rgb(255, 0, 128) 50%,
+        rgb(247, 0, 255) 75%,
+        rgb(255, 0, 212) 100%);
+    background-size: 400% 400%;
+}
+.blob.green{
+    background: linear-gradient(135deg, 
+        rgb(0, 255, 21) 0%, 
+        rgb(100, 255, 150) 25%,
+        rgb(0, 255, 234) 50%,
+        rgb(0, 217, 255) 75%,
+        rgb(0, 204, 255) 100%);
+    background-size: 400% 400%;
+}
+.wrapper img{
+    margin-top:-100%;
+    transform: scale(.9);
+    z-index: 60;
+    border-radius: 120px 65% 30% 25%;
+    animation: blobMove 8s ease-in-out infinite;
+}

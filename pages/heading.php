@@ -124,8 +124,22 @@
                                 echo '</li>';
                             }
                             echo '</ul>';
-                            // Use an absolute endpoint to be robust across include contexts; JS also has fallbacks
-                            echo '<button id="mark-read" data-user-id="' . htmlspecialchars((string)$user_id) . '" data-endpoint="/pages/internes/mark_notifications_read.php">Als gelesen markieren</button>';
+                            // Calculate correct path to mark_notifications_read.php
+                            // heading.php is in pages/, script could be in root, pages/, or pages/internes/
+                            $scriptPath = str_replace('\\', '/', $_SERVER['SCRIPT_NAME']);
+                            
+                            if (strpos($scriptPath, '/pages/internes/') !== false) {
+                                // Script is in pages/internes/ (e.g., admin.php, dashboard.php)
+                                $markReadPath = 'mark_notifications_read.php';
+                            } elseif (strpos($scriptPath, '/pages/') !== false) {
+                                // Script is in pages/ (e.g., mitglied-werden.php, kontakt.php)
+                                $markReadPath = 'internes/mark_notifications_read.php';
+                            } else {
+                                // Script is in root (e.g., index.php)
+                                $markReadPath = 'pages/internes/mark_notifications_read.php';
+                            }
+                            
+                            echo '<button id="mark-read" data-user-id="' . htmlspecialchars((string)$user_id) . '" data-endpoint="' . htmlspecialchars($markReadPath) . '">Als gelesen markieren</button>';
                         }
                     }
                 } catch (Exception $e) {
