@@ -52,8 +52,10 @@ if (!hasAdminOrVorstandRole($userId)) {
         <div id="member-output">
             <div id="member-output-heading">
                 <button class="member-button ganzer-name">Name</button>
-                <button class="member-button role">Rolle</button>
-                <span class="status">Status</span>
+                <div class="role-status flex-row">
+                    <button class="member-button role">Rolle</button>
+                    <span class="status">Status</span>
+                </div>
                 <span class="edit-button"></span>
             </div>
             <script src="../../assets/js/dashboard.js" defer></script>
@@ -72,7 +74,7 @@ if (!hasAdminOrVorstandRole($userId)) {
                     $pdo->exec("PRAGMA encoding = 'UTF-8'");
                     
                     // Get all members
-                    $stmt = $pdo->prepare('SELECT id, name, nachname, strasse, hausnummer, plz, ort, festnetz, mobilnummer, e_mail, rolle, status, join_date FROM mitglieder ORDER BY id ASC, name ASC');
+                    $stmt = $pdo->prepare('SELECT id, titel, name, nachname, strasse, hausnummer, adresszusatz, plz, ort, festnetz, mobilnummer, e_mail, rolle, status, join_date FROM mitglieder ORDER BY id ASC, name ASC');
                     $stmt->execute();
                     $members = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     
@@ -132,11 +134,12 @@ if (!hasAdminOrVorstandRole($userId)) {
                             }
 
                             $mobilVal = '';
-                            if (!empty($member['mobilnummer'])) {
+                            if ($member['mobilnummer'] === '+49' || $member['mobilnummer'] === '+49 ') {
+                                $mobilVal = '';
+                            }else{
                                 $mobilVal = $member['mobilnummer'];
-                            } elseif (!empty($member['mobil'])) {
-                                $mobilVal = $member['mobil'];
                             }
+
 
                             // Format join date
                             $joinDateFormatted = '';
@@ -152,23 +155,25 @@ if (!hasAdminOrVorstandRole($userId)) {
                             // Format address
                             $address1 = !empty($member['strasse']) ? htmlspecialchars($member['strasse']) . ', ' . htmlspecialchars($member['hausnummer']) : '';
                             $address2 = (!empty($member['PLZ']) ? htmlspecialchars($member['PLZ']) . ' ' : '') . 
-                                        (!empty($member['ort']) ? htmlspecialchars($member['ort']) : '');
+                                        (!empty($member['ort']) ? htmlspecialchars($member['ort']) : '').
+                                        (!empty($member['adresszusatz']) ? '<br>'.htmlspecialchars($member['adresszusatz']) : '');
                             
                             $hasAddress = !empty($address1) || !empty($address2);
                             ?>
-                            <div class="member">
+                            <div class="member" data-member-id="<?php echo (int)$member['id']; ?>">
                                 <div class="member-top">
                                     <div class="ganzer-name">
-                                        <h2 class="nachname"><?php echo htmlspecialchars($member['nachname']); ?>,</h2>
-                                        <h2 class="name"><?php echo htmlspecialchars($member['name']); ?></h2>
+                                        <h2 class="nachname"><?php echo htmlspecialchars($member['titel']) . ' ' . htmlspecialchars($member['nachname']); ?>, <?php echo htmlspecialchars($member['name']); ?></h2>
                                     </div>
-                                    <div class="role <?php echo $roleClass; ?> center">
-                                        <span class="material-symbols-outlined role-symbol"><?php echo $roleIcon; ?></span>
-                                        <span class="role-text"><?php echo $roleText; ?></span>
-                                    </div>
-                                    <div class="status <?php echo $statusClass; ?> center">
-                                        <span class="material-symbols-outlined status-symbol"><?php echo $statusIcon; ?></span>
-                                        <span class="status-text"><?php echo $statusText; ?></span>
+                                    <div class="role-status flex-row">
+                                        <div class="role <?php echo $roleClass; ?> center">
+                                            <span class="material-symbols-outlined role-symbol"><?php echo $roleIcon; ?></span>
+                                            <span class="role-text"><?php echo $roleText; ?></span>
+                                        </div>
+                                        <div class="status <?php echo $statusClass; ?> center">
+                                            <span class="material-symbols-outlined status-symbol"><?php echo $statusIcon; ?></span>
+                                            <span class="status-text"><?php echo $statusText; ?></span>
+                                        </div>
                                     </div>
                                     <button class="edit-button">
                                         <span class="material-symbols-outlined">more_vert</span>

@@ -13,32 +13,7 @@
 </head>
 <body>
     <div id="heading">
-        <div id="left">
-            <a href="../index.php">
-                <img src="../assets/icons/logo.png" alt="Plänitz-Leddin Logo">
-            </a>
-        </div>
-        <div id="right">
-            <div class="link" id="startseite">
-                <a href="../index.php">Startseite</a>
-                <span class="line"></span>
-            </div>
-            <div class="link" id="uber-uns">
-                <a href="../pages/uber-uns.php">Über uns</a>
-                <span class="line"></span>
-            </div>
-            <div class="link" id="veranstaltungen">
-                <a href="../pages/veranstaltungen.php">Veranstaltungen</a>
-                <span class="line"></span>
-            </div>
-            <div class="link" id="kontakt">
-                <a href="../pages/kontakt.php">Kontakt</a>
-                <span class="line"></span>
-            </div>
-            <button id="mitglied-werden" onclick="location.href='../pages/mitglied-werden.php'">Mitglied werden</button>
-        </div>
-        <script src="../assets/js/navbar.js"></script>
-        <a href="javascript:void(0);" style="font-size:15px;" class="icon" onclick="dreibalkensymbol()">&#9776;</a>
+        <?php include '../pages/heading.php'; ?>    
     </div>
     <div class="banner">
         <h1>Zwei Dörfer, eine Gemeinschaft</h1>
@@ -210,22 +185,22 @@
         <?php
         // PHP code to handle form submission
         if ($_SERVER["REQUEST_METHOD"] === "POST") {
-            // Sanitize and validate input data
-            $titel = filter_input(INPUT_POST, 'titel', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
-            $anrede = filter_input(INPUT_POST, 'anrede', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
-            $vorname = filter_input(INPUT_POST, 'vorname', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
-            $nachname = filter_input(INPUT_POST, 'nachname', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
-            $strasse = filter_input(INPUT_POST, 'strasse', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
-            $hausnummer = filter_input(INPUT_POST, 'hausnummer', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
-            $ort = filter_input(INPUT_POST, 'ort', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
-            $plz = filter_input(INPUT_POST, 'plz', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
-            $zusatz = filter_input(INPUT_POST, 'zusatz', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
+            // Sanitize and validate input data - using FILTER_UNSAFE_RAW to preserve UTF-8 characters
+            $titel = filter_input(INPUT_POST, 'titel', FILTER_UNSAFE_RAW);
+            $anrede = filter_input(INPUT_POST, 'anrede', FILTER_UNSAFE_RAW);
+            $vorname = filter_input(INPUT_POST, 'vorname', FILTER_UNSAFE_RAW);
+            $nachname = filter_input(INPUT_POST, 'nachname', FILTER_UNSAFE_RAW);
+            $strasse = filter_input(INPUT_POST, 'strasse', FILTER_UNSAFE_RAW);
+            $hausnummer = filter_input(INPUT_POST, 'hausnummer', FILTER_UNSAFE_RAW);
+            $ort = filter_input(INPUT_POST, 'ort', FILTER_UNSAFE_RAW);
+            $plz = filter_input(INPUT_POST, 'plz', FILTER_UNSAFE_RAW);
+            $zusatz = filter_input(INPUT_POST, 'zusatz', FILTER_UNSAFE_RAW);
             $email = filter_input(INPUT_POST, 'email', FILTER_SANITIZE_EMAIL);
-            $telefon = filter_input(INPUT_POST, 'telefon', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
-            $mobil = filter_input(INPUT_POST, 'mobil', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
-            $kontakt = filter_input(INPUT_POST, 'kontakt', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
-            $nachricht = filter_input(INPUT_POST, 'nachricht', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
-            $date = date('Y-m-d H:i:s');
+            $telefon = filter_input(INPUT_POST, 'telefon', FILTER_UNSAFE_RAW);
+            $mobil = filter_input(INPUT_POST, 'mobil', FILTER_UNSAFE_RAW);
+            $kontakt = filter_input(INPUT_POST, 'kontakt', FILTER_UNSAFE_RAW);
+            $nachricht = filter_input(INPUT_POST, 'nachricht', FILTER_UNSAFE_RAW);
+            $date = gmdate('Y-m-d H:i:s'); // Use UTC time for consistency
 
             // Check if required fields are filled
             if (true) {

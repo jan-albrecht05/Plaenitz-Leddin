@@ -111,6 +111,9 @@ span#notification-indicator {
     list-style-type: none;
     margin-left: -1rem;
 }
+#notifications-popup li{
+    margin-bottom: .5rem;
+}
 #notifications-popup li:last-child{
     border-bottom: none;
     margin-bottom: 0;

@@ -7,6 +7,7 @@
     padding-bottom: 10px;
     margin-bottom: 10px;
     font-size: 110%;
+    border-bottom: 2px solid var(--shadow-color);
 }
 #member-output button{
     background: none;
@@ -20,20 +21,21 @@
 }
 #member-output-heading span{
     color: var(--lightgrey);
+    margin-right: 2rem;
 }
 #member-output-heading button:hover{
     color: var(--text-color);
 }
 :not(.role).member{
     width: 100%;
-    border-bottom: 1px solid var(--lightgrey);
+    border-bottom: 1px solid var(--shadow-color);
     padding: 10px 0;
     background-color: var(--bg-color);
 }
 .member > .member-bottom,
 .member > .member-bottom .left,
 .member > .member-bottom .right{
-    height: 0px;
+    max-height: 0px;
     overflow: hidden;
     transition: all 0.3s ease;
     border: none;
@@ -41,7 +43,7 @@
 .member.open > .member-bottom,
 .member.open > .member-bottom .left,
 .member.open > .member-bottom .right{
-    height: max-content;
+    max-height: 1000px;
 }
 .member.open{
     padding-bottom: 3rem;
@@ -64,7 +66,7 @@
     display: flex;
     align-items: center;
     flex-direction: row;
-    width: 50%;
+    width: 60%;
     gap: 10px;
 }
 .role,
@@ -78,6 +80,13 @@
     min-height: 2rem;
     cursor: default;
     user-select: none;
+}
+.flex-row{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    width: 30%;
+    justify-content: space-between;
 }
 .role.admin{
     background-color: var(--orange);
@@ -110,26 +119,110 @@
 .left{
     text-align: left;
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
     align-items: start;
 }
 .flex-column{
     display: flex;
     flex-direction: column;
 }
-.address{
+.address,
+.join-date{
     display: flex;
     flex-direction: row;
     margin-left: 10px;
     font-size: 120%;
     margin-right: 2rem;
 }
+.address-text{
+    margin-bottom: .5rem;
+}
 .member-bottom{
-    border-top: 1px solid var(--shadow-color);
-    padding-top: 10px;
-    overflow: hidden;
+    padding-inline: 10px;
+    transition: all .3s ease;
 }
 span.material-symbols-outlined{
     font-size: 24px;
     margin-right: 8px;
+}
+@media (max-width: 1600px){
+    #main{
+        width: 75% !important;
+    }
+}
+@media (max-width: 1300px){
+    #main{
+        width: 95% !important;
+    }
+    .ganzer-name{
+        width: 50%;
+    }
+    .role-status{
+        width: 40%;
+    }
+}
+@media (max-width: 800px){
+    #member-output-heading{
+        display: none;
+    }
+    #member-output-heading .role,
+    #member-output-heading .status{
+        display: none;
+    }
+    .member.open,
+    .member{
+        margin-bottom: 0rem;
+        padding-bottom: 0rem;
+    }
+    .ganzer-name{
+        width: 60%;
+        font-size: 90%;
+    }
+    .role,
+    .status{
+        padding: 5px;
+        font-size: 90%;
+        min-height: 1.5rem;
+        min-width: 1.5rem;
+    }
+    :not(.right) span.material-symbols-outlined{
+        margin: 0 !important;
+    }
+    .role-text,
+    .status-text{
+        display: none;
+    }
+    .flex-row{
+        width: 25%;
+        margin-right: 5%;
+    }
+    .address{
+        font-size: 100%;
+        margin: 0 0 1rem 0;
+    }
+    .join-date{
+        margin: 0;
+    }
+    .member-bottom{
+        flex-direction: column !important;
+        padding-left: 10px;
+        width: calc(100% - 10px) !important;
+    }
+    .member-bottom .left,
+    .member-bottom .right{
+        width: 100%;
+        margin-bottom: 1.5rem;
+        flex-direction: column;
+    }
+    .member-bottom .left span.material-symbols-outlined,
+    .member-bottom .right span.material-symbols-outlined{
+        margin-right: 8px !important;
+    }
+    .phone,
+    .email,
+    .mobile{
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+    }
 }
