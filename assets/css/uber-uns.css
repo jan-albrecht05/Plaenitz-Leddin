@@ -4,6 +4,10 @@
     border-bottom: 1px solid var(--lightgrey);
     margin-top: 2rem;
 }
+.ort{
+    border-right: 2px solid var(--lightgrey);
+    padding-right: 1.5rem;
+}
 .info{
     color: var(--lightgrey);
     display: flex;
@@ -32,6 +36,7 @@
 /* Blobs */
 .wrapper{
     width: 100%;
+    transition: all 0.5s ease;
 }
 .blob{
     filter: blur(5px);
@@ -91,4 +96,26 @@
     z-index: 60;
     border-radius: 120px 65% 30% 25%;
     animation: blobMove 8s ease-in-out infinite;
+}
+.wrapper:hover{
+    transform: scale(1.05);
+}
+
+@media (max-width: 600px){
+    .person.schema1{
+        flex-direction: column-reverse;
+    }
+    .person.schema2{
+        flex-direction: column;
+    }
+    .person{
+        margin-top: 4rem;
+        padding-bottom: 4rem;
+    }
+    .person .textseite,
+    .person .bildseite{
+        width: 100%;
+        padding: 0;
+    }
+    
 }
