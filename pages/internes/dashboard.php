@@ -18,6 +18,8 @@ if (!hasAdminOrVorstandRole($userId)) {
     header("Location: login.php?error=" . urlencode("Sie haben keine Berechtigung für diese Seite."));
     exit();
 }
+//get "?neu=" from URL
+
 ?>
 <!DOCTYPE html>
 <html lang="de">
@@ -48,6 +50,68 @@ if (!hasAdminOrVorstandRole($userId)) {
     <div id="dashboard-container" class="banner">
         <h1>Willkommen zum Dashboard</h1>
     </div>
+    <div class="popup" <?php if (isset($_GET['change_pw'])) echo 'style="display: flex;"'; ?> id="pw-change-popup">
+        <div class="popup-content">
+            <h2>Es scheint, als wäre dies ihr erster Login.</h2>
+            <h3>Bitte legen Sie sich ein neues Passwort fest.</h3>
+            <form action="index.php" method="post">
+                <div class="form-group">
+                    <label for="current-password">Aktuelles Passwort:</label>
+                    <input type="password" id="current-password" name="current_password" required>
+                </div>
+                <div class="form-group">
+                    <label for="new-password">Neues Passwort:</label>
+                    <input type="password" id="new-password" name="new_password" required>
+                </div>
+                <div class="form-group">
+                    <label for="confirm-password">Neues Passwort bestätigen:</label>
+                    <input type="password" id="confirm-password" name="confirm_password" required>
+                </div>
+                <button type="submit">Passwort ändern</button>
+            </form>
+        </div>
+    </div>
+    <?php
+        // uupdate db with users new password if form submitted
+        if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['current_password'], $_POST['new_password'], $_POST['confirm_password'])) {
+            if (!isset($_SESSION['user_id'])) {
+                // User not logged in; cannot change password
+                header("Location: index.php");
+                exit();
+            }
+            $userId = $_SESSION['user_id'];
+            $currentPassword = $_POST['current_password'];
+            $newPassword = $_POST['new_password'];
+            $confirmPassword = $_POST['confirm_password'];
+
+            // Validate new password and confirmation
+            if ($newPassword !== $confirmPassword) {
+                // Passwords do not match
+                header("Location: index.php?change_pw=1&error=" . urlencode("Die neuen Passwörter stimmen nicht überein."));
+                exit();
+            }
+
+            // Verify current password
+            if (!verifyUserPassword($userId, $currentPassword)) {
+                // Current password incorrect
+                header("Location: index.php?change_pw=1&error=" . urlencode("Das aktuelle Passwort ist falsch."));
+                exit();
+            }
+
+            // Update password in database
+            if (updateUserPassword($userId, $newPassword)) {
+                // Success
+                updateLastVisitedDate($userId);
+                header("Location: index.php?pw_changed=1");
+                exit();
+            } else {
+                // Failed to update password
+                header("Location: index.php?change_pw=1&error=" . urlencode("Fehler beim Ändern des Passworts. Bitte versuchen Sie es erneut."));
+                exit();
+            }
+        }
+        
+    ?>
     <div id="main">
         <div id="member-output">
             <div id="member-output-heading">
