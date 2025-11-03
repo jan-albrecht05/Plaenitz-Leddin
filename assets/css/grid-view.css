@@ -43,17 +43,35 @@ h2.name{
     text-overflow: ellipsis;
     white-space: nowrap;
 }
+h4.date{
+    color: var(--lightgrey);
+}
 p.description{
     font-size: 0.9rem;
     color: var(--text-color);
-    margin-top: .5rem;
+    margin-top: 1rem;
     margin-bottom: .5rem;
-    margin-left:0.3rem;
+    margin-left: 1rem;
+    box-sizing: border-box;
+    width: calc(100% - 1rem);
     overflow: hidden;
     text-overflow: ellipsis;
     display: -webkit-box;
     -webkit-line-clamp: 3;
     -webkit-box-orient: vertical;
+    text-align: left;
+    /* Allow long words/URLs to wrap on small screens */
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    hyphens: auto;
+}
+h4.days-left{
+    margin-top: auto;
+    margin-bottom: .5rem;
+    color: var(--lightgrey);
+    margin-left: 3rem;
+    width: 100%;
+    text-align: left;
 }
 .event a.more-info{
     text-decoration: none;
@@ -61,11 +79,36 @@ p.description{
     padding: 0.5rem 1rem;
     border-radius: 5px;
     display: inline-block;
-    margin-top: auto;
+    margin-top: .5rem;
     margin-bottom: .5rem;
     width: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
     user-select: none;
+}
+@media (max-width: 900px) {
+    #veranstaltungen{
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+@media (max-width: 600px) {
+    #veranstaltungen{
+        grid-template-columns: repeat(1, 1fr);
+    }
+    p.description{
+        width: 100%;
+        -webkit-line-clamp: unset;
+        line-clamp: unset;
+        display: block;
+        margin-left: 0;
+        width: 100%;
+        padding: 0 0.75rem;
+        margin-bottom: auto;
+        margin-top: .5rem;
+        height: 100%;
+    }
+    h2.name{
+        white-space: normal; 
+    }
 }

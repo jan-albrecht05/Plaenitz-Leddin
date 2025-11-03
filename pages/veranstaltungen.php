@@ -45,7 +45,7 @@
         <div id="controls">
             <?php
                 if($is_admin || $is_vorstand){
-                    echo '<a href="internes/veranstaltung-erstellen.php" class="button" id="veranstaltung-erstellen"><span class="material-symbols-outlined">add</span> Veranstaltung erstellen</a>';
+                    echo '<a href="internes/veranstaltung-erstellen.php" class="button center" id="veranstaltung-erstellen"><span class="material-symbols-outlined">add</span> Veranstaltung erstellen</a>';
                 }
                 echo '';
             ?>
@@ -116,7 +116,7 @@
                         } else {
                             echo '<h4 class="days-left">Noch ' . $days_left . ' Tage</h4>';
                         }
-                        echo '<a href="event.php?id=' . urlencode($event['id']) . '" class="more-info">';
+                        echo '<a href="event.php?id=' . urlencode($event['id']) . '" class="more-info center">';
                             echo '<span class="text">Mehr erfahren</span>';
                             echo '<span class="material-symbols-outlined">arrow_forward</span>';
                         echo '</a>';

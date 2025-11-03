@@ -17,7 +17,7 @@
     min-width: 50%;
 }
 .name{
-    width: 100%;
+    width: 40%;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -26,9 +26,18 @@ h2.name,
 h4.date{
     margin: 0;
 }
+.description{
+    font-weight: normal;
+    width: 40%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
 .days-left{
     color: var(--lightgrey);
     font-weight: normal;
+    width: 10%;
+    text-align: right;
 }
 .line{
     display: none;
@@ -38,18 +47,22 @@ h4.date{
     a span.text{
         display: none;
     }
-    a.more-info{
-        width: 2%;
-        margin: 0;
-    }
-    .days-left{
-        width: 15%;
-        margin-left: auto;
-        margin-right: 0;
-    }
+    
     .description{
+        display: none;
+    }
+    .flex-column{
+        width: 60%;
+    }
+    .event h2.name{
+        width: 100%;
+    }
+    .event h4.days-left{
         width: 30%;
-        margin-right: 5%;
         margin-left: auto;
+        margin-right: 1rem;
+    }
+    .more-info{
+        width: 10%;
     }
 }
