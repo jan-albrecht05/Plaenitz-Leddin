@@ -36,6 +36,7 @@
         if($user) {
             // Store only user ID in session, roles will be checked from database
             $_SESSION['user_id'] = $user['id'];
+            $_SESSION['name'] = $user['name'];
             // check if there was already a last visited date
             if (!isset($_SESSION['last_visited'])) {
                 $redirect = "?neu=Vorstand";

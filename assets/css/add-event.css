@@ -1,0 +1,65 @@
+form{
+    display: flex;
+    flex-direction: column;
+    justify-content: start;
+    width: 100%;
+}
+form .info{
+    width: 100%;
+}
+form .form-row{
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 1rem;
+}
+
+/* file drop */
+#drop-zone {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    max-width: 100%;
+    height: 200px;
+    padding: 1em;
+    border: 1px solid #cccccc;
+    border-radius: 4px;
+    color: var(--bg-color);
+    background-color: var(--lightgrey);
+    cursor: pointer;
+    font-size: 130%;
+}
+#drop-zone .material-symbols-outlined {
+    font-size: 300%;
+    margin-bottom: 1.5rem;
+}
+
+#file-input {
+    display: none;
+}
+
+#preview {
+    width: 500px;
+    max-width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5em;
+    list-style: none;
+    padding: 0;
+}
+
+#preview li {
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
+    margin: 0;
+    width: 100%;
+    height: 100px;
+}
+
+#preview img {
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+}

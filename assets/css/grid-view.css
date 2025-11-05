@@ -87,7 +87,7 @@ h4.days-left{
     justify-content: center;
     user-select: none;
 }
-@media (max-width: 900px) {
+a@media (max-width: 900px) {
     #veranstaltungen{
         grid-template-columns: repeat(2, 1fr);
     }
