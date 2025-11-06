@@ -17,8 +17,11 @@ if(isset($_SESSION['user_id'])) {
 }
 // get event ID from URL
 $event_id = $_GET['id'] ?? null;
-if($event_id === null) {
-    // redirect to events page if no ID is provided
+// If no id in query but form posts an event_id (participation), accept that
+if ($event_id === null && isset($_POST['event_id'])) {
+    $event_id = $_POST['event_id'];
+} elseif ($event_id === null) {
+    // redirect to events page if no ID is provided anywhere
     header('Location: ../pages/veranstaltungen.php');
     exit;
 }
@@ -35,6 +38,35 @@ if ($event_id !== null) {
         error_log("event.php: database file not readable by PHP process: $dbPath");
         $event = null;
     } else {
+        // If a participation POST was sent, process it here before selecting the event
+        if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['participate'])) {
+            $postedId = (int)($_POST['event_id'] ?? $event_id);
+            if (session_status() !== PHP_SESSION_ACTIVE) {
+                session_start();
+            }
+            if (!isset($_SESSION['participated_events']) || !is_array($_SESSION['participated_events'])) {
+                $_SESSION['participated_events'] = [];
+            }
+
+            if (!isset($_SESSION['participated_events'][$postedId])) {
+                // mark as participated in session first to avoid race conditions
+                $_SESSION['participated_events'][$postedId] = time();
+                try {
+                    $pdo_upd = new PDO('sqlite:' . $dbPath);
+                    $pdo_upd->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+                    $stmt_upd = $pdo_upd->prepare('UPDATE veranstaltungen SET teilnehmer = COALESCE(teilnehmer, 0) + 1 WHERE id = :id');
+                    $stmt_upd->bindValue(':id', $postedId, PDO::PARAM_INT);
+                    $stmt_upd->execute();
+                } catch (Exception $e) {
+                    error_log('event.php: Failed to update participants - ' . $e->getMessage());
+                }
+            }
+
+            // Redirect back to the event page (PRG pattern) so page reloads don't resubmit the form
+            header('Location: event.php?id=' . urlencode($postedId));
+            exit();
+        }
+
         try {
             // Use PDO with sqlite for safer, consistent parameter binding and exceptions
             $pdo = new PDO('sqlite:' . $dbPath);
@@ -125,9 +157,9 @@ $event_title = $event['titel'] ?? 'Veranstaltung';
                 <?php echo htmlspecialchars($event['titel'] ?? 'Veranstaltung'); ?>
             </h1>
             <?php
-                if ($event && !empty($event['cover_image_name']) && file_exists(__DIR__ . '/../' . $event['cover_image_name'])) {
+                if ($event && !empty($event['banner_image_name'])) {
                     echo '<div class="cover-image">';
-                        echo '<img src="../' . htmlspecialchars($event['cover_image_name']) . '" alt="' . htmlspecialchars($event['titel'] ?? 'Veranstaltung') . '">';
+                        echo '<img src="' . htmlspecialchars($event['banner_image_name']) . '" alt="">';
                     echo '</div>';
                 } else {
                     echo '';
@@ -137,7 +169,7 @@ $event_title = $event['titel'] ?? 'Veranstaltung';
                 <?php echo htmlspecialchars($event['beschreibung'] ?? ''); ?>
             </h3>
             <h2 class="zeit">
-                Wann? <span><?php echo htmlspecialchars($event['datum'] ?? '') . ', ' . (isset($event['zeit']) ? htmlspecialchars($event['zeit'].' Uhr') : ''); ?></span>
+                Wann? <span><?php echo htmlspecialchars(date('d.m.Y', strtotime($event['datum'] ?? ''))) . ', ' . (isset($event['zeit']) ? htmlspecialchars($event['zeit'].' Uhr') : ''); ?></span>
             </h2>
             <h2 class="ort">
                 Wo? <span><?php echo htmlspecialchars($event['ort'] ?? ''); ?></span>
@@ -167,7 +199,7 @@ $event_title = $event['titel'] ?? 'Veranstaltung';
                 </div>
             </div>
             <?php if($user_id == null): ?>
-            <form id="participate-form" method="post" action="../pages/veranstaltungen.php">
+            <form id="participate-form" method="post" action="">
                 <input type="hidden" name="event_id" value="<?php echo htmlspecialchars($event_id); ?>">
                 <button type="submit" name="participate" id="participate-button">
                     <span class="material-symbols-outlined">how_to_reg</span>
@@ -176,7 +208,7 @@ $event_title = $event['titel'] ?? 'Veranstaltung';
             </form>
             <?php else: ?>
             <div class="form">
-                <button id="edit-event-button" onclick="location.href='../pages/internes/dashboard.php'">
+                <button id="edit-event-button" onclick="location.href='../pages/internes/edit-event.php?id=<?php echo urlencode($event_id); ?>'">
                     <span class="material-symbols-outlined">edit</span>
                     <span>Veranstaltung bearbeiten</span>
                 </button>
@@ -184,6 +216,42 @@ $event_title = $event['titel'] ?? 'Veranstaltung';
             <?php endif; ?>
         </div>
     </div>
+    <?php
+        // Increment view count
+        if ($event) {
+            try {
+                if (session_status() !== PHP_SESSION_ACTIVE) {
+                    session_start();
+                }
+
+                if (!isset($_SESSION['viewed_events']) || !is_array($_SESSION['viewed_events'])) {
+                    $_SESSION['viewed_events'] = [];
+                }
+
+                $shouldIncrement = true;
+                // if this event id was already viewed in this session, skip increment
+                if (isset($_SESSION['viewed_events'][(int)$event_id])) {
+                    $shouldIncrement = false;
+                    error_log('event.php: viewcount not incremented for event ' . (int)$event_id . ' — already viewed in this session');
+                }
+
+                if ($shouldIncrement) {
+                    // mark as viewed in session immediately to avoid race conditions
+                    $_SESSION['viewed_events'][(int)$event_id] = time();
+
+                    $pdo = new PDO('sqlite:' . $dbPath);
+                    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
+                    $stmt = $pdo->prepare('UPDATE veranstaltungen SET viewcount = COALESCE(viewcount, 0) + 1 WHERE id = :id');
+                    $stmt->bindValue(':id', (int)$event_id, PDO::PARAM_INT);
+                    $stmt->execute();
+                }
+            } catch (Exception $e) {
+                error_log('event.php: Failed to increment view count - ' . $e->getMessage());
+            }
+        }
+        // participants are updated via the POST handler above (PRG)
+    ?>
     <div id="footer" class="center">
         <?php include '../pages/footer.php'; ?>
     </div>

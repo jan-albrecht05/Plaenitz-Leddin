@@ -32,7 +32,7 @@
                 <li>Unterstützung bei Ihren Projekten und Ideen</li>
             </ul>
             <h2>Kosten</h2>
-            <p>Die Mitgliedschaft in unserem Verein ist kostenlos.</p>
+            <p>Die Mitgliedschaft in unserem Verein beträgt 24 Euro pro Jahr.<br>Der Beitrag muss jährlich bis zum 31. Januar auf dem Vereinskonto eingegangen sein.</p>
             <br><h3>Wir freuen uns darauf, Sie als neues Mitglied in unserer Gemeinschaft willkommen zu heißen!</h3>
         </div>
         <form id="member-form" method="post">

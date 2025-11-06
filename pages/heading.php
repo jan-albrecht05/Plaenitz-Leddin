@@ -1,7 +1,6 @@
 <div id="left">
             <a href="../index.php">
                 <img src="../assets/icons/logo.png" alt="">
-                <img src="../../assets/icons/logo.png" alt="">
             </a>
         </div>
         <div id="right">
@@ -66,12 +65,10 @@
                 . '</div>';
             }
             ?>
+    </div>
     <script src="../assets/js/navbar.js"></script>
-    <script src="../../assets/js/navbar.js"></script>
     <script src="../assets/js/notifications.js"></script>
-    <script src="../../assets/js/notifications.js"></script>
     <a href="javascript:void(0);" style="font-size:15px;" class="icon" onclick="dreibalkensymbol()">&#9776;</a>
-</div>
 <!-- Notifications Popup (shared) -->
 <div id="notifications-popup" class="hidden">
     <div id="notifications-header">

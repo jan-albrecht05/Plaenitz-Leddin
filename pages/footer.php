@@ -31,7 +31,7 @@
             ?>
         </div>
         <div id="middle">
-            <span>&copy; 2025 Plänitz-Leddin. Alle Rechte vorbehalten.</span>
+            <span>&copy; 2025 Gemeinsam für Plänitz-Leddin. Alle Rechte vorbehalten.</span>
             <a href="https://github.com/jan-albrecht05/Plaenitz-Leddin/commits/main/">Version 0.5</a>
         </div>
         <div id="right">

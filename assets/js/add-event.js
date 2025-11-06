@@ -65,7 +65,7 @@ function clearDropzoneBackground() {
 
 function displayImages(files) {
   // clear previous filename preview
-  //preview.textContent = "";
+  if (preview) preview.textContent = "";
   // Clear previous background (we'll set a new one if an image is found)
   clearDropzoneBackground();
 
@@ -80,11 +80,12 @@ function displayImages(files) {
         currentBgUrl = objUrl;
         setDropzoneBackground(objUrl);
       }
+      if (preview) preview.appendChild(li);
     }
   }
 
   // If no images were found, ensure background is cleared
-  if (preview.children.length === 0) {
+  if (!preview || preview.children.length === 0) {
     clearDropzoneBackground();
   }
 }
@@ -105,15 +106,45 @@ fileInput.addEventListener("change", (e) => {
 // Clear preview
 const clearBtn = document.getElementById("clear-btn");
 clearBtn.addEventListener("click", () => {
-  // revoke all object URLs shown in the list
-  for (const img of preview.querySelectorAll("img")) {
-    try {
-      URL.revokeObjectURL(img.src);
-    } catch (e) {
-      // ignore
+  // revoke all object URLs shown in the list (if present)
+  if (preview) {
+    for (const img of preview.querySelectorAll("img")) {
+      try {
+        URL.revokeObjectURL(img.src);
+      } catch (e) {
+        // ignore
+      }
     }
+    preview.textContent = "";
   }
-  preview.textContent = "";
   // clear dropzone background as well
   clearDropzoneBackground();
 });
+
+// On load, if server provided an existing cover image path in a hidden input,
+// use it as the dropzone background so edit form shows current banner.
+document.addEventListener('DOMContentLoaded', () => {
+  const existing = document.querySelector('input[name="existing_cover_image"]');
+  if (existing && existing.value) {
+    // set directly (it's a normal URL/path, not an object URL)
+    setDropzoneBackground(existing.value);
+  }
+  // ensure there's a hidden remove_cover input so clear can mark removal
+  let rem = document.querySelector('input[name="remove_cover"]');
+  if (!rem) {
+    rem = document.createElement('input');
+    rem.type = 'hidden';
+    rem.name = 'remove_cover';
+    rem.value = '0';
+    const form = document.getElementById('event-form') || document.querySelector('form');
+    if (form) form.appendChild(rem);
+  }
+});
+
+// mark remove_cover when clear button clicked
+if (typeof clearBtn !== 'undefined' && clearBtn) {
+  clearBtn.addEventListener('click', () => {
+    const rem = document.querySelector('input[name="remove_cover"]');
+    if (rem) rem.value = '1';
+  });
+}

@@ -87,8 +87,16 @@
     }
 }
 @media (max-width: 900px){
-    #veranstaltung-erstellen{
+    #veranstaltung-erstellen .text{
         display: none;
+    }
+    #controls{
+        padding: 0;
+        margin-bottom: 1rem;
+    }
+    #controls a{
+        padding: .5rem;
+        margin-right: 1rem;
     }
 }
 @media (max-width: 1300px){

@@ -29,7 +29,7 @@
     </div>
     <div id="main">
         <p id="einführung">
-            Wir sind der Verein Plänitz-Leddin e.V., eine Gemeinschaft von engagierten Einwohnern der Dörfer Plänitz und Leddin. Unser Ziel ist es, das Dorfleben zu fördern, Traditionen zu bewahren und gemeinsame Aktivitäten zu organisieren, die das Miteinander stärken.
+            Wir sind der Verein <b>Gemeinsam für Plänitz-Leddin e.V.</b>, eine Gemeinschaft von engagierten Einwohnern der Dörfer Plänitz und Leddin. Unser Ziel ist es, das Dorfleben zu fördern, Traditionen zu bewahren und gemeinsame Aktivitäten zu organisieren, die das Miteinander stärken.
         </p>
         <div class="person schema2">
             <div class="bildseite">

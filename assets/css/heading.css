@@ -4,14 +4,14 @@
     background-color: var(--bg-color);
     align-items: center;
     padding-inline: 5%;
-    height: 4rem;
-    box-shadow: var(--shadow);
+    min-height: 4rem;
     font-size: 120%;
     font-family: Verdana, Geneva, Tahoma, sans-serif;
     position: sticky;
     top: 0;
     z-index: 10;
     user-select: none;
+    box-shadow: var(--shadow);
 }
 #heading #right{
     display: flex;
@@ -99,7 +99,7 @@ span#notification-indicator {
     transition: transform 0.3s ease-in-out;
 }
 #notifications-popup.hidden {
-    transform: translateY(-150%);
+    transform: translateY(-180%);
 }
 #notifications-header{
     display: flex;
@@ -122,7 +122,8 @@ span#notification-indicator {
 @media screen and (max-width: 600px) {
     #heading{
         flex-direction: column;
-        height: 2rem;
+        max-height: 2rem;
+        min-height: 2rem;
         padding: 10px 0;
         gap: 10px;
     }

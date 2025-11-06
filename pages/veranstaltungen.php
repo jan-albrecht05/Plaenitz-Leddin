@@ -45,7 +45,9 @@
         <div id="controls">
             <?php
                 if($is_admin || $is_vorstand){
-                    echo '<a href="internes/veranstaltung-erstellen.php" class="button center" id="veranstaltung-erstellen"><span class="material-symbols-outlined">add</span> Veranstaltung erstellen</a>';
+                    echo '<a href="internes/veranstaltung-erstellen.php" class="button center" id="veranstaltung-erstellen">
+                        <span class="material-symbols-outlined">add</span>
+                        <span class="text"> Veranstaltung erstellen</span></a>';
                 }
                 echo '';
             ?>

@@ -14,7 +14,7 @@ body{
     background-size: cover;
     background-attachment: fixed;
     background-position: 60% 30%;
-    height: 300px;
+    min-height: 300px;
     display: flex;
     align-items: center;
     z-index: 2;
@@ -167,7 +167,7 @@ a{
     .banner{
         font-size: 150%;
         background-position: 50% 20%;
-        height: 200px;
+        max-height: 200px;
         padding-left: 5%;
     }
     #cookie-banner{

@@ -47,6 +47,12 @@
     background-size: cover;
     background-position: center;
 }
+.cover-image img{
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+}
 .zeit, .ort{
     font-size: 150%;
     margin-bottom: 1rem;
@@ -131,4 +137,20 @@ form,
         gap: .5rem;
     }
     
+}
+@media print{
+    #heading, 
+    #back-button,
+    .banner,
+    button,
+    #footer,
+    form,
+    #view-count,
+    #participants-count{
+        display: none !important;
+    }
+    #main{
+        width: 90%;
+        margin-top: 0rem;
+    }
 }

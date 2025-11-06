@@ -60,11 +60,8 @@ Mit dieser Website sollen Mitglieder verwaltet, Veranstaltungen geteilt und Übe
  - alles
  - Logs.db (Name, Aktion, Fehlermeldung)
 ## Veranstaltung erstellen/ändern
- - alles
+ - Tags hinzufügen
 ## Dashboard:
  - Aktion Contextmenu
  - PW-Vergabe für neue Vorstandsmitglieder
-## Login.php:
- - check for (last_login == null){redirect="index.php?Vorstand=neu"}
-## index.php
  - wenn ?Vorstand=neu, dann Aufforderung zu neuem Passwort (erster Login)

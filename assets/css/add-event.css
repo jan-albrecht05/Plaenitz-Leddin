@@ -28,7 +28,8 @@ form textarea{
     background-color: var(--bg-color);
     color: var(--text-color);
 }
-form .form-row input:disabled{
+form .form-row input:disabled,
+form .form-row input::placeholder{
     color: var(--lightgrey);
 }
 form .form-row input[type="text"]:focus,
