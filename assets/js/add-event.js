@@ -65,7 +65,7 @@ function clearDropzoneBackground() {
 
 function displayImages(files) {
   // clear previous filename preview
-  preview.textContent = "";
+  //preview.textContent = "";
   // Clear previous background (we'll set a new one if an image is found)
   clearDropzoneBackground();
 
@@ -76,19 +76,9 @@ function displayImages(files) {
       const objUrl = URL.createObjectURL(file);
       img.src = objUrl;
       img.alt = file.name;
-      li.appendChild(img);
-      li.appendChild(document.createTextNode(file.name));
-      preview.appendChild(li);
-
-      // use the first image as dropzone background
       if (!currentBgUrl) {
         currentBgUrl = objUrl;
         setDropzoneBackground(objUrl);
-      } else {
-        // we already set a background URL; revoke this extra URL because
-        // we keep only the first as background but still show a small
-        // preview image in the list
-        // (it will be revoked when cleared)
       }
     }
   }

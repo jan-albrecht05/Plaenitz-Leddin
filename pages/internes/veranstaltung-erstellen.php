@@ -76,13 +76,17 @@ if (!hasAdminOrVorstandRole($userId)) {
                 <input type="text" id="titel" name="titel" required>
             </div>
             <div class="form-row">
-                <label id="drop-zone">
-                    <span class="material-symbols-outlined">image_arrow_up</span>
-                    <span>Cover-Bild hochladen oder hier ablegen</span>
+                <label id="drop-zone" class="center">
+                    <div id="first-text" class="center">
+                        <span class="material-symbols-outlined">image_arrow_up</span>
+                        <span>Cover-Bild hochladen oder hier ablegen</span>
+                    </div>
                     <input type="file" id="file-input" accept="image/*" />
+                    <button id="clear-btn" class="center" type="button" onclick="clearDropzoneBackground()">
+                        <span class="material-symbols-outlined">delete</span>
+                        Bild entfernen
+                    </button>
                 </label>
-                <ul id="preview"></ul>
-                <button id="clear-btn">Bild entfernen</button>
                 <script src="../../assets/js/add-event.js"></script>
             </div>
             <div class="form-row">
@@ -102,7 +106,7 @@ if (!hasAdminOrVorstandRole($userId)) {
             </div>
             <div class="form-row">
                 <label for="ort">Ort:</label>
-                <input type="text" id="ort" name="ort" required>
+                <input type="text" id="ort" name="ort" required placeholder="z.B. Gemeindehaus Leddin">
             </div>
             <div class="form-row">
                 <label for="kosten">Eintrittskosten:</label>
