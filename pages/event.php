@@ -83,8 +83,18 @@ $event_title = $event['titel'] ?? 'Veranstaltung';
     <div id="heading">
         <?php include '../pages/heading.php'; ?>
     </div>
-    <div class="banner">
-        <h1>Zwei Dörfer, eine Gemeinschaft</h1>
+    <?php
+        // Banner: use event cover image if available, otherwise fall back to default text banner
+        $bannerTitle = htmlspecialchars($event['titel'] ?? 'Zwei Dörfer, eine Gemeinschaft');
+        $bannerStyle = '';
+        if ($event && !empty($event['cover_image_name']) && file_exists(__DIR__ . '/../' . $event['cover_image_name'])) {
+            $imgUrl = '../' . $event['cover_image_name'];
+            // inline style keeps templates simple; background-size ensures cover look
+            $bannerStyle = 'style="background-image: url(' . htmlspecialchars($imgUrl) . '); background-size: cover; background-position: center;"';
+        }
+    ?>
+    <div class="banner" <?php echo $bannerStyle; ?>>
+        <h1><?php echo $bannerTitle; ?></h1>
     </div>
     <div id="main">
         <div id="back-button" onclick="history.back()">
@@ -101,7 +111,9 @@ $event_title = $event['titel'] ?? 'Veranstaltung';
                     <span class="material-symbols-outlined">calendar_month</span>
                     <span><?php
                         if ($event && isset($event['timecode_erstellt'])) {
-                            $date = new DateTime($event['timecode_erstellt']);
+                            //date in UNIX format
+                            $date = new DateTime();
+                            $date->setTimestamp((int)$event['timecode_erstellt']);
                             echo $date->format('d.m.Y');
                         } else {
                             echo 'Unbekannt';

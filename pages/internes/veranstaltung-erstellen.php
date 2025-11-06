@@ -18,6 +18,97 @@ if (!hasAdminOrVorstandRole($userId)) {
     header("Location: login.php?error=" . urlencode("Sie haben keine Berechtigung für diese Seite."));
     exit();
 }
+// Handle form submission
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Retrieve and sanitize form inputs
+    $titel = trim($_POST['titel']);
+    $untertitel = trim($_POST['untertitel']);
+    $datum = $_POST['datum'];
+    $uhrzeit = !empty($_POST['uhrzeit']) ? $_POST['uhrzeit'] : null;
+    $ort = trim($_POST['ort']);
+    $kosten = !empty($_POST['kosten']) ? trim($_POST['kosten']) : 'Frei';
+    $beschreibung = trim($_POST['beschreibung']);
+    $zielgruppe = $_POST['zielgruppe'] ?? 'alle';
+    $tags = ''; // Placeholder for tags, can be extended later
+
+    // Handle file upload
+    $coverImagePath = null;
+    if (isset($_FILES['cover_image']) && $_FILES['cover_image']['error'] === UPLOAD_ERR_OK) {
+        $uploadDir = '../../assets/images/uploads/event_covers/';
+        if (!is_dir($uploadDir)) {
+            mkdir($uploadDir, 0755, true);
+        }
+        $fileTmpPath = $_FILES['cover_image']['tmp_name'];
+        $fileName = basename($_FILES['cover_image']['name']);
+        $fileExtension = pathinfo($fileName, PATHINFO_EXTENSION);
+        $newFileName = uniqid('event_cover_', true) . '.' . $fileExtension;
+        $destPath = $uploadDir . $newFileName;
+
+        if (move_uploaded_file($fileTmpPath, $destPath)) {
+            $coverImagePath = '../../assets/images/uploads/event_covers/' . $newFileName;
+        }
+    }
+
+    // Insert event into database (locally)
+    // Resolve path to events DB and create PDO connection
+    $dbPath = __DIR__ . '/../../assets/db/veranstaltungen.db';
+    if (!file_exists($dbPath) || !is_readable($dbPath)) {
+        error_log('veranstaltung-erstellen.php: events DB not found or not readable: ' . $dbPath);
+        header("Location: veranstaltungen.php?error=" . urlencode("Datenbank nicht verfügbar."));
+        exit();
+    }
+
+    try {
+        $pdo = new PDO('sqlite:' . $dbPath);
+        $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
+        // Insert into the existing 'veranstaltungen' table (columns match pages/event.php usage)
+        $stmt = $pdo->prepare("INSERT INTO veranstaltungen 
+                    (titel, beschreibung, autor, datum, zeit, ort, cost, text, zielgruppe, banner_image_name, timecode_erstellt, tags, flag) 
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+
+        // Debug: dump params before execute
+        try {
+            ob_start();
+            $stmt->debugDumpParams();
+            $dbg = ob_get_clean();
+            error_log('veranstaltung-erstellen.php: prepared statement BEFORE execute:\n' . $dbg);
+        } catch (Exception $e) {
+            error_log('veranstaltung-erstellen.php: debugDumpParams before execute failed: ' . $e->getMessage());
+        }
+
+        try {
+            $stmt->execute([$titel, $untertitel, $_SESSION['name'], $datum, $uhrzeit, $ort, $kosten, $beschreibung, $zielgruppe, $coverImagePath, time(), $tags, 1]);
+            // Log last insert id for verification
+            try {
+                $lastId = $pdo->lastInsertId();
+                error_log('veranstaltung-erstellen.php: insert successful, lastInsertId=' . $lastId);
+            } catch (Exception $e) {
+                error_log('veranstaltung-erstellen.php: could not get lastInsertId: ' . $e->getMessage());
+            }
+        } catch (Exception $ex) {
+            error_log('veranstaltung-erstellen.php: execute failed - ' . $ex->getMessage());
+            try {
+                ob_start();
+                $stmt->debugDumpParams();
+                $dbg2 = ob_get_clean();
+                error_log('veranstaltung-erstellen.php: prepared statement AFTER failure:\n' . $dbg2);
+            } catch (Exception $e2) {
+                error_log('veranstaltung-erstellen.php: debugDumpParams after failure failed: ' . $e2->getMessage());
+            }
+            throw $ex;
+        }
+    } catch (Exception $e) {
+        error_log('../veranstaltung-erstellen.php: DB error - ' . $e->getMessage());
+        //header("Location: veranstaltungen.php?error=" . urlencode("Fehler beim Erstellen der Veranstaltung."));
+        exit();
+    }
+
+
+    // Redirect to event list or confirmation page
+    header("Location: ../veranstaltungen.php?success=" . urlencode("Veranstaltung erfolgreich erstellt."));
+    exit();
+}
 
 ?>
 
@@ -81,7 +172,7 @@ if (!hasAdminOrVorstandRole($userId)) {
                         <span class="material-symbols-outlined">image_arrow_up</span>
                         <span>Cover-Bild hochladen oder hier ablegen</span>
                     </div>
-                    <input type="file" id="file-input" accept="image/*" />
+                    <input type="file" id="file-input" name="cover_image" accept="image/*" />
                     <button id="clear-btn" class="center" type="button" onclick="clearDropzoneBackground()">
                         <span class="material-symbols-outlined">delete</span>
                         Bild entfernen
@@ -117,8 +208,8 @@ if (!hasAdminOrVorstandRole($userId)) {
             </div>
             <div class="form-row">
                 <label for="zielgruppe">Zielgruppe:</label>
-                <select>
-                    <option value="alle" selected>Alle Dorfbewohner</option>
+                <select name="zielgruppe">
+                    <option value="alle" selected>Alle Anwohner</option>
                     <option value="Familien">Familien</option>
                     <option value="Kinder">Kinder</option>
                     <option value="Mitglieder">Mitglieder</option>
