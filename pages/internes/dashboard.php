@@ -19,6 +19,96 @@ if (!hasAdminOrVorstandRole($userId)) {
     exit();
 }
 //get "?neu=" from URL
+// Context-menu actions (delete, promote, demote, activate, deactivate)
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['member_id'], $_POST['action'])) {
+    $currentUserId = $_SESSION['user_id'] ?? null;
+    $targetId = (int)$_POST['member_id'];
+    $action = (string)$_POST['action'];
+
+    $isAjax = (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest')
+        || (strpos($_SERVER['HTTP_ACCEPT'] ?? '', 'application/json') !== false);
+
+    $respond = function($success, $message) use ($isAjax) {
+        if ($isAjax) {
+            header('Content-Type: application/json; charset=utf-8');
+            echo json_encode(['success' => (bool)$success, 'message' => $message]);
+            exit();
+        } else {
+            if ($success) header('Location: dashboard.php?success=' . urlencode($message));
+            else header('Location: dashboard.php?error=' . urlencode($message));
+            exit();
+        }
+    };
+
+    if (!$currentUserId || $targetId <= 0) {
+        $respond(false, 'Ungültige Anfrage.');
+    }
+
+    // Use helper to get PDO connection to member DB
+    $pdo = getMemberDbConnection();
+    if (!$pdo) {
+        error_log('dashboard: Mitgliederdatenbank nicht erreichbar.');
+        $respond(false, 'Datenbankfehler.');
+    }
+
+    $isAdmin = hasAdminRole($currentUserId);
+    $isVorstand = hasVorstandRole($currentUserId);
+    $canModifyStatus = $isAdmin || $isVorstand;
+    $canChangeRoleOrDelete = $isAdmin;
+
+    try {
+        if ($action === 'delete') {
+            if (!$canChangeRoleOrDelete) throw new Exception('Keine Berechtigung zum Löschen.');
+            if ($targetId === $currentUserId) throw new Exception('Sie können sich nicht selbst löschen.');
+            $stmt = $pdo->prepare('DELETE FROM mitglieder WHERE id = :id');
+            $stmt->bindValue(':id', $targetId, PDO::PARAM_INT);
+            $stmt->execute();
+            $respond(true, 'Benutzer gelöscht.');
+        }
+
+        if ($action === 'promote') {
+            if (!$canChangeRoleOrDelete) throw new Exception('Keine Berechtigung zum Promoten.');
+            $stmt = $pdo->prepare('UPDATE mitglieder SET rolle = :rolle WHERE id = :id AND rolle != :adminRole');
+            $stmt->bindValue(':rolle', 'vorstand', PDO::PARAM_STR);
+            $stmt->bindValue(':id', $targetId, PDO::PARAM_INT);
+            $stmt->bindValue(':adminRole', 'admin', PDO::PARAM_STR);
+            $stmt->execute();
+            $respond(true, 'Benutzer zum Vorstand gemacht.');
+        }
+
+        if ($action === 'demote') {
+            if (!$canChangeRoleOrDelete) throw new Exception('Keine Berechtigung zum Demoten.');
+            $stmt = $pdo->prepare('SELECT rolle FROM mitglieder WHERE id = :id LIMIT 1');
+            $stmt->bindValue(':id', $targetId, PDO::PARAM_INT);
+            $stmt->execute();
+            $row = $stmt->fetch(PDO::FETCH_ASSOC);
+            if (!$row) throw new Exception('Benutzer nicht gefunden.');
+            if (strtolower((string)$row['rolle']) === 'admin') throw new Exception('Admin kann nicht gedemoted werden.');
+            $stmt = $pdo->prepare('UPDATE mitglieder SET rolle = :rolle WHERE id = :id');
+            $stmt->bindValue(':rolle', 'mitglied', PDO::PARAM_STR);
+            $stmt->bindValue(':id', $targetId, PDO::PARAM_INT);
+            $stmt->execute();
+            $respond(true, 'Benutzer gedemoted.');
+        }
+
+        if ($action === 'activate' || $action === 'deactivate') {
+            if (!$canModifyStatus) throw new Exception('Keine Berechtigung zur Statusänderung.');
+            $newStatus = $action === 'activate' ? 1 : 2;
+            $stmt = $pdo->prepare('UPDATE mitglieder SET status = :status WHERE id = :id');
+            $stmt->bindValue(':status', $newStatus, PDO::PARAM_INT);
+            $stmt->bindValue(':id', $targetId, PDO::PARAM_INT);
+            $stmt->execute();
+            $msg = $action === 'activate' ? 'Benutzer aktiviert.' : 'Benutzer deaktiviert.';
+            $respond(true, $msg);
+        }
+
+        $respond(false, 'Unbekannte Aktion.');
+
+    } catch (Exception $e) {
+        error_log('dashboard action error: ' . $e->getMessage());
+        $respond(false, $e->getMessage());
+    }
+}
 
 ?>
 <!DOCTYPE html>
@@ -41,6 +131,85 @@ if (!hasAdminOrVorstandRole($userId)) {
                 <img src="../../assets/icons/logo.png" alt="">
             </a>
         </div>
+        <script>
+            // Submit context action via AJAX and update UI without reload
+            async function submitContextActionAjax(action, memberId) {
+                try {
+                    const params = new URLSearchParams();
+                    params.append('action', action);
+                    params.append('member_id', memberId);
+
+                    const res = await fetch('dashboard.php', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'Accept': 'application/json'
+                        },
+                        body: params.toString()
+                    });
+
+                    const data = await res.json();
+                    if (!data.success) {
+                        alert('Fehler: ' + (data.message || 'Unbekannter Fehler'));
+                        return;
+                    }
+
+                    // Update DOM based on action
+                    const el = document.querySelector('.member[data-member-id="' + memberId + '"]');
+                    if (action === 'delete') {
+                        if (el) el.remove();
+                    } else if (action === 'promote') {
+                        if (el) {
+                            const roleDiv = el.querySelector('.role');
+                            const roleText = el.querySelector('.role-text');
+                            if (roleDiv) { roleDiv.classList.remove('member'); roleDiv.classList.add('vorstand'); }
+                            if (roleText) roleText.textContent = 'Vorstand';
+                        }
+                    } else if (action === 'demote') {
+                        if (el) {
+                            const roleDiv = el.querySelector('.role');
+                            const roleText = el.querySelector('.role-text');
+                            if (roleDiv) { roleDiv.classList.remove('vorstand'); roleDiv.classList.add('member'); }
+                            if (roleText) roleText.textContent = 'Mitglied';
+                        }
+                    } else if (action === 'activate' || action === 'deactivate') {
+                        if (el) {
+                            const statusDiv = el.querySelector('.status');
+                            const statusText = el.querySelector('.status-text');
+                            if (statusDiv && statusText) {
+                                if (action === 'activate') {
+                                    statusDiv.className = 'status aktiv center';
+                                    statusText.textContent = 'Aktiv';
+                                } else {
+                                    statusDiv.className = 'status inaktiv center';
+                                    statusText.textContent = 'Inaktiv';
+                                }
+                            }
+                        }
+                    }
+
+                    // optional small success feedback
+                    alert(data.message || 'Erfolgreich.');
+                } catch (err) {
+                    alert('Netzwerkfehler: ' + err.message);
+                }
+            }
+
+            // Convenience wrapper for non-AJAX fallback: set hidden fields and submit
+            function submitContextAction(action, memberId) {
+                const form = document.getElementById('member-context-menu-form');
+                if (!form) return;
+                // If fetch is available, use AJAX
+                if (window.fetch) {
+                    submitContextActionAjax(action, memberId);
+                    return;
+                }
+                document.getElementById('context-member-id').value = memberId;
+                document.getElementById('context-action').value = action;
+                form.submit();
+            }
+        </script>
         <div id="right">
             <a href="logout.php" id="logout-button">
                 <span class="material-symbols-outlined">logout</span>
@@ -224,7 +393,7 @@ if (!hasAdminOrVorstandRole($userId)) {
                             
                             $hasAddress = !empty($address1) || !empty($address2);
                             ?>
-                            <div class="member" data-member-id="<?php echo (int)$member['id']; ?>">
+                            <div class="member" data-member-id="<?php echo (int)$member['id']; ?>" oncontextmenu="opencontextMenu('<?php echo htmlspecialchars($member['id']); ?>'); return false;">
                                 <div class="member-top">
                                     <div class="ganzer-name">
                                         <h2 class="nachname"><?php echo htmlspecialchars($member['titel']) . ' ' . htmlspecialchars($member['nachname']); ?>, <?php echo htmlspecialchars($member['name']); ?></h2>
@@ -239,7 +408,7 @@ if (!hasAdminOrVorstandRole($userId)) {
                                             <span class="status-text"><?php echo $statusText; ?></span>
                                         </div>
                                     </div>
-                                    <button class="edit-button">
+                                    <button class="edit-button" onclick="opencontextMenu('<?php echo htmlspecialchars($member['id']); ?>')">
                                         <span class="material-symbols-outlined">more_vert</span>
                                     </button>
                                 </div>
@@ -299,6 +468,36 @@ if (!hasAdminOrVorstandRole($userId)) {
                 }
             }
             ?>
+        </div>
+        <div id="member-context-menu" class="context-menu">
+            <form action="dashboard.php" method="post" id="member-context-menu-form">
+                <input type="hidden" id="context-member-id" name="member_id" value="">
+                <input type="hidden" id="context-action" name="action" value="">
+                <button id="edit-member">
+                    <span class="material-symbols-outlined">edit</span>
+                    <span class="text">bearbeiten</span>
+                </button>
+                <button id="activate-member">
+                    <span class="material-symbols-outlined">verified</span>
+                    <span class="text">als aktiv markieren</span>
+                </button>
+                <button id="deactivate-member">
+                    <span class="material-symbols-outlined">do_not_disturb_on</span>
+                    <span class="text">als inaktiv markieren</span>
+                </button>
+                <button id="up-member">
+                    <span class="material-symbols-outlined">shield_person</span>
+                    <span class="text">Vorstandsrolle hinzufügen</span>
+                </button>
+                <button id="down-member">
+                    <span class="material-symbols-outlined">person</span>
+                    <span class="text">Vorstandsrolle entfernen</span>
+                </button>
+                <button id="delete-member">
+                    <span class="material-symbols-outlined">delete</span>
+                    <span class="text">löschen</span>
+                </button>
+            </form>
         </div>
     </div>
     <div id="footer" class="center">

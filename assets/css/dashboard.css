@@ -145,6 +145,40 @@ span.material-symbols-outlined{
     font-size: 24px;
     margin-right: 8px;
 }
+
+/* Context Menu */
+#member-context-menu{
+    position: absolute;
+    background-color: var(--bg-color);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border: 1px solid var(--shadow-color);
+    border-radius: 5px;
+    z-index: 1000;
+    flex-direction: column;
+    min-width: 150px;
+    border-radius: 3px;
+    display: none;
+}
+#member-context-menu-form{
+    display: flex;
+    flex-direction: column;
+}
+#member-context-menu-form button{
+    background: none;
+    border: none;
+    padding: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    width: 100%;
+    cursor: pointer;
+    color: var(--text-color);
+    font-size: 110%;
+}
+#member-context-menu-form button:hover{
+    background-color: var(--lightgrey);
+}
+
 @media (max-width: 1600px){
     #main{
         width: 75% !important;
