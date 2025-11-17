@@ -210,4 +210,63 @@ function updateLastVisitedDate($userId) {
         return false;
     }
 }
+
+/**
+ * Verify user password
+ * @param int $userId
+ * @param string $password
+ * @return bool Returns true if password matches, false otherwise
+ */
+function verifyUserPassword($userId, $password) {
+    $pdo = getMemberDbConnection();
+    if (!$pdo) {
+        return false;
+    }
+
+    try {
+        $stmt = $pdo->prepare('SELECT password FROM mitglieder WHERE id = :id LIMIT 1');
+        $stmt->bindValue(':id', $userId, PDO::PARAM_INT);
+        $stmt->execute();
+
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($result && password_verify($password, $result['password'])) {
+            return true;
+        }
+
+        return false;
+    } catch (Exception $e) {
+        error_log('verifyUserPassword: DB error - ' . $e->getMessage());
+        return false;
+    }
+}
+
+/**
+ * Update user password
+ * @param int $userId
+ * @param string $newPassword
+ * @return bool Returns true on success, false on failure
+ */
+function updateUserPassword($userId, $newPassword) {
+    $pdo = getMemberDbConnection();
+    if (!$pdo) {
+        return false;
+    }
+
+    try {
+        // Hash the new password
+        $hashedPassword = password_hash($newPassword, PASSWORD_DEFAULT);
+
+        // Update password in database
+        $stmt = $pdo->prepare('UPDATE mitglieder SET password = :password WHERE id = :id');
+        $stmt->bindValue(':password', $hashedPassword, PDO::PARAM_STR);
+        $stmt->bindValue(':id', $userId, PDO::PARAM_INT);
+        $stmt->execute();
+
+        return true;
+    } catch (Exception $e) {
+        error_log('updateUserPassword: DB error - ' . $e->getMessage());
+        return false;
+    }
+}
 ?>

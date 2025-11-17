@@ -158,39 +158,66 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['member_id'], $_POST['
                     // Update DOM based on action
                     const el = document.querySelector('.member[data-member-id="' + memberId + '"]');
                     if (action === 'delete') {
-                        if (el) el.remove();
+                        if (el) {
+                            el.style.transition = 'opacity 0.3s';
+                            el.style.opacity = '0';
+                            setTimeout(() => el.remove(), 300);
+                        }
                     } else if (action === 'promote') {
                         if (el) {
                             const roleDiv = el.querySelector('.role');
                             const roleText = el.querySelector('.role-text');
-                            if (roleDiv) { roleDiv.classList.remove('member'); roleDiv.classList.add('vorstand'); }
+                            const roleIcon = el.querySelector('.role-symbol');
+                            if (roleDiv) { 
+                                roleDiv.classList.remove('member', 'hidden'); 
+                                roleDiv.classList.add('vorstand'); 
+                            }
                             if (roleText) roleText.textContent = 'Vorstand';
+                            if (roleIcon) roleIcon.textContent = 'shield_person';
                         }
                     } else if (action === 'demote') {
                         if (el) {
                             const roleDiv = el.querySelector('.role');
                             const roleText = el.querySelector('.role-text');
-                            if (roleDiv) { roleDiv.classList.remove('vorstand'); roleDiv.classList.add('member'); }
+                            const roleIcon = el.querySelector('.role-symbol');
+                            if (roleDiv) { 
+                                roleDiv.classList.remove('vorstand', 'hidden'); 
+                                roleDiv.classList.add('member'); 
+                            }
                             if (roleText) roleText.textContent = 'Mitglied';
+                            if (roleIcon) roleIcon.textContent = 'person';
                         }
                     } else if (action === 'activate' || action === 'deactivate') {
                         if (el) {
                             const statusDiv = el.querySelector('.status');
                             const statusText = el.querySelector('.status-text');
-                            if (statusDiv && statusText) {
+                            const statusIcon = el.querySelector('.status-symbol');
+                            const roleDiv = el.querySelector('.role');
+                            const roleTextEl = el.querySelector('.role-text');
+                            if (statusDiv && statusText && statusIcon) {
                                 if (action === 'activate') {
                                     statusDiv.className = 'status aktiv center';
                                     statusText.textContent = 'Aktiv';
+                                    statusIcon.textContent = 'verified';
+                                    if (roleDiv) {
+                                        roleDiv.classList.remove('hidden');
+                                        const hasSpecificRole = roleDiv.classList.contains('admin') || roleDiv.classList.contains('vorstand');
+                                        if (!hasSpecificRole && !roleDiv.classList.contains('member')) {
+                                            roleDiv.classList.add('member');
+                                        }
+                                    }
                                 } else {
                                     statusDiv.className = 'status inaktiv center';
                                     statusText.textContent = 'Inaktiv';
+                                    statusIcon.textContent = 'do_not_disturb_on';
+                                    if (roleDiv) roleDiv.classList.add('hidden');
                                 }
                             }
                         }
                     }
 
-                    // optional small success feedback
-                    alert(data.message || 'Erfolgreich.');
+                    // Success feedback
+                    console.log('✓ ' + (data.message || 'Erfolgreich'));
                 } catch (err) {
                     alert('Netzwerkfehler: ' + err.message);
                 }
@@ -223,7 +250,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['member_id'], $_POST['
         <div class="popup-content">
             <h2>Es scheint, als wäre dies ihr erster Login.</h2>
             <h3>Bitte legen Sie sich ein neues Passwort fest.</h3>
-            <form action="index.php" method="post">
+            <form action="dashboard.php" method="post">
                 <div class="form-group">
                     <label for="current-password">Aktuelles Passwort:</label>
                     <input type="password" id="current-password" name="current_password" required>
@@ -241,11 +268,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['member_id'], $_POST['
         </div>
     </div>
     <?php
-        // uupdate db with users new password if form submitted
+        // Update db with users new password if form submitted
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['current_password'], $_POST['new_password'], $_POST['confirm_password'])) {
             if (!isset($_SESSION['user_id'])) {
                 // User not logged in; cannot change password
-                header("Location: index.php");
+                header("Location: dashboard.php");
                 exit();
             }
             $userId = $_SESSION['user_id'];
@@ -256,14 +283,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['member_id'], $_POST['
             // Validate new password and confirmation
             if ($newPassword !== $confirmPassword) {
                 // Passwords do not match
-                header("Location: index.php?change_pw=1&error=" . urlencode("Die neuen Passwörter stimmen nicht überein."));
+                header("Location: dashboard.php?change_pw=1&error=" . urlencode("Die neuen Passwörter stimmen nicht überein."));
                 exit();
             }
 
             // Verify current password
             if (!verifyUserPassword($userId, $currentPassword)) {
                 // Current password incorrect
-                header("Location: index.php?change_pw=1&error=" . urlencode("Das aktuelle Passwort ist falsch."));
+                header("Location: dashboard.php?change_pw=1&error=" . urlencode("Das aktuelle Passwort ist falsch."));
                 exit();
             }
 
@@ -271,11 +298,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['member_id'], $_POST['
             if (updateUserPassword($userId, $newPassword)) {
                 // Success
                 updateLastVisitedDate($userId);
-                header("Location: index.php?pw_changed=1");
+                header("Location: dashboard.php?pw_changed=1");
                 exit();
             } else {
                 // Failed to update password
-                header("Location: index.php?change_pw=1&error=" . urlencode("Fehler beim Ändern des Passworts. Bitte versuchen Sie es erneut."));
+                header("Location: dashboard.php?change_pw=1&error=" . urlencode("Fehler beim Ändern des Passworts. Bitte versuchen Sie es erneut."));
                 exit();
             }
         }
@@ -473,27 +500,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['member_id'], $_POST['
             <form action="dashboard.php" method="post" id="member-context-menu-form">
                 <input type="hidden" id="context-member-id" name="member_id" value="">
                 <input type="hidden" id="context-action" name="action" value="">
-                <button id="edit-member">
+                <button type="button" id="edit-member">
                     <span class="material-symbols-outlined">edit</span>
                     <span class="text">bearbeiten</span>
                 </button>
-                <button id="activate-member">
+                <button type="button" id="activate-member">
                     <span class="material-symbols-outlined">verified</span>
                     <span class="text">als aktiv markieren</span>
                 </button>
-                <button id="deactivate-member">
+                <button type="button" id="deactivate-member">
                     <span class="material-symbols-outlined">do_not_disturb_on</span>
                     <span class="text">als inaktiv markieren</span>
                 </button>
-                <button id="up-member">
+                <button type="button" id="up-member">
                     <span class="material-symbols-outlined">shield_person</span>
                     <span class="text">Vorstandsrolle hinzufügen</span>
                 </button>
-                <button id="down-member">
+                <button type="button" id="down-member">
                     <span class="material-symbols-outlined">person</span>
                     <span class="text">Vorstandsrolle entfernen</span>
                 </button>
-                <button id="delete-member">
+                <button type="button" id="delete-member">
                     <span class="material-symbols-outlined">delete</span>
                     <span class="text">löschen</span>
                 </button>

@@ -43,6 +43,76 @@ function opencontextMenu(memberId) {
     }
 
 }
+
+// Close context menu function
+function closeContextMenu() {
+    const contextMenu = document.getElementById('member-context-menu');
+    contextMenu.style.display = 'none';
+}
+
+// Add event listeners to context menu buttons
+document.addEventListener('DOMContentLoaded', () => {
+    // Activate member
+    document.getElementById('activate-member')?.addEventListener('click', (e) => {
+        e.preventDefault();
+        const memberId = document.getElementById('context-member-id').value;
+        if (memberId && window.submitContextActionAjax) {
+            submitContextActionAjax('activate', memberId);
+            closeContextMenu();
+        }
+    });
+
+    // Deactivate member
+    document.getElementById('deactivate-member')?.addEventListener('click', (e) => {
+        e.preventDefault();
+        const memberId = document.getElementById('context-member-id').value;
+        if (memberId && window.submitContextActionAjax) {
+            submitContextActionAjax('deactivate', memberId);
+            closeContextMenu();
+        }
+    });
+
+    // Promote member
+    document.getElementById('up-member')?.addEventListener('click', (e) => {
+        e.preventDefault();
+        const memberId = document.getElementById('context-member-id').value;
+        if (memberId && window.submitContextActionAjax) {
+            submitContextActionAjax('promote', memberId);
+            closeContextMenu();
+        }
+    });
+
+    // Demote member
+    document.getElementById('down-member')?.addEventListener('click', (e) => {
+        e.preventDefault();
+        const memberId = document.getElementById('context-member-id').value;
+        if (memberId && window.submitContextActionAjax) {
+            submitContextActionAjax('demote', memberId);
+            closeContextMenu();
+        }
+    });
+
+    // Delete member
+    document.getElementById('delete-member')?.addEventListener('click', (e) => {
+        e.preventDefault();
+        const memberId = document.getElementById('context-member-id').value;
+        if (memberId && confirm('Möchten Sie dieses Mitglied wirklich löschen?')) {
+            if (window.submitContextActionAjax) {
+                submitContextActionAjax('delete', memberId);
+                closeContextMenu();
+            }
+        }
+    });
+
+    // Edit member (placeholder for future implementation)
+    document.getElementById('edit-member')?.addEventListener('click', (e) => {
+        e.preventDefault();
+        const memberId = document.getElementById('context-member-id').value;
+        alert('Bearbeitungsfunktion wird in Kürze implementiert. Mitglied-ID: ' + memberId);
+        closeContextMenu();
+    });
+});
+
 // close context menu on click outside or escape key
 document.addEventListener('click', (event) => {
     if (!event.target.classList.contains('edit-button')) return;
