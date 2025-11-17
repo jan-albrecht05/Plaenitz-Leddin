@@ -62,6 +62,5 @@ Mit dieser Website sollen Mitglieder verwaltet, Veranstaltungen geteilt und Übe
 ## Veranstaltung erstellen/ändern
  - Tags hinzufügen
 ## Dashboard:
- - Aktion Contextmenu
  - PW-Vergabe für neue Vorstandsmitglieder
  - wenn ?Vorstand=neu, dann Aufforderung zu neuem Passwort (erster Login)
