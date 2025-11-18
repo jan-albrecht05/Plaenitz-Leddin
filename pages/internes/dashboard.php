@@ -68,12 +68,41 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['member_id'], $_POST['
 
         if ($action === 'promote') {
             if (!$canChangeRoleOrDelete) throw new Exception('Keine Berechtigung zum Promoten.');
-            $stmt = $pdo->prepare('UPDATE mitglieder SET rolle = :rolle WHERE id = :id AND rolle != :adminRole');
-            $stmt->bindValue(':rolle', 'vorstand', PDO::PARAM_STR);
-            $stmt->bindValue(':id', $targetId, PDO::PARAM_INT);
-            $stmt->bindValue(':adminRole', 'admin', PDO::PARAM_STR);
-            $stmt->execute();
-            $respond(true, 'Benutzer zum Vorstand gemacht.');
+            
+            // Check if a temporary password was provided
+            $tempPassword = $_POST['temp_password'] ?? null;
+            if (empty($tempPassword)) {
+                $respond(false, 'Bitte geben Sie ein vorläufiges Passwort ein.');
+            }
+            
+            // Validate password length
+            if (strlen($tempPassword) < 8) {
+                $respond(false, 'Das Passwort muss mindestens 8 Zeichen lang sein.');
+            }
+            
+            // Update role and password
+            $pdo->beginTransaction();
+            try {
+                // Update role
+                $stmt = $pdo->prepare('UPDATE mitglieder SET rolle = :rolle WHERE id = :id AND rolle != :adminRole');
+                $stmt->bindValue(':rolle', 'vorstand', PDO::PARAM_STR);
+                $stmt->bindValue(':id', $targetId, PDO::PARAM_INT);
+                $stmt->bindValue(':adminRole', 'admin', PDO::PARAM_STR);
+                $stmt->execute();
+                
+                // Update password
+                $hashedPassword = password_hash($tempPassword, PASSWORD_DEFAULT);
+                $stmt = $pdo->prepare('UPDATE mitglieder SET password = :password WHERE id = :id');
+                $stmt->bindValue(':password', $hashedPassword, PDO::PARAM_STR);
+                $stmt->bindValue(':id', $targetId, PDO::PARAM_INT);
+                $stmt->execute();
+                
+                $pdo->commit();
+                $respond(true, 'Benutzer zum Vorstand gemacht und Passwort gesetzt.');
+            } catch (Exception $e) {
+                $pdo->rollBack();
+                throw $e;
+            }
         }
 
         if ($action === 'demote') {
@@ -133,11 +162,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['member_id'], $_POST['
         </div>
         <script>
             // Submit context action via AJAX and update UI without reload
-            async function submitContextActionAjax(action, memberId) {
+            async function submitContextActionAjax(action, memberId, tempPassword) {
                 try {
                     const params = new URLSearchParams();
                     params.append('action', action);
                     params.append('member_id', memberId);
+                    if (tempPassword) {
+                        params.append('temp_password', tempPassword);
+                    }
 
                     const res = await fetch('dashboard.php', {
                         method: 'POST',
@@ -223,12 +255,50 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['member_id'], $_POST['
                 }
             }
 
+            // Store pending promote action
+            let pendingPromoteMemberId = null;
+            // Show password popup for promote action
+            function showPromotePasswordPopup(memberId) {
+                pendingPromoteMemberId = memberId;
+                document.getElementById('promote-password-popup').style.display = 'flex';
+                document.getElementById('promote-temp-password').value = '';
+                document.getElementById('promote-temp-password-confirm').value = '';
+                document.getElementById('promote-temp-password').focus();
+            }
+            // Cancel promote action
+            function cancelPromote() {
+                pendingPromoteMemberId = null;
+                document.getElementById('promote-password-popup').style.display = 'none';
+            }
+            // Confirm promote with password
+            function confirmPromote() {
+                const password = document.getElementById('promote-temp-password').value;
+                const passwordConfirm = document.getElementById('promote-temp-password-confirm').value;
+                if (!password || password.length < 8) {
+                    alert('Das Passwort muss mindestens 8 Zeichen lang sein.');
+                    return;
+                }
+                if (password !== passwordConfirm) {
+                    alert('Die Passwörter stimmen nicht überein.');
+                    return;
+                }
+                if (pendingPromoteMemberId) {
+                    document.getElementById('promote-password-popup').style.display = 'none';
+                    submitContextActionAjax('promote', pendingPromoteMemberId, password);
+                    pendingPromoteMemberId = null;
+                }
+            }
             // Convenience wrapper for non-AJAX fallback: set hidden fields and submit
             function submitContextAction(action, memberId) {
                 const form = document.getElementById('member-context-menu-form');
                 if (!form) return;
                 // If fetch is available, use AJAX
                 if (window.fetch) {
+                    // For promote action, show password popup first
+                    if (action === 'promote') {
+                        showPromotePasswordPopup(memberId);
+                        return;
+                    }
                     submitContextActionAjax(action, memberId);
                     return;
                 }
@@ -245,6 +315,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['member_id'], $_POST['
     </div>
     <div id="dashboard-container" class="banner">
         <h1>Willkommen zum Dashboard</h1>
+    </div>
+    <div class="popup" id="promote-password-popup" style="display: flex;">
+        <div class="popup-content">
+            <h2>Vorstandsrolle zuweisen</h2>
+            <h3>Bitte geben Sie ein vorläufiges Passwort für den neuen Vorstand ein.</h3>
+            <div class="form-group">
+                <label for="promote-temp-password">Vorläufiges Passwort:</label>
+                <input type="password" id="promote-temp-password" required minlength="8">
+                <small style="color: #666;">Mindestens 8 Zeichen</small>
+            </div>
+            <div class="form-group">
+                <label for="promote-temp-password-confirm">Passwort bestätigen:</label>
+                <input type="password" id="promote-temp-password-confirm" required minlength="8">
+            </div>
+            <div class="buttons">
+                <button type="button" class="abbrechen" onclick="cancelPromote()">Abbrechen</button>
+                <button type="button" class="submit" onclick="confirmPromote()">Bestätigen</button>
+            </div>
+        </div>
     </div>
     <div class="popup" <?php if (isset($_GET['change_pw'])) echo 'style="display: flex;"'; ?> id="pw-change-popup">
         <div class="popup-content">

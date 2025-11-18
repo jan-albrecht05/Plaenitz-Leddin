@@ -76,8 +76,8 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('up-member')?.addEventListener('click', (e) => {
         e.preventDefault();
         const memberId = document.getElementById('context-member-id').value;
-        if (memberId && window.submitContextActionAjax) {
-            submitContextActionAjax('promote', memberId);
+        if (memberId && window.submitContextAction) {
+            submitContextAction('promote', memberId);
             closeContextMenu();
         }
     });
