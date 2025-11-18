@@ -48,12 +48,42 @@ if ($event_id !== null) {
                 $_SESSION['participated_events'] = [];
             }
 
-            if (!isset($_SESSION['participated_events'][$postedId])) {
+            // Guard: fetch event date/time and block participation for past events
+            $isPastEvent = false;
+            try {
+                $pdo_chk = new PDO('sqlite:' . $dbPath);
+                $pdo_chk->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+                // Avoid long locks if DB is busy
+                $pdo_chk->exec('PRAGMA busy_timeout = 2000');
+                $stmt_chk = $pdo_chk->prepare('SELECT datum, zeit FROM veranstaltungen WHERE id = :id LIMIT 1');
+                $stmt_chk->bindValue(':id', $postedId, PDO::PARAM_INT);
+                $stmt_chk->execute();
+                $row = $stmt_chk->fetch(PDO::FETCH_ASSOC);
+                if ($row) {
+                    $dtStr = trim((string)($row['datum'] ?? ''));
+                    $tmStr = trim((string)($row['zeit'] ?? ''));
+                    if ($tmStr !== '') { $dtStr .= ' ' . $tmStr; }
+                    $ts = $dtStr !== '' ? strtotime($dtStr) : false;
+                    if ($ts !== false && $ts < time()) {
+                        $isPastEvent = true;
+                    }
+                }
+            } catch (Exception $e) {
+                error_log('event.php: Failed to check event datetime - ' . $e->getMessage());
+            }
+
+            if (!$isPastEvent && !isset($_SESSION['participated_events'][$postedId])) {
                 // mark as participated in session first to avoid race conditions
                 $_SESSION['participated_events'][$postedId] = time();
+                // Release session lock early to prevent blocking parallel requests
+                if (session_status() === PHP_SESSION_ACTIVE) {
+                    session_write_close();
+                }
                 try {
                     $pdo_upd = new PDO('sqlite:' . $dbPath);
                     $pdo_upd->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+                    // Avoid long locks if DB is busy
+                    $pdo_upd->exec('PRAGMA busy_timeout = 2000');
                     $stmt_upd = $pdo_upd->prepare('UPDATE veranstaltungen SET teilnehmer = COALESCE(teilnehmer, 0) + 1 WHERE id = :id');
                     $stmt_upd->bindValue(':id', $postedId, PDO::PARAM_INT);
                     $stmt_upd->execute();
@@ -63,7 +93,8 @@ if ($event_id !== null) {
             }
 
             // Redirect back to the event page (PRG pattern) so page reloads don't resubmit the form
-            header('Location: event.php?id=' . urlencode($postedId));
+            $self = $_SERVER['PHP_SELF'] ?? 'event.php';
+            header('Location: ' . $self . '?id=' . urlencode($postedId));
             exit();
         }
 
@@ -71,6 +102,8 @@ if ($event_id !== null) {
             // Use PDO with sqlite for safer, consistent parameter binding and exceptions
             $pdo = new PDO('sqlite:' . $dbPath);
             $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+            // Avoid long locks if DB is busy
+            $pdo->exec('PRAGMA busy_timeout = 2000');
 
             $stmt = $pdo->prepare('SELECT * FROM veranstaltungen WHERE id = :id LIMIT 1');
             $stmt->bindValue(':id', (int)$event_id, PDO::PARAM_INT);
@@ -175,7 +208,7 @@ $event_title = $event['titel'] ?? 'Veranstaltung';
                 Wo? <span><?php echo htmlspecialchars($event['ort'] ?? ''); ?></span>
             </h2>
             <h2 class="kosten">
-                Eintritt: <span><?php echo htmlspecialchars($event['cost'] ?? ''); ?></span>
+                Eintritt: <span><?php echo !empty($event['cost']) ? htmlspecialchars($event['cost']) : 'Frei'; ?></span>
             </h2>
             <h2 class="zielgruppe">
                 Für wen? <span><?php echo htmlspecialchars($event['zielgruppe'] ?? ''); ?></span>
@@ -198,15 +231,29 @@ $event_title = $event['titel'] ?? 'Veranstaltung';
                     <span><?php echo htmlspecialchars($event['teilnehmer'] ?? 0); ?></span>
                 </div>
             </div>
-            <?php if($user_id == null): ?>
-            <form id="participate-form" method="post" action="">
+            <?php
+                // Compute if event is in the past based on datum and zeit
+                $isPast = false;
+                if ($event && !empty($event['datum'])) {
+                    $dtStr = trim((string)$event['datum']);
+                    $tmStr = trim((string)($event['zeit'] ?? ''));
+                    if ($tmStr !== '') { $dtStr .= ' ' . $tmStr; }
+                    $ts = strtotime($dtStr);
+                    if ($ts !== false && $ts < time()) {
+                        $isPast = true;
+                    }
+                }
+            ?>
+            <?php if(!$isPast): ?>
+            <form id="participate-form" method="post" action="<?php echo htmlspecialchars($_SERVER['PHP_SELF'] . '?id=' . urlencode((string)$event_id)); ?>">
                 <input type="hidden" name="event_id" value="<?php echo htmlspecialchars($event_id); ?>">
                 <button type="submit" name="participate" id="participate-button">
                     <span class="material-symbols-outlined">how_to_reg</span>
                     <span>Teilnehmen</span>
                 </button>
             </form>
-            <?php else: ?>
+            <?php endif; ?>
+            <?php if($is_admin || $is_vorstand): ?>
             <div class="form">
                 <button id="edit-event-button" onclick="location.href='../pages/internes/edit-event.php?id=<?php echo urlencode($event_id); ?>'">
                     <span class="material-symbols-outlined">edit</span>
@@ -241,6 +288,8 @@ $event_title = $event['titel'] ?? 'Veranstaltung';
 
                     $pdo = new PDO('sqlite:' . $dbPath);
                     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+                    // Avoid long locks if DB is busy
+                    $pdo->exec('PRAGMA busy_timeout = 2000');
 
                     $stmt = $pdo->prepare('UPDATE veranstaltungen SET viewcount = COALESCE(viewcount, 0) + 1 WHERE id = :id');
                     $stmt->bindValue(':id', (int)$event_id, PDO::PARAM_INT);

@@ -18,6 +18,10 @@ if (!hasAdminOrVorstandRole($userId)) {
     header("Location: login.php?error=" . urlencode("Sie haben keine Berechtigung für diese Seite."));
     exit();
 }
+// Release session lock early to avoid blocking other requests
+if (session_status() === PHP_SESSION_ACTIVE) {
+    session_write_close();
+}
 // Determine event id from GET or POST (edit target)
 $event_id = $_GET['id'] ?? ($_POST['event_id'] ?? null);
 
@@ -35,6 +39,9 @@ if ($event_id !== null) {
     try {
         $pdo = new PDO('sqlite:' . $dbPath);
         $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+        // Avoid long locks if DB is busy and enable WAL for better concurrency
+        $pdo->exec('PRAGMA busy_timeout = 5000');
+        $pdo->exec('PRAGMA journal_mode = WAL');
         $stmt = $pdo->prepare('SELECT * FROM veranstaltungen WHERE id = :id LIMIT 1');
         $stmt->bindValue(':id', (int)$event_id, PDO::PARAM_INT);
         $stmt->execute();
@@ -112,28 +119,55 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $event_id !== null) {
     }
 
     try {
+        // Ensure previous read cursor/connection is closed before writing
+        if (isset($stmt) && is_object($stmt) && method_exists($stmt, 'closeCursor')) {
+            $stmt->closeCursor();
+        }
+        if (isset($pdo)) { $pdo = null; }
+
         $pdoUp = new PDO('sqlite:' . $dbPath);
         $pdoUp->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+        // Avoid long locks if DB is busy and enable WAL for better concurrency
+        $pdoUp->exec('PRAGMA busy_timeout = 5000');
+        $pdoUp->exec('PRAGMA journal_mode = WAL');
 
-        $updateStmt = $pdoUp->prepare('UPDATE veranstaltungen SET titel = ?, beschreibung = ?, datum = ?, zeit = ?, ort = ?, cost = ?, text = ?, zielgruppe = ?, banner_image_name = ? WHERE id = ?');
-        $updateStmt->execute([
-            $titel,
-            $untertitel,
-            $datum,
-            $uhrzeit,
-            $ort,
-            $kosten,
-            $beschreibung,
-            $zielgruppe,
-            $coverImagePath,
-            (int)$event_id
-        ]);
+        $updateStmt = $pdoUp->prepare('UPDATE veranstaltungen 
+            SET titel = :titel,
+                beschreibung = :beschreibung,
+                datum = :datum,
+                zeit = :zeit,
+                ort = :ort,
+                cost = :cost,
+                text = :text,
+                zielgruppe = :zielgruppe,
+                banner_image_name = :banner
+            WHERE id = :id');
+
+        $updateStmt->bindValue(':titel', $titel, PDO::PARAM_STR);
+        $updateStmt->bindValue(':beschreibung', $untertitel !== '' ? $untertitel : null, $untertitel !== '' ? PDO::PARAM_STR : PDO::PARAM_NULL);
+        $updateStmt->bindValue(':datum', $datum ?: null, $datum ? PDO::PARAM_STR : PDO::PARAM_NULL);
+        $updateStmt->bindValue(':zeit', $uhrzeit ?: null, $uhrzeit ? PDO::PARAM_STR : PDO::PARAM_NULL);
+        $updateStmt->bindValue(':ort', $ort, PDO::PARAM_STR);
+        $updateStmt->bindValue(':cost', $kosten !== null && $kosten !== '' ? $kosten : null, ($kosten !== null && $kosten !== '') ? PDO::PARAM_STR : PDO::PARAM_NULL);
+        $updateStmt->bindValue(':text', $beschreibung, PDO::PARAM_STR);
+        $updateStmt->bindValue(':zielgruppe', $zielgruppe, PDO::PARAM_STR);
+        $updateStmt->bindValue(':banner', $coverImagePath !== null && $coverImagePath !== '' ? $coverImagePath : null, ($coverImagePath !== null && $coverImagePath !== '') ? PDO::PARAM_STR : PDO::PARAM_NULL);
+        $updateStmt->bindValue(':id', (int)$event_id, PDO::PARAM_INT);
+        
+        // Execute inside a transaction for atomicity
+        $pdoUp->beginTransaction();
+        $updateStmt->execute();
+        $pdoUp->commit();
 
         // After updating, redirect to the event view page
-        header('Location: ../event.php?id=' . urlencode($event_id));
+        header('Location: ../event.php?id=' . urlencode((string)$event_id));
         exit();
     } catch (Exception $e) {
+        if (isset($pdoUp) && $pdoUp->inTransaction()) {
+            $pdoUp->rollBack();
+        }
         error_log('edit-event.php: Failed to update event - ' . $e->getMessage());
+        $updateError = 'Fehler beim Speichern: ' . htmlspecialchars($e->getMessage());
         // fall through to re-render the form with submitted values and an error
     }
 }
@@ -175,7 +209,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $event_id !== null) {
             <span class="material-symbols-outlined">arrow_back</span>
             <span>Zurück</span>
         </div>
-        <form id="event-form" action="" method="POST" enctype="multipart/form-data">
+        <?php if (!empty($updateError)): ?>
+            <div class="error-message" style="color: var(--danger, #b00020); margin: 8px 0 16px;">
+                <?php echo $updateError; ?>
+            </div>
+        <?php endif; ?>
+        <form id="event-form" action="<?php echo htmlspecialchars($_SERVER['PHP_SELF'] . '?id=' . urlencode((string)$event_id)); ?>" method="POST" enctype="multipart/form-data">
             <input type="hidden" name="event_id" value="<?php echo htmlspecialchars($event_id); ?>">
             <div class="info">
                 <div class="author">

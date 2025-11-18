@@ -1,5 +1,7 @@
 const dropZone = document.getElementById("drop-zone");
-dropZone.addEventListener("drop", dropHandler);
+if (dropZone) {
+  dropZone.addEventListener("drop", dropHandler);
+}
 
 window.addEventListener("drop", (e) => {
   if ([...e.dataTransfer.items].some((item) => item.kind === "file")) {
@@ -64,48 +66,68 @@ function clearDropzoneBackground() {
 }
 
 function displayImages(files) {
-  // clear previous filename preview
+  if (!files || files.length === 0) {
+    // No files: clear everything
+    if (preview) preview.textContent = "";
+    clearDropzoneBackground();
+    return;
+  }
+
+  // Clear previous preview list (if it exists)
   if (preview) preview.textContent = "";
-  // Clear previous background (we'll set a new one if an image is found)
+  // Clear previous background; we'll set a new one if an image is found
   clearDropzoneBackground();
 
+  let firstImageSet = false;
   for (const file of files) {
-    if (file.type && file.type.startsWith("image/")) {
+    if (file && file.type && file.type.startsWith("image/")) {
       const li = document.createElement("li");
       const img = document.createElement("img");
       const objUrl = URL.createObjectURL(file);
       img.src = objUrl;
       img.alt = file.name;
-      if (!currentBgUrl) {
+      if (!firstImageSet) {
+        firstImageSet = true;
         currentBgUrl = objUrl;
         setDropzoneBackground(objUrl);
       }
-      if (preview) preview.appendChild(li);
+      if (preview) {
+        li.appendChild(img);
+        preview.appendChild(li);
+      }
     }
-  }
-
-  // If no images were found, ensure background is cleared
-  if (!preview || preview.children.length === 0) {
-    clearDropzoneBackground();
   }
 }
 
 function dropHandler(ev) {
   ev.preventDefault();
-  const files = [...ev.dataTransfer.items]
-    .map((item) => item.getAsFile())
-    .filter((file) => file);
+  let files = [];
+  if (ev.dataTransfer && ev.dataTransfer.items && ev.dataTransfer.items.length) {
+    files = [...ev.dataTransfer.items]
+      .map((item) => (item.kind === "file" ? item.getAsFile() : null))
+      .filter((file) => file);
+  } else if (ev.dataTransfer && ev.dataTransfer.files && ev.dataTransfer.files.length) {
+    files = [...ev.dataTransfer.files];
+  }
   displayImages(files);
+  // Sync dropped files into the file input so they get uploaded
+  if (fileInput && files.length) {
+    const dt = new DataTransfer();
+    for (const f of files) dt.items.add(f);
+    fileInput.files = dt.files;
+  }
 }
 
 const fileInput = document.getElementById("file-input");
-fileInput.addEventListener("change", (e) => {
-  displayImages(e.target.files);
-});
+if (fileInput) {
+  fileInput.addEventListener("change", (e) => {
+    displayImages(e.target.files);
+  });
+}
 
 // Clear preview
 const clearBtn = document.getElementById("clear-btn");
-clearBtn.addEventListener("click", () => {
+if (clearBtn) clearBtn.addEventListener("click", () => {
   // revoke all object URLs shown in the list (if present)
   if (preview) {
     for (const img of preview.querySelectorAll("img")) {
@@ -119,6 +141,8 @@ clearBtn.addEventListener("click", () => {
   }
   // clear dropzone background as well
   clearDropzoneBackground();
+  const rem = document.querySelector('input[name="remove_cover"]');
+  if (rem) rem.value = '1';
 });
 
 // On load, if server provided an existing cover image path in a hidden input,
@@ -142,9 +166,4 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // mark remove_cover when clear button clicked
-if (typeof clearBtn !== 'undefined' && clearBtn) {
-  clearBtn.addEventListener('click', () => {
-    const rem = document.querySelector('input[name="remove_cover"]');
-    if (rem) rem.value = '1';
-  });
-}
+// (additional clear handler unified above)
