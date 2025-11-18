@@ -52,8 +52,46 @@ if ($event_id !== null) {
     }
 }
 
+// Handle delete request
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && $event_id !== null && isset($_POST['delete_event'])) {
+    try {
+        $pdoDel = new PDO('sqlite:' . $dbPath);
+        $pdoDel->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+        $pdoDel->exec('PRAGMA busy_timeout = 5000');
+        $pdoDel->exec('PRAGMA journal_mode = WAL');
+
+        // Delete banner image file if exists
+        if (!empty($event['banner_image_name'])) {
+            $projectRoot = dirname(__DIR__, 2);
+            $stored = $event['banner_image_name'];
+            $relative = preg_replace('#^(\.{1,2}/)+#', '', $stored);
+            $oldFull = $projectRoot . DIRECTORY_SEPARATOR . str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $relative);
+            if (file_exists($oldFull) && is_file($oldFull)) {
+                @unlink($oldFull);
+            }
+        }
+
+        // Delete event from database
+        $pdoDel->beginTransaction();
+        $deleteStmt = $pdoDel->prepare('DELETE FROM veranstaltungen WHERE id = :id');
+        $deleteStmt->bindValue(':id', (int)$event_id, PDO::PARAM_INT);
+        $deleteStmt->execute();
+        $pdoDel->commit();
+
+        // Redirect to events list
+        header('Location: ../veranstaltungen.php?success=' . urlencode('Veranstaltung wurde gelöscht.'));
+        exit();
+    } catch (Exception $e) {
+        if (isset($pdoDel) && $pdoDel->inTransaction()) {
+            $pdoDel->rollBack();
+        }
+        error_log('edit-event.php: Failed to delete event - ' . $e->getMessage());
+        $deleteError = 'Fehler beim Löschen: ' . htmlspecialchars($e->getMessage());
+    }
+}
+
 // Handle form submission (update existing event)
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && $event_id !== null) {
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && $event_id !== null && !isset($_POST['delete_event'])) {
     // Retrieve and sanitize form inputs
     $titel = trim($_POST['titel'] ?? '');
     $untertitel = trim($_POST['untertitel'] ?? '');
@@ -160,7 +198,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $event_id !== null) {
         $pdoUp->commit();
 
         // After updating, redirect to the event view page
-        header('Location: ../event.php?id=' . urlencode((string)$event_id));
+        header('Location: ../event.php?id=' . urlencode((string)$event_id) . '&success=' . urlencode('Veranstaltung wurde erfolgreich bearbeitet.'));
         exit();
     } catch (Exception $e) {
         if (isset($pdoUp) && $pdoUp->inTransaction()) {
@@ -327,6 +365,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $event_id !== null) {
             </div>
             <button type="submit">Veranstaltung speichern</button>
         </form>
+        
+        <!-- Separate form for deletion with confirmation -->
+        <form method="POST" action="<?php echo htmlspecialchars($_SERVER['PHP_SELF'] . '?id=' . urlencode((string)$event_id)); ?>" onsubmit="return confirm('Möchten Sie diese Veranstaltung wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.');" style="margin-top: 20px;">
+            <input type="hidden" name="event_id" value="<?php echo htmlspecialchars($event_id); ?>">
+            <input type="hidden" name="delete_event" value="1">
+            <button type="submit" style="background-color: var(--danger, #b00020); color: white;" class="center">
+                <span class="material-symbols-outlined">delete</span>
+                Veranstaltung löschen
+            </button>
+        </form>
+        
+        <?php if (!empty($deleteError)): ?>
+            <div class="error-message" style="color: var(--danger, #b00020); margin: 16px 0;">
+                <?php echo $deleteError; ?>
+            </div>
+        <?php endif; ?>
     </div>
     <div id="footer" class="center">
         <?php include '../../pages/internes/footer.php'; ?>

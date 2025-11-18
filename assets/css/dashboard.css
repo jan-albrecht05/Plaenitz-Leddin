@@ -192,6 +192,7 @@ span.material-symbols-outlined{
     top: 0;
     left: 0;
     z-index: 1001;
+    display: none;
 }
 .popup-content {
     background-color: var(--bg-color)   ;
@@ -202,7 +203,7 @@ span.material-symbols-outlined{
     padding: 20px;
     box-shadow:var(--shadow);
     height: auto;
-    margin: 0 !important;
+    margin: 0;
 }
 .form-group{
     display: flex;
@@ -226,7 +227,7 @@ input[type="password"]{
     gap: 10px;
     margin-top: 2rem;
 }
-.buttons button{
+.popup-content button{
     flex: 1;
     padding: 10px;
     font-size: 110%;
@@ -235,12 +236,12 @@ input[type="password"]{
     cursor: pointer;
     transition: all .2s;
 }
-.buttons button.abbrechen{
+button.abbrechen{
     background-color: var(--bg-color);
     color: var(--text-color);
     border: 2px solid var(--text-color);
 }
-.buttons button.submit{
+button.submit{
     background-color: var(--primary-color);
     color: #fff;
 }
@@ -325,4 +326,16 @@ input[type="password"]{
         display: flex;
         align-items: center;
     }
+    .popup{
+        width: 100%;
+        height: 100lvh;
+        padding: 0;
+        margin: 0;
+    }
+    .popup-content{
+        width: 90% !important;
+        margin-inline: 5%;
+        border-radius: 7px;
+    }
+
 }

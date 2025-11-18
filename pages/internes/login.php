@@ -37,14 +37,18 @@
             // Store only user ID in session, roles will be checked from database
             $_SESSION['user_id'] = $user['id'];
             $_SESSION['name'] = $user['name'];
-            // check if there was already a last visited date
-            if (!isset($_SESSION['last_visited'])) {
-                $redirect = "?neu=Vorstand";
-            }else{
+            
+            // Check if user has completed password setup (has last_visited_date in DB)
+            // If not, redirect with ?neu=1 to show password change popup
+            // DO NOT update last_visited_date here - it will be set after successful password change
+            if (!userHasCompletedPasswordSetup($user['id'])) {
+                $redirect = "?neu=1";
+            } else {
+                // User already has last_visited_date, update it now
+                updateLastVisitedDate($user['id']);
                 $redirect = "";
             }
-            // Update last visited date in UTC format
-            updateLastVisitedDate($user['id']);
+            
             header("Location: dashboard.php" . $redirect);
             exit();
         } else {

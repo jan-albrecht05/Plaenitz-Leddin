@@ -269,4 +269,62 @@ function updateUserPassword($userId, $newPassword) {
         return false;
     }
 }
+
+/**
+ * Update last login date for user (set when user successfully changes password for first time)
+ * @param int $userId
+ * @return bool Returns true on success, false on failure
+ */
+function updateLastLoginDate($userId) {
+    $pdo = getMemberDbConnection();
+    if (!$pdo) {
+        return false;
+    }
+
+    try {
+        // Set last_login to current UTC timestamp
+        $stmt = $pdo->prepare('UPDATE mitglieder SET last_visited_date = :last_visited_date WHERE id = :id');
+        $stmt->bindValue(':last_visited_date', gmdate('Y-m-d H:i:s'), PDO::PARAM_STR);
+        $stmt->bindValue(':id', $userId, PDO::PARAM_INT);
+        $stmt->execute();
+
+        return true;
+    } catch (Exception $e) {
+        error_log('updateLastLoginDate: DB error - ' . $e->getMessage());
+        return false;
+    }
+}
+
+/**
+ * Check if user has completed initial password setup (has last_visited_date)
+ * @param int $userId
+ * @return bool Returns true if user has last_visited_date set, false otherwise
+ */
+function userHasCompletedPasswordSetup($userId) {
+    $pdo = getMemberDbConnection();
+    if (!$pdo) {
+        error_log("userHasCompletedPasswordSetup: No PDO connection for user $userId");
+        return false;
+    }
+
+    try {
+        $stmt = $pdo->prepare('SELECT last_visited_date FROM mitglieder WHERE id = :id LIMIT 1');
+        $stmt->bindValue(':id', $userId, PDO::PARAM_INT);
+        $stmt->execute();
+
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        error_log("userHasCompletedPasswordSetup: User $userId - Result: " . print_r($result, true));
+        error_log("userHasCompletedPasswordSetup: User $userId - last_visited_date = " . ($result['last_visited_date'] ?? 'NULL'));
+        error_log("userHasCompletedPasswordSetup: User $userId - isEmpty check = " . (empty($result['last_visited_date']) ? 'true' : 'false'));
+
+        // Return true if last_visited_date exists and is not null/empty
+        $hasCompleted = $result && !empty($result['last_visited_date']);
+        error_log("userHasCompletedPasswordSetup: User $userId - Returning: " . ($hasCompleted ? 'true' : 'false'));
+        return $hasCompleted;
+    } catch (Exception $e) {
+        error_log('userHasCompletedPasswordSetup: DB error - ' . $e->getMessage());
+        return false;
+    }
+}
 ?>

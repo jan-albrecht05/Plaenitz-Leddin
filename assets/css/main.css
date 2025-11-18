@@ -39,22 +39,6 @@ a{
     background: var(--primary-color);
     color: white;
 }
-#pw-change-popup{
-    display: none;
-    position: fixed;
-    top:0;
-    left: 0;
-    height: 90vh;
-    margin-top: 3rem;
-    width: 97%;
-    background-color: var(--bg-color);
-    padding: 3rem 4rem 2rem 2rem;
-}
-.popup-content{
-    width: 90%;
-    height: auto;
-    margin-top: 20%;
-}
 #main{
     width: 50%;
     margin-inline: auto;

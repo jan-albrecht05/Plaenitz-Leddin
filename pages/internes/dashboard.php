@@ -18,7 +18,67 @@ if (!hasAdminOrVorstandRole($userId)) {
     header("Location: login.php?error=" . urlencode("Sie haben keine Berechtigung für diese Seite."));
     exit();
 }
+
 //get "?neu=" from URL
+// Handle password change form submission BEFORE any output
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['current_password'], $_POST['new_password'], $_POST['confirm_password'])) {
+    error_log("Dashboard PW Change: POST received");
+    error_log("Dashboard PW Change: POST data: " . print_r($_POST, true));
+    
+    if (!isset($_SESSION['user_id'])) {
+        error_log("Dashboard PW Change: No user_id in session");
+        // User not logged in; cannot change password
+        header("Location: dashboard.php");
+        exit();
+    }
+    $userId = $_SESSION['user_id'];
+    error_log("Dashboard PW Change: User ID = $userId");
+    
+    $currentPassword = $_POST['current_password'];
+    $newPassword = $_POST['new_password'];
+    $confirmPassword = $_POST['confirm_password'];
+
+    // Validate new password and confirmation
+    if ($newPassword !== $confirmPassword) {
+        error_log("Dashboard PW Change: Passwords don't match");
+        // Passwords do not match
+        header("Location: dashboard.php?change_pw=1&error=" . urlencode("Die neuen Passwörter stimmen nicht überein."));
+        exit();
+    }
+
+    // Verify current password
+    error_log("Dashboard PW Change: Verifying current password");
+    if (!verifyUserPassword($userId, $currentPassword)) {
+        error_log("Dashboard PW Change: Current password incorrect");
+        // Current password incorrect
+        header("Location: dashboard.php?change_pw=1&error=" . urlencode("Das aktuelle Passwort ist falsch."));
+        exit();
+    }
+
+    // Update password in database
+    error_log("Dashboard PW Change: Updating password");
+    if (updateUserPassword($userId, $newPassword)) {
+        error_log("Dashboard PW Change: Password updated successfully");
+        // Success - set last_login date and last_visited_date
+        error_log("Dashboard PW Change: Calling updateLastLoginDate");
+        $loginResult = updateLastLoginDate($userId);
+        error_log("Dashboard PW Change: updateLastLoginDate returned: " . ($loginResult ? 'true' : 'false'));
+        
+        error_log("Dashboard PW Change: Calling updateLastVisitedDate");
+        $visitResult = updateLastVisitedDate($userId);
+        error_log("Dashboard PW Change: updateLastVisitedDate returned: " . ($visitResult ? 'true' : 'false'));
+        
+        error_log("Dashboard PW Change: Redirecting to ?pw_changed=1");
+        header("Location: dashboard.php?pw_changed=1");
+        exit();
+    } else {
+        error_log("Dashboard PW Change: Failed to update password");
+        // Failed to update password
+        header("Location: dashboard.php?change_pw=1&error=" . urlencode("Fehler beim Ändern des Passworts. Bitte versuchen Sie es erneut."));
+        exit();
+    }
+}
+
 // Context-menu actions (delete, promote, demote, activate, deactivate)
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['member_id'], $_POST['action'])) {
     $currentUserId = $_SESSION['user_id'] ?? null;
@@ -137,6 +197,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['member_id'], $_POST['
         error_log('dashboard action error: ' . $e->getMessage());
         $respond(false, $e->getMessage());
     }
+}
+
+// Check if user needs to set up password (no last_visited_date) - AFTER POST handlers
+// This only runs for GET requests or after all POST processing is complete
+$needsPasswordSetup = !userHasCompletedPasswordSetup($userId);
+error_log("Dashboard: User $userId - needsPasswordSetup = " . ($needsPasswordSetup ? 'true' : 'false'));
+error_log("Dashboard: User $userId - GET params: neu=" . (isset($_GET['neu']) ? '1' : '0') . ", change_pw=" . (isset($_GET['change_pw']) ? '1' : '0') . ", pw_changed=" . (isset($_GET['pw_changed']) ? '1' : '0'));
+
+// If user hasn't completed password setup and no neu/change_pw parameter, redirect with neu flag
+if ($needsPasswordSetup && !isset($_GET['neu']) && !isset($_GET['change_pw']) && !isset($_GET['pw_changed'])) {
+    error_log("Dashboard: User $userId - Redirecting to ?neu=1");
+    header("Location: dashboard.php?neu=1");
+    exit();
 }
 
 ?>
@@ -316,7 +389,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['member_id'], $_POST['
     <div id="dashboard-container" class="banner">
         <h1>Willkommen zum Dashboard</h1>
     </div>
-    <div class="popup" id="promote-password-popup" style="display: flex;">
+    <div class="popup" id="promote-password-popup">
         <div class="popup-content">
             <h2>Vorstandsrolle zuweisen</h2>
             <h3>Bitte geben Sie ein vorläufiges Passwort für den neuen Vorstand ein.</h3>
@@ -335,11 +408,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['member_id'], $_POST['
             </div>
         </div>
     </div>
-    <div class="popup" <?php if (isset($_GET['change_pw'])) echo 'style="display: flex;"'; ?> id="pw-change-popup">
+    <div class="popup" <?php if (isset($_GET['neu']) || isset($_GET['change_pw'])) echo 'style="display: flex;"'; ?> id="pw-change-popup">
         <div class="popup-content">
             <h2>Es scheint, als wäre dies ihr erster Login.</h2>
             <h3>Bitte legen Sie sich ein neues Passwort fest.</h3>
-            <form action="dashboard.php" method="post">
+            <?php if (isset($_GET['error'])): ?>
+                <div class="error-message" style="background-color: #ffebee; border: 1px solid #ef5350; color: #c62828; padding: 10px; margin-bottom: 15px; border-radius: 4px;">
+                    <?php echo htmlspecialchars($_GET['error']); ?>
+                </div>
+            <?php endif; ?>
+            <form action="dashboard.php" method="post" id="pw-change-form">
                 <div class="form-group">
                     <label for="current-password">Aktuelles Passwort:</label>
                     <input type="password" id="current-password" name="current_password" required>
@@ -352,57 +430,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['member_id'], $_POST['
                     <label for="confirm-password">Neues Passwort bestätigen:</label>
                     <input type="password" id="confirm-password" name="confirm_password" required>
                 </div>
-                <button type="submit">Passwort ändern</button>
+                <button type="submit" class="submit" onclick="console.log('Submit button clicked');">Passwort ändern</button>
             </form>
         </div>
     </div>
-    <?php
-        // Update db with users new password if form submitted
-        if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['current_password'], $_POST['new_password'], $_POST['confirm_password'])) {
-            if (!isset($_SESSION['user_id'])) {
-                // User not logged in; cannot change password
-                header("Location: dashboard.php");
-                exit();
-            }
-            $userId = $_SESSION['user_id'];
-            $currentPassword = $_POST['current_password'];
-            $newPassword = $_POST['new_password'];
-            $confirmPassword = $_POST['confirm_password'];
-
-            // Validate new password and confirmation
-            if ($newPassword !== $confirmPassword) {
-                // Passwords do not match
-                header("Location: dashboard.php?change_pw=1&error=" . urlencode("Die neuen Passwörter stimmen nicht überein."));
-                exit();
-            }
-
-            // Verify current password
-            if (!verifyUserPassword($userId, $currentPassword)) {
-                // Current password incorrect
-                header("Location: dashboard.php?change_pw=1&error=" . urlencode("Das aktuelle Passwort ist falsch."));
-                exit();
-            }
-
-            // Update password in database
-            if (updateUserPassword($userId, $newPassword)) {
-                // Success
-                updateLastVisitedDate($userId);
-                header("Location: dashboard.php?pw_changed=1");
-                exit();
-            } else {
-                // Failed to update password
-                header("Location: dashboard.php?change_pw=1&error=" . urlencode("Fehler beim Ändern des Passworts. Bitte versuchen Sie es erneut."));
-                exit();
-            }
-        }
-        
-    ?>
     <div id="main">
         <div id="member-output">
             <div id="member-output-heading">
-                <button class="member-button ganzer-name">Name</button>
+                <button class="member-button ganzer-name" onclick="window.location.href='dashboard.php?sort=nachname'">Name</button>
                 <div class="role-status flex-row">
-                    <button class="member-button role">Rolle</button>
+                    <button class="member-button role" onclick="window.location.href='dashboard.php?sort=rolle'">Rolle</button>
                     <span class="status">Status</span>
                 </div>
                 <span class="edit-button"></span>
@@ -421,9 +458,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['member_id'], $_POST['
                     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
                     // Set UTF-8 encoding for proper display of special characters (ß, ä, ö, ü, etc.)
                     $pdo->exec("PRAGMA encoding = 'UTF-8'");
-                    
+                    // Determine sorting
+                    $allowedSorts = ['name', 'nachname', 'rolle', 'status', 'join_date'];
+                    $sort = 'nachname'; // default sort
+                    if (isset($_GET['sort']) && in_array($_GET['sort'], $allowedSorts)) {
+                        $sort = $_GET['sort'];
+                    }
                     // Get all members
-                    $stmt = $pdo->prepare('SELECT id, titel, name, nachname, strasse, hausnummer, adresszusatz, plz, ort, festnetz, mobilnummer, e_mail, rolle, status, join_date FROM mitglieder ORDER BY id ASC, name ASC');
+                    $stmt = $pdo->prepare('SELECT id, titel, name, nachname, strasse, hausnummer, adresszusatz, plz, ort, festnetz, mobilnummer, e_mail, rolle, status, join_date FROM mitglieder ORDER BY ' . $sort . ' ASC');
                     $stmt->execute();
                     $members = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     
@@ -512,7 +554,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['member_id'], $_POST['
                             <div class="member" data-member-id="<?php echo (int)$member['id']; ?>" oncontextmenu="opencontextMenu('<?php echo htmlspecialchars($member['id']); ?>'); return false;">
                                 <div class="member-top">
                                     <div class="ganzer-name">
-                                        <h2 class="nachname"><?php echo htmlspecialchars($member['titel']) . ' ' . htmlspecialchars($member['nachname']); ?>, <?php echo htmlspecialchars($member['name']); ?></h2>
+                                        <h2 class="nachname"><?php echo htmlspecialchars($member['titel'] ?? '') . ' ' . htmlspecialchars($member['nachname'] ?? ''); ?>, <?php echo htmlspecialchars($member['name'] ?? ''); ?></h2>
                                     </div>
                                     <div class="role-status flex-row">
                                         <div class="role <?php echo $roleClass; ?> center">

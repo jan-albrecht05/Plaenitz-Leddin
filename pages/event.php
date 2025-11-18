@@ -161,6 +161,32 @@ $event_title = $event['titel'] ?? 'Veranstaltung';
     <div class="banner" <?php echo $bannerStyle; ?>>
         <h1><?php echo $bannerTitle; ?></h1>
     </div>
+    <?php
+        // Show success banner if redirected after deletion
+        if (isset($_GET['success'])) {
+            $successMessage = htmlspecialchars($_GET['success']);
+            echo '<script>
+                document.addEventListener("DOMContentLoaded", function() {
+                    var successBar = document.getElementById("success-bar");
+                    var successMessageElem = document.getElementById("success-message");
+                    var successTimeline = document.getElementById("success-timeline");
+                    successMessageElem.textContent = ' . json_encode($successMessage) . ';
+                    successBar.style.display = "flex";
+                    // Animate timeline
+                    successTimeline.style.animation = "timelineAnimation 2s linear forwards";
+                    // Hide after 5 seconds
+                    setTimeout(function() {
+                        successBar.style.display = "none";
+                    }, 5000);
+                });
+            </script>';
+        }
+    ?>
+    <div class="notification-bar center" id="success-bar" style="display: none;">
+        <span class="material-symbols-outlined">check_circle</span>
+        <span id="success-message"></span>
+        <span class="timeline" id="success-timeline"></span>
+    </div>
     <div id="main">
         <div id="back-button" onclick="history.back()">
             <span class="material-symbols-outlined">arrow_back</span>

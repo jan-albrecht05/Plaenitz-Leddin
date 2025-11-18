@@ -113,6 +113,56 @@ form,
     background-color: grey;
     cursor: not-allowed;
 }
+.notification-bar{
+    gap: 1rem;
+    padding: 1rem;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    border: 1px solid var(--lightgrey);
+    position: absolute;
+    margin: 0;
+    width: fit-content;
+    top: 0;
+    left: 0;
+    z-index: 80;
+    margin-top: 5rem;
+    animation: fadeOut 4s;
+    transform: translateX(-100%);
+
+}
+@keyframes fadeOut {
+    0% {
+        opacity: 1;
+        transform: translateX(0);
+    }
+    50% {
+        opacity: 1;
+        transform: translateX(0);
+    }
+    80% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0;
+        transform: translateX(-100%);
+    }
+}
+.notification-bar .timeline{
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 4px;
+    background-color: var(--primary-color);
+    animation: timelineAnimation 1s;
+}
+@keyframes timelineAnimation {
+    5% {
+        width: 100%;
+    }
+    100% {
+        width: 0%;
+    }
+}
 
 @media (max-width: 600px) {
     #back-button{
