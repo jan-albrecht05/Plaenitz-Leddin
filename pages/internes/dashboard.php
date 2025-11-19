@@ -173,7 +173,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['member_id'], $_POST['
             $row = $stmt->fetch(PDO::FETCH_ASSOC);
             if (!$row) throw new Exception('Benutzer nicht gefunden.');
             if (strtolower((string)$row['rolle']) === 'admin') throw new Exception('Admin kann nicht gedemoted werden.');
-            $stmt = $pdo->prepare('UPDATE mitglieder SET rolle = :rolle WHERE id = :id');
+            
+            // Update role and reset last_visited_date to null so user must set new password on next login
+            $stmt = $pdo->prepare('UPDATE mitglieder SET rolle = :rolle, last_visited_date = NULL WHERE id = :id');
             $stmt->bindValue(':rolle', 'mitglied', PDO::PARAM_STR);
             $stmt->bindValue(':id', $targetId, PDO::PARAM_INT);
             $stmt->execute();
