@@ -38,7 +38,7 @@
         <form id="member-form" method="post">
             <h2>Grunddaten:</h2>
             <div class="row no-flex">
-                <label for="anrede">Anrede:</label>
+                <label for="anrede"><span class="stern">*</span>Anrede:</label>
                 <input type="radio" id="herr" name="anrede" value="Herr" required>
                 <label for="herr">Herr</label>
                 <input type="radio" id="frau" name="anrede" value="Frau" required>

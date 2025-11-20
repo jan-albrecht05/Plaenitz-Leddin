@@ -272,6 +272,21 @@ if ($needsPasswordSetup && !isset($_GET['neu']) && !isset($_GET['change_pw']) &&
     <link rel="stylesheet" href="../../assets/css/heading.css">
     <link rel="stylesheet" href="../../assets/css/footer.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" />
+    <style>
+        #heading{
+            display: flex !important;
+            flex-direction: row !important;
+            justify-content: space-between;
+        }
+        #heading #right{
+            transform: translateX(0);
+            background-color: transparent;
+            height: auto;
+            display: flex;
+            align-items: end;
+            margin-right: 10px;
+        }
+    </style>
 </head>
 <body>
     <div id="heading">

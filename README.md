@@ -54,8 +54,7 @@ Mit dieser Website sollen Mitglieder verwaltet, Veranstaltungen geteilt und Übe
  - Knopf "beendete anzeigen"
  - suche: Titel, Autor, Tags, Ort, Datum
 ## Kontakt:
- - alles
- - DB
+ - E-Mail Adresse und EmailJS hinzufügen
 ## Admin:
  - alles
  - Logs.db (Name, Aktion, Fehlermeldung)
@@ -63,3 +62,14 @@ Mit dieser Website sollen Mitglieder verwaltet, Veranstaltungen geteilt und Übe
  - Tags hinzufügen
 ## Dashboard:
  - PW-Change
+
+# Future Updates
+ - config.db
+   - tabicon
+   - bannerbild
+   - bannertext
+   - logo
+   - primary-color
+   - gif-anzeigen
+   - gif-auswahl
+ - gif.db

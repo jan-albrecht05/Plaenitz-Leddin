@@ -31,7 +31,7 @@
             ?>
         </div>
         <div id="middle">
-            <span>&copy; 2025 Gemeinsam für Plänitz-Leddin. Alle Rechte vorbehalten.</span>
+            <span>&copy; 2025-<?php echo date("Y"); ?> Gemeinsam für Plänitz-Leddin.<br> Alle Rechte vorbehalten.</span>
             <a href="https://github.com/jan-albrecht05/Plaenitz-Leddin/commits/main/">Version 0.9</a>
         </div>
         <div id="right">
