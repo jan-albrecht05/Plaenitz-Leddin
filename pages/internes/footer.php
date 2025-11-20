@@ -11,7 +11,7 @@
             <a href="../../pages/internes/admin.php">Admin-Anmeldung<span class="material-symbols-outlined">open_in_new</span></a>
         </div>
         <div id="middle">
-            <span>&copy; 2025 Plänitz-Leddin. Alle Rechte vorbehalten.</span>
+            <span>&copy; 2025-<?php echo date("Y"); ?> Gemeinsam für Plänitz-Leddin.<br> Alle Rechte vorbehalten.</span>
             <span>Version 0.5</span>
         </div>
         <div id="right">
