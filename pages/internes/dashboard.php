@@ -79,6 +79,51 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['current_password'], $
     }
 }
 
+// Handle member edit form submission
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_member_submit'])) {
+    $currentUserId = $_SESSION['user_id'] ?? null;
+    $targetId = (int)$_POST['member_id'];
+    
+    if (!$currentUserId || $targetId <= 0) {
+        header('Location: dashboard.php?error=' . urlencode('Ungültige Anfrage.'));
+        exit();
+    }
+    
+    $pdo = getMemberDbConnection();
+    if (!$pdo) {
+        error_log('dashboard: Mitgliederdatenbank nicht erreichbar.');
+        header('Location: dashboard.php?error=' . urlencode('Datenbankfehler.'));
+        exit();
+    }
+    
+    try {
+        $stmt = $pdo->prepare('UPDATE mitglieder SET titel = :titel, name = :name, nachname = :nachname, strasse = :strasse, hausnummer = :hausnummer, adresszusatz = :adresszusatz, plz = :plz, ort = :ort, festnetz = :festnetz, mobilnummer = :mobilnummer, e_mail = :e_mail WHERE id = :id');
+        
+        $stmt->bindValue(':titel', $_POST['titel'] ?? '', PDO::PARAM_STR);
+        $stmt->bindValue(':name', $_POST['name'] ?? '', PDO::PARAM_STR);
+        $stmt->bindValue(':nachname', $_POST['nachname'] ?? '', PDO::PARAM_STR);
+        $stmt->bindValue(':strasse', $_POST['strasse'] ?? '', PDO::PARAM_STR);
+        $stmt->bindValue(':hausnummer', $_POST['hausnummer'] ?? '', PDO::PARAM_STR);
+        $stmt->bindValue(':adresszusatz', $_POST['adresszusatz'] ?? '', PDO::PARAM_STR);
+        $stmt->bindValue(':plz', $_POST['plz'] ?? '', PDO::PARAM_STR);
+        $stmt->bindValue(':ort', $_POST['ort'] ?? '', PDO::PARAM_STR);
+        $stmt->bindValue(':festnetz', $_POST['telefon'] ?? '', PDO::PARAM_STR);
+        $stmt->bindValue(':mobilnummer', $_POST['mobilnummer'] ?? '', PDO::PARAM_STR);
+        $stmt->bindValue(':e_mail', $_POST['email'] ?? '', PDO::PARAM_STR);
+        $stmt->bindValue(':id', $targetId, PDO::PARAM_INT);
+        
+        $stmt->execute();
+        
+        header('Location: dashboard.php?success=' . urlencode('Mitglied erfolgreich aktualisiert.'));
+        exit();
+        
+    } catch (Exception $e) {
+        error_log('dashboard edit error: ' . $e->getMessage());
+        header('Location: dashboard.php?error=' . urlencode('Fehler beim Aktualisieren: ' . $e->getMessage()));
+        exit();
+    }
+}
+
 // Context-menu actions (delete, promote, demote, activate, deactivate)
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['member_id'], $_POST['action'])) {
     $currentUserId = $_SESSION['user_id'] ?? null;
@@ -477,6 +522,22 @@ if ($needsPasswordSetup && !isset($_GET['neu']) && !isset($_GET['change_pw']) &&
                             $roleClass = 'member';
                             $roleIcon = 'person';
                             $roleText = 'Mitglied';
+                            
+                            // Prepare data attributes for JavaScript
+                            $dataAttrs = sprintf(
+                                'data-titel="%s" data-name="%s" data-nachname="%s" data-strasse="%s" data-hausnummer="%s" data-adresszusatz="%s" data-plz="%s" data-ort="%s" data-festnetz="%s" data-mobilnummer="%s" data-email="%s"',
+                                htmlspecialchars($member['titel'] ?? '', ENT_QUOTES),
+                                htmlspecialchars($member['name'] ?? '', ENT_QUOTES),
+                                htmlspecialchars($member['nachname'] ?? '', ENT_QUOTES),
+                                htmlspecialchars($member['strasse'] ?? '', ENT_QUOTES),
+                                htmlspecialchars($member['hausnummer'] ?? '', ENT_QUOTES),
+                                htmlspecialchars($member['adresszusatz'] ?? '', ENT_QUOTES),
+                                htmlspecialchars($member['PLZ'] ?? '', ENT_QUOTES),
+                                htmlspecialchars($member['ort'] ?? '', ENT_QUOTES),
+                                htmlspecialchars($member['festnetz'] ?? '', ENT_QUOTES),
+                                htmlspecialchars($member['mobilnummer'] ?? '', ENT_QUOTES),
+                                htmlspecialchars($member['e_mail'] ?? '', ENT_QUOTES)
+                            );
 
                             $statusClass = 'pending';
                             $statusIcon = 'schedule';
@@ -553,7 +614,7 @@ if ($needsPasswordSetup && !isset($_GET['neu']) && !isset($_GET['change_pw']) &&
                             
                             $hasAddress = !empty($address1) || !empty($address2);
                             ?>
-                            <div class="member" data-member-id="<?php echo (int)$member['id']; ?>" oncontextmenu="opencontextMenu('<?php echo htmlspecialchars($member['id']); ?>'); return false;">
+                            <div class="member" data-member-id="<?php echo (int)$member['id']; ?>" <?php echo $dataAttrs; ?> oncontextmenu="opencontextMenu('<?php echo htmlspecialchars($member['id']); ?>'); return false;">
                                 <div class="member-top">
                                     <div class="ganzer-name">
                                         <h2 class="nachname"><?php echo htmlspecialchars($member['titel'] ?? '') . ' ' . htmlspecialchars($member['nachname'] ?? ''); ?>, <?php echo htmlspecialchars($member['name'] ?? ''); ?></h2>
@@ -658,6 +719,75 @@ if ($needsPasswordSetup && !isset($_GET['neu']) && !isset($_GET['change_pw']) &&
                     <span class="text">löschen</span>
                 </button>
             </form>
+        </div>
+        <div class="popup center" id="member-edit-popup">
+            <div id="member-edit-form" class="popup-content">
+                <button class="close-popup-button center" onclick="closeMemberEditPopup()">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+                <form action="dashboard.php" method="post">
+                    <input type="hidden" id="edit-member-id" name="member_id" value="">
+                    <input type="hidden" name="edit_member_submit" value="1">
+                    <h2>Mitglied bearbeiten</h2>
+                    <h3>Grunddaten</h3>
+                    <div class="row">
+                        <div class="short form-group">
+                            <label for="edit-titel">Titel:</label>
+                            <input type="text" id="edit-titel" name="titel" value="">
+                        </div>
+                        <div class="form-group">
+                            <label for ="edit-name">Vorname:</label>
+                            <input type="text" id="edit-name" name="name" value="">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-nachname">Nachname:</label>
+                        <input type="text" id="edit-nachname" name="nachname" value="">
+                    </div>
+                    <h3>Addresse</h3>
+                    <div class="row">
+                        <div class="form-group" id="form-group-street">
+                            <label for="edit-strasse">Straße:</label>
+                            <input type="text" id="edit-strasse" name="strasse" value="">
+                        </div>
+                        <div class="short form-group">
+                            <label for="edit-hausnummer">Hausnummer:</label>
+                            <input type="text" id="edit-hausnummer" name="hausnummer" value="">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="short form-group">
+                            <label for="edit-plz">PLZ:</label>
+                            <input type="text" id="edit-plz" name="plz" value="">
+                        </div>
+                        <div class="form-group">
+                            <label for="edit-ort">Ort:</label>
+                            <input type="text" id="edit-ort" name="ort" value="">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-adresszusatz">Adresszusatz:</label>
+                        <input type="text" id="edit-adresszusatz" name="adresszusatz" value="">
+                    </div>
+                    <h3>Kontaktinformationen</h3>
+                    <div class="form-group">
+                        <label for="edit-email">E-Mail:</label>
+                        <input type="email" id="edit-email" name="email" value="">
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-telefon">Telefon:</label>
+                        <input type="tel" id="edit-telefon" name="telefon" value="">
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-mobilnummer">Mobilnummer:</label>
+                        <input type="tel" id="edit-mobilnummer" name="mobilnummer" value="">
+                    </div>
+                    <div class="buttons">
+                        <button type="button" class="abbrechen" onclick="closeMemberEditPopup()">Abbrechen</button>
+                        <button type="submit" class="submit">Speichern</button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
     <div id="footer" class="center">

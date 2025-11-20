@@ -104,26 +104,83 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Edit member (placeholder for future implementation)
+    // Edit member
     document.getElementById('edit-member')?.addEventListener('click', (e) => {
         e.preventDefault();
+        e.stopPropagation(); // Prevent event from bubbling to document click handler
         const memberId = document.getElementById('context-member-id').value;
-        alert('Bearbeitungsfunktion wird in Kürze implementiert. Mitglied-ID: ' + memberId);
-        closeContextMenu();
+        if (memberId) {
+            // Open edit popup
+            const popup = document.getElementById('member-edit-popup');
+            popup.style.display = 'flex';
+            document.getElementById('edit-member-id').value = memberId;
+            closeContextMenu();
+            // Load member data into form
+            loadMemberDataIntoForm(memberId);
+        }        
     });
 });
 
-// close context menu on click outside or escape key
+// close context menu and member edit popup on click outside or escape key
 document.addEventListener('click', (event) => {
-    if (!event.target.classList.contains('edit-button')) return;
     const contextMenu = document.getElementById('member-context-menu');
-    if (!contextMenu.contains(event.target)) {
+    // Close context menu if click is outside and it's currently visible
+    if (contextMenu && contextMenu.style.display !== 'none' && !contextMenu.contains(event.target) && !event.target.classList.contains('edit-button')) {
         contextMenu.style.display = 'none';
     }
+    
+    const popup = document.getElementById('member-edit-popup');
+    // Close popup if click is outside and it's currently visible
+    if (popup && popup.style.display !== 'none' && !popup.contains(event.target)) {
+        closeMemberEditPopup();
+    }
 });
+
 document.addEventListener('keydown', (event) => {
     const contextMenu = document.getElementById('member-context-menu');
     if (event.key === 'Escape') {
         contextMenu.style.display = 'none';
     }
+    const popup = document.getElementById('member-edit-popup');
+    if (event.key === 'Escape') {
+        closeMemberEditPopup();
+    }
 });
+
+// Function to close member edit popup
+function closeMemberEditPopup() {
+    const popup = document.getElementById('member-edit-popup');
+    popup.style.display = 'none';
+}
+
+// Function to load member data into edit form
+function loadMemberDataIntoForm(memberId) {
+    const memberElement = document.querySelector(`.member[data-member-id='${memberId}']`);
+    if (!memberElement) return;
+    
+    // Extract data from member element
+    const titel = memberElement.getAttribute('data-titel') || '';
+    const name = memberElement.getAttribute('data-name') || '';
+    const nachname = memberElement.getAttribute('data-nachname') || '';
+    const strasse = memberElement.getAttribute('data-strasse') || '';
+    const hausnummer = memberElement.getAttribute('data-hausnummer') || '';
+    const adresszusatz = memberElement.getAttribute('data-adresszusatz') || '';
+    const plz = memberElement.getAttribute('data-plz') || '';
+    const ort = memberElement.getAttribute('data-ort') || '';
+    const festnetz = memberElement.getAttribute('data-festnetz') || '';
+    const mobilnummer = memberElement.getAttribute('data-mobilnummer') || '';
+    const email = memberElement.getAttribute('data-email') || '';
+    
+    // Fill form fields
+    document.getElementById('edit-titel').value = titel;
+    document.getElementById('edit-name').value = name;
+    document.getElementById('edit-nachname').value = nachname;
+    document.getElementById('edit-strasse').value = strasse;
+    document.getElementById('edit-hausnummer').value = hausnummer;
+    document.getElementById('edit-adresszusatz').value = adresszusatz;
+    document.getElementById('edit-plz').value = plz;
+    document.getElementById('edit-ort').value = ort;
+    document.getElementById('edit-telefon').value = festnetz;
+    document.getElementById('edit-mobilnummer').value = mobilnummer;
+    document.getElementById('edit-email').value = email;
+}

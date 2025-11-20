@@ -210,6 +210,9 @@ span.material-symbols-outlined{
     flex-direction: column;
     margin-bottom: 15px;
 }
+input[type="text"],
+input[type="email"],
+input[type="tel"],
 input[type="password"]{
     padding: 5px 10px;
     border: 1px solid var(--shadow-color);
@@ -219,6 +222,13 @@ input[type="password"]{
     transition: all .2s;
     background-color: var(--lightgrey);
     color: var(--text-color);
+}
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="tel"]:focus,
+input[type="password"]:focus{
+    border-color: var(--primary-color);
+    outline: none;
 }
 .buttons{
     display: flex;
@@ -244,6 +254,56 @@ button.abbrechen{
 button.submit{
     background-color: var(--primary-color);
     color: #fff;
+}
+#member-edit-form{
+    width: 50%;
+}
+#member-edit-form form .form-group input{
+    width: 100%;
+}
+.close-popup-button{
+    background: none;
+    border: none;
+    font-size: 24px;
+    color: var(--lightgrey);
+    cursor: pointer;
+    transition: all .2s;
+    margin-left: auto;
+    right: 0;
+    position: relative;
+    padding: 0 !important;
+    margin-right: -.5rem;
+    transition: all .2s;
+}
+.close-popup-button:hover{
+    color: var(--text-color);
+}
+.form-group{
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 15px;
+    max-width: calc(100% - 2rem);
+    width: 100%;
+}
+.short.form-group{
+    max-width: 120px;
+}
+.row{
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+    align-items: center;
+    width: calc(100% - 2rem);
+}
+#edit-titel,
+#edit-plz{
+    max-width: 100px;
+}
+#form-group-street{
+    margin-right: 20px !important;
+}
+#edit-hausnummer{
+    width: 100%
 }
 
 @media (max-width: 1600px){
@@ -337,5 +397,14 @@ button.submit{
         margin-inline: 5%;
         border-radius: 7px;
     }
-
+    #member-edit-form{
+        height: 80lvh;
+        overflow-y: scroll;
+        margin-top: 10lvh;
+    }
+    .close-popup-button{
+        position: absolute;
+        top: 14lvh;
+        right: 40px;
+    }
 }
