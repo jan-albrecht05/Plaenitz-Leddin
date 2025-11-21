@@ -203,6 +203,8 @@ span.material-symbols-outlined{
     padding: 20px;
     box-shadow:var(--shadow);
     height: auto;
+    max-height: 80lvh;
+    overflow-y: scroll;
     margin: 0;
 }
 .form-group{

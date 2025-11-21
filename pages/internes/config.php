@@ -7,10 +7,10 @@
     // connection to config.db
 
     // read config.db "vorstand_can_edit_UI" and "vorstand_can_edit_config"
-    /*$vorstandCanEditUI = getConfigValue('vorstand_can_edit_UI');
+    $vorstandCanEditUI = getConfigValue('vorstand_can_edit_UI');
     $vorstandCanEditConfig = getConfigValue('vorstand_can_edit_config');
     $vorstandCanEditUI = ($vorstandCanEditUI === '1');
-    $vorstandCanEditConfig = ($vorstandCanEditConfig === '1');*/
+    $vorstandCanEditConfig = ($vorstandCanEditConfig === '1');
 
     // Check if user is logged in and is admin
     if (!isset($_SESSION['user_id'])) {

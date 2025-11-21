@@ -72,4 +72,9 @@ Mit dieser Website sollen Mitglieder verwaltet, Veranstaltungen geteilt und Übe
    - primary-color
    - gif-anzeigen
    - gif-auswahl
+   - Versionsnummer
  - gif.db
+ - banner_img
+ - banner_texte
+ - tabicons
+ - logos
