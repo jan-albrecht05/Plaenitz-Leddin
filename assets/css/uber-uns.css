@@ -4,6 +4,9 @@
     border-bottom: 1px solid var(--lightgrey);
     margin-top: 2rem;
 }
+.person:nth-child(2n){
+    flex-direction: row-reverse;
+}
 .ort{
     border-right: 2px solid var(--lightgrey);
     padding-right: 1.5rem;
@@ -102,13 +105,9 @@
 }
 
 @media (max-width: 600px){
-    .person.schema1{
-        flex-direction: column-reverse;
-    }
-    .person.schema2{
+    .person,
+    .person:nth-child(2n){
         flex-direction: column;
-    }
-    .person{
         margin-top: 4rem;
         padding-bottom: 4rem;
     }

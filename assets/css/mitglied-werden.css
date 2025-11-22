@@ -203,7 +203,9 @@ nobr{
         font-size: medium;
         width: 100%;
     }
-    
+    .row.no-flex{
+        gap: 8px;
+    }
     #form-buttons button{
         width: 100%;
     }

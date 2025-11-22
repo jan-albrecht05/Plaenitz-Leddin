@@ -156,7 +156,7 @@
                     <span class="material-symbols-outlined">markunread_mailbox</span>
                     Post</label></nobr>
             </div>
-            <h2>Möchten Sie und noch etwas mitteilen?</h2>
+            <h2>Möchten Sie uns noch etwas mitteilen?</h2>
             <div class="row">
                 <div class="input-wrapper">
                     <textarea id="nachricht" name="nachricht" rows="4" placeholder="Ihre Nachricht..."></textarea>

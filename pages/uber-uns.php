@@ -31,7 +31,7 @@
         <p id="einführung">
             Wir sind der Verein <b>Gemeinsam für Plänitz-Leddin e.V.</b>, eine Gemeinschaft von engagierten Einwohnern der Dörfer Plänitz und Leddin. Unser Ziel ist es, das Dorfleben zu fördern, Traditionen zu bewahren und gemeinsame Aktivitäten zu organisieren, die das Miteinander stärken.
         </p>
-        <div class="person schema2">
+        <div class="person">
             <div class="bildseite">
                 <div class="wrapper">
                     <div class="blob shape-1 green"></div> 
@@ -51,7 +51,13 @@
                 </p>
             </div>
         </div>
-        <div class="person schema1">
+        <div class="person">
+            <div class="bildseite">
+                <div class="wrapper">
+                    <div class="blob shape-1 pink"></div> 
+                    <img src="../assets/images/team/jan.jpg" alt="">
+                </div>
+            </div>
             <div class="textseite">
                 <h1 class="name">Jan Albrecht</h1>
                 <div class="info">
@@ -63,12 +69,6 @@
                 <p class="beschreibung">
                     Jan ist ehrenamtliches Mitglied unseres Vereins und engagiert sich besonders in der Online-Präsenz. Als Admin dieser Seite sorgt er dafür, dass unsere Inhalte stets aktuell bleiben.
                 </p>
-            </div>
-            <div class="bildseite">
-                <div class="wrapper">
-                    <div class="blob shape-1 pink"></div> 
-                    <img src="../assets/images/team/jan.jpg" alt="">
-                </div>
             </div>
         </div>
         
