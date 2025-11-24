@@ -58,7 +58,7 @@ if (!file_exists($dbPath)) {
         $pdo = new PDO('sqlite:' . $dbPath);
         $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-        $stmt = $pdo->query('SELECT * FROM veranstaltungen ORDER BY datum ASC LIMIT 4');
+        $stmt = $pdo->query('SELECT * FROM veranstaltungen WHERE datum >= date("now") ORDER BY datum ASC LIMIT 4');
         $events = $stmt->fetchAll(PDO::FETCH_ASSOC);
         if ($events === false) {
             $events = []; // no rows found
@@ -236,7 +236,7 @@ if (!file_exists($dbPath)) {
                     foreach ($events as $event) {
                         echo '<div class="event">
                                 <span class="event-title">' . htmlspecialchars($event['titel']) . '</span>
-                                <span class="date">' . htmlspecialchars((new DateTime($event['datum']))->format('d.h.Y')) . '</span>
+                                <span class="date">' . htmlspecialchars((new DateTime($event['datum']))->format('d.m.Y')) . '</span>
                                 <span class="location">' . htmlspecialchars($event['ort']) . '</span>
                                 <a href="pages/event.php?id=' . urlencode($event['id']) . '" class="more-info" title="Mehr erfahren"><span class="material-symbols-outlined">arrow_right_alt</span></a>
                               </div>';

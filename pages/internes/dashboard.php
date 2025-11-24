@@ -329,6 +329,14 @@ if ($needsPasswordSetup && !isset($_GET['neu']) && !isset($_GET['change_pw']) &&
                             el.style.transition = 'opacity 0.3s';
                             el.style.opacity = '0';
                             setTimeout(() => el.remove(), 300);
+                            // Success feedback
+                                var successBar = document.getElementById("success-bar");
+                                var successMessageElem = document.getElementById("success-message");
+                                var successTimeline = document.getElementById("success-timeline");
+                                successMessageElem.textContent = "Eintrag erfolgreich gelöscht.";
+                                successBar.style.display = "flex";
+                                // Animate timeline
+                                successTimeline.style.animation = "timelineAnimation 2s linear forwards";
                         }
                     } else if (action === 'promote') {
                         if (el) {
@@ -451,6 +459,32 @@ if ($needsPasswordSetup && !isset($_GET['neu']) && !isset($_GET['change_pw']) &&
     <div id="dashboard-container" class="banner">
         <h1>Willkommen zum Dashboard</h1>
     </div>
+    <?php
+        // Show success banner if redirected
+        if (isset($_GET['success'])) {
+            $successMessage = htmlspecialchars($_GET['success']);
+            echo '<script>
+                document.addEventListener("DOMContentLoaded", function() {
+                    var successBar = document.getElementById("success-bar");
+                    var successMessageElem = document.getElementById("success-message");
+                    var successTimeline = document.getElementById("success-timeline");
+                    successMessageElem.textContent = ' . json_encode($successMessage) . ';
+                    successBar.style.display = "flex";
+                    // Animate timeline
+                    successTimeline.style.animation = "timelineAnimation 2s linear forwards";
+                    // Hide after 5 seconds
+                    setTimeout(function() {
+                        successBar.style.display = "none";
+                    }, 5000);
+                });
+            </script>';
+        }
+    ?>
+    <div class="notification-bar center" id="success-bar" style="display: none;">
+        <span class="material-symbols-outlined">check_circle</span>
+        <span id="success-message"></span>
+        <span class="timeline" id="success-timeline"></span>
+    </div>
     <div class="popup" id="promote-password-popup">
         <div class="popup-content">
             <h2>Vorstandsrolle zuweisen</h2>
@@ -527,7 +561,7 @@ if ($needsPasswordSetup && !isset($_GET['neu']) && !isset($_GET['change_pw']) &&
                         $sort = $_GET['sort'];
                     }
                     // Get all members
-                    $stmt = $pdo->prepare('SELECT id, titel, name, nachname, strasse, hausnummer, adresszusatz, plz, ort, festnetz, mobilnummer, e_mail, rolle, status, join_date FROM mitglieder ORDER BY ' . $sort . ' ASC');
+                    $stmt = $pdo->prepare('SELECT * FROM mitglieder ORDER BY ' . $sort . ' ASC');
                     $stmt->execute();
                     $members = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     
@@ -551,7 +585,8 @@ if ($needsPasswordSetup && !isset($_GET['neu']) && !isset($_GET['change_pw']) &&
                                 htmlspecialchars($member['ort'] ?? '', ENT_QUOTES),
                                 htmlspecialchars($member['festnetz'] ?? '', ENT_QUOTES),
                                 htmlspecialchars($member['mobilnummer'] ?? '', ENT_QUOTES),
-                                htmlspecialchars($member['e_mail'] ?? '', ENT_QUOTES)
+                                htmlspecialchars($member['e_mail'] ?? '', ENT_QUOTES),
+                                htmlspecialchars($member['info'] ?? '', ENT_QUOTES)
                             );
 
                             $statusClass = 'pending';
@@ -672,21 +707,27 @@ if ($needsPasswordSetup && !isset($_GET['neu']) && !isset($_GET['change_pw']) &&
                                     </div>
                                     <div class="right">
                                         <?php if (!empty($telefonVal)): ?>
-                                        <div class="phone">
+                                        <div class="phone center">
                                             <span class="material-symbols-outlined phone-symbol">phone</span>
                                             <span class="phone-text"><?php echo htmlspecialchars($telefonVal); ?></span>
                                         </div>
                                         <?php endif; ?>
                                         <?php if (!empty($mobilVal)): ?>
-                                        <div class="mobile">
+                                        <div class="mobile center">
                                             <span class="material-symbols-outlined mobile-symbol">smartphone</span>
                                             <span class="mobile-text"><?php echo htmlspecialchars($mobilVal); ?></span>
                                         </div>
                                         <?php endif; ?>
                                         <?php if (!empty($member['e_mail'])): ?>
-                                        <div class="email">
+                                        <div class="email center">
                                             <span class="material-symbols-outlined email-symbol">email</span>
                                             <span class="email-text"><?php echo htmlspecialchars($member['e_mail']); ?></span>
+                                        </div>
+                                        <?php endif; ?>
+                                        <?php if (!empty($member['info'])): ?>
+                                        <div class="info-text center">
+                                            <span class="material-symbols-outlined email-symbol">sticky_note_2</span>
+                                            <span class="email-text"><?php echo htmlspecialchars($member['info']); ?></span>
                                         </div>
                                         <?php endif; ?>
                                     </div>

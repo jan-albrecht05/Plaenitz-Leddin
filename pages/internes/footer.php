@@ -12,7 +12,7 @@
         </div>
         <div id="middle">
             <span>&copy; 2025-<?php echo date("Y"); ?> Gemeinsam für Plänitz-Leddin.<br> Alle Rechte vorbehalten.</span>
-            <span>Version 0.5</span>
+            <a href="https://github.com/jan-albrecht05/Plaenitz-Leddin/commits/main/">Version 0.9</a>
         </div>
         <div id="right">
             <a href="../../pages/kontakt.php">Kontakt<span class="material-symbols-outlined">open_in_new</span></a>

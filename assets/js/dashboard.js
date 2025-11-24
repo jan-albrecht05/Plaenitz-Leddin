@@ -124,14 +124,18 @@ document.addEventListener('DOMContentLoaded', () => {
 // close context menu and member edit popup on click outside or escape key
 document.addEventListener('click', (event) => {
     const contextMenu = document.getElementById('member-context-menu');
+    // determine the clicked element (safely handle non-element targets)
+    const clickedEl = (event.target && event.target.nodeType === Node.ELEMENT_NODE) ? event.target : event.target && event.target.parentElement;
+
     // Close context menu if click is outside and it's currently visible
-    if (contextMenu && contextMenu.style.display !== 'none' && !contextMenu.contains(event.target) && !event.target.classList.contains('edit-button')) {
+    // but do NOT close when clicking the three-dots button (or its children)
+    if (contextMenu && contextMenu.style.display !== 'none' && !contextMenu.contains(clickedEl) && !(clickedEl && clickedEl.closest && clickedEl.closest('.edit-button'))) {
         contextMenu.style.display = 'none';
     }
-    
+
     const popup = document.getElementById('member-edit-popup');
     // Close popup if click is outside and it's currently visible
-    if (popup && popup.style.display !== 'none' && !popup.contains(event.target)) {
+    if (popup && popup.style.display !== 'none' && !popup.contains(clickedEl)) {
         closeMemberEditPopup();
     }
 });

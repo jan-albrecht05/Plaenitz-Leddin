@@ -51,9 +51,8 @@ Mit dieser Website sollen Mitglieder verwaltet, Veranstaltungen geteilt und Übe
 ---
 # To-Do:
 ## Events Page:
- - Knopf "beendete anzeigen"
- - suche: Titel, Autor, Tags, Ort, Datum
-## Kontakt:
+ - Filter nach Tags
+## Kontakt
  - E-Mail Adresse und EmailJS hinzufügen
 ## Admin:
  - alles

@@ -228,7 +228,7 @@ $event_title = $event['titel'] ?? 'Veranstaltung';
                 <?php echo htmlspecialchars($event['beschreibung'] ?? ''); ?>
             </h3>
             <h2 class="zeit">
-                Wann? <span><?php echo htmlspecialchars(date('d.m.Y', strtotime($event['datum'] ?? ''))) . ', ' . (isset($event['zeit']) ? htmlspecialchars($event['zeit'].' Uhr') : ''); ?></span>
+                Wann? <span><?php echo htmlspecialchars(date('d.m.Y', strtotime($event['datum'] ?? ''))) . (isset($event['zeit']) ? htmlspecialchars(', ' . $event['zeit'] . ' Uhr') : ''); ?></span>
             </h2>
             <h2 class="ort">
                 Wo? <span><?php echo htmlspecialchars($event['ort'] ?? ''); ?></span>

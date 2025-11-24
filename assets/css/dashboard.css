@@ -115,12 +115,11 @@
 .left,
 .right{
     width: 50%;
-}
-.left{
     text-align: left;
+    align-items: start;
     display: flex;
     flex-direction: column;
-    align-items: start;
+    gap: 5px
 }
 .flex-column{
     display: flex;
@@ -133,9 +132,6 @@
     margin-left: 10px;
     font-size: 120%;
     margin-right: 2rem;
-}
-.address-text{
-    margin-bottom: .5rem;
 }
 .member-bottom{
     padding-inline: 10px;

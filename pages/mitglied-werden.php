@@ -233,7 +233,18 @@
                     $result = $stmt->execute();
                     // positive feedback
                     if ($result) {
-                        echo '<div class="success-message"><p>Vielen Dank für Ihre Mitgliedschaftsanfrage! Ein Vorstandsmitglied wird sich bald bei Ihnen melden.</p></div>';
+                        echo '<div class="success-message center">
+                            <div class="popup center">
+                                <div class="popup-content">
+                                    <span class="material-symbols-outlined success-icon center">check_circle</span>
+                                        <h2>Mitgliedschaftsanfrage erhalten!</h2>
+                                    <p>Vielen Dank für Ihre Mitgliedschaftsanfrage! Ein Vorstandsmitglied wird sich bald bei Ihnen melden.</p>
+                                    <a href="../index.php" class="close-button center">
+                                        <span class="material-symbols-outlined">home</span>
+                                        Zur Startseite
+                                    </a>
+                                </div>
+                            </div></div>';
                     } else {
                         echo '<div class="error-message"><p>Es gab einen Fehler beim Speichern Ihrer Daten. Bitte versuchen Sie es erneut.</p></div>';
                     }
@@ -242,9 +253,9 @@
                     error_log("Database error in mitglied-werden.php: " . $e->getMessage());
                     echo '<div class="error-message"><p>Es gab einen technischen Fehler. Bitte versuchen Sie es später erneut oder kontaktieren Sie uns direkt.</p></div>';
                 }
-            } /*else {
+            } else {
                 echo '<div class="error-message"><p>Bitte füllen Sie alle Pflichtfelder aus.</p></div>';
-            }*/
+            }
         }
         ?>
     </div>

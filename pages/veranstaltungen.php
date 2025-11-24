@@ -11,6 +11,11 @@
         $is_admin = hasAdminRole($user_id);
         $is_vorstand = hasVorstandRole($user_id);
     }
+    $show_ended = false;
+    if (isset($_GET['show_ended'])) {
+        $show_ended = ($_GET['show_ended'] === '1');
+        //$show_ended = true;
+    }
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -114,8 +119,11 @@
                         // Use PDO with sqlite for safer, consistent parameter binding and exceptions
                         $pdo = new PDO('sqlite:' . $dbPath);
                         $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-
-                        $stmt = $pdo->prepare('SELECT * FROM veranstaltungen ORDER BY datum DESC');
+                        if($show_ended){
+                            $stmt = $pdo->prepare('SELECT * FROM veranstaltungen ORDER BY datum ASC');
+                        } else {
+                            $stmt = $pdo->prepare('SELECT * FROM veranstaltungen WHERE datum >= date("now") ORDER BY datum ASC');
+                        }
                         $stmt->execute();
                         $events = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         if ($events === false) {
@@ -153,6 +161,21 @@
                     }
                 } else {
                     echo '<p>Keine Veranstaltungen gefunden.</p>';
+                }
+            ?>
+        </div>
+        <div class="center">
+            <?php
+                if($show_ended){
+                    echo '<button class="button center" onclick="window.location.href=\'veranstaltungen.php\'">
+                        <span class="material-symbols-outlined">hourglass_top</span>
+                        nur zukünftige Veranstaltungen anzeigen
+                    </button>';
+                }else{
+                    echo '<button class="button center" onclick="window.location.href=\'veranstaltungen.php?show_ended=1\'">
+                        <span class="material-symbols-outlined">hourglass_disabled</span>
+                        beendete Veranstaltungen anzeigen
+                    </button>';
                 }
             ?>
         </div>
