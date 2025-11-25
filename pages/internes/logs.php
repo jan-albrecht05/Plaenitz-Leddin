@@ -52,25 +52,48 @@
                     try {
                         $stmt = $pdo->query("SELECT * FROM logs ORDER BY timecode DESC LIMIT 100");
                         $logs = $stmt->fetchAll(PDO::FETCH_ASSOC);
-                        foreach ($logs as $log) {
-                            echo '<div class="log-entry '.$log['action'].'" style="z-index: '.(1000-$i).';">
-                                    <div class="spacer"></div>
-                                    <div class="log-content">
-                                        <div class="log-text">' . htmlspecialchars($log['text']) . '</div>
-                                        <div class="log-bottom">
-                                            <div class="log-timecode center">' . date('d.m.Y H:i:s', strtotime($log['timecode'])) . '</div>
-                                            <div class="log-userid center"><span class="material-symbols-outlined">person</span> ' . htmlspecialchars(isset($log['user_id']) ? $log['user_id'] : '') . '</div>
-                                            <div class="log-ip center"><span class="material-symbols-outlined">public</span> ' . htmlspecialchars($log['ip']) . '</div>
+                        
+                        if (empty($logs)) {
+                            echo '<div class="log-entry info" style="padding: 20px; text-align: center;">';
+                            echo '<p>Keine Logs vorhanden.</p>';
+                            echo '</div>';
+                        } else {
+                            foreach ($logs as $log) {
+                                echo '<div class="log-entry '.$log['action'].'" style="z-index: '.(1000-$i).';">
+                                        <div class="spacer"></div>
+                                        <div class="log-content">
+                                            <div class="log-text">' . htmlspecialchars($log['text']) . '</div>
+                                            <div class="log-bottom">
+                                                <div class="log-timecode center">' . date('d.m.Y H:i:s', strtotime($log['timecode'])) . '</div>
+                                                <div class="log-userid center"><span class="material-symbols-outlined">person</span> ' . htmlspecialchars(isset($log['user_id']) ? $log['user_id'] : '') . '</div>
+                                                <div class="log-ip center"><span class="material-symbols-outlined">public</span> ' . htmlspecialchars($log['ip']) . '</div>
+                                            </div>
                                         </div>
-                                    </div>
-                                </div>';
-                            $i++;
+                                    </div>';
+                                $i++;
+                            }
                         }
                     } catch (PDOException $e) {
-                        echo "Error fetching logs: " . htmlspecialchars($e->getMessage());
+                        echo '<div class="log-entry error" style="padding: 20px;">';
+                        echo "<strong>Error fetching logs:</strong> " . htmlspecialchars($e->getMessage());
+                        echo '<br><br><strong>Debug Info:</strong><br>';
+                        echo 'Database Path: ' . htmlspecialchars(__DIR__ . '/../../assets/db/logs.db');
+                        echo '<br>File exists: ' . (file_exists(__DIR__ . '/../../assets/db/logs.db') ? 'Yes' : 'No');
+                        echo '<br>File readable: ' . (is_readable(__DIR__ . '/../../assets/db/logs.db') ? 'Yes' : 'No');
+                        echo '</div>';
                     }
                 } else {
-                    echo "Unable to connect to the logs database.";
+                    echo '<div class="log-entry error" style="padding: 20px;">';
+                    echo "<strong>Unable to connect to the logs database.</strong>";
+                    echo '<br><br><strong>Debug Info:</strong><br>';
+                    $dbPath = __DIR__ . '/../../assets/db/logs.db';
+                    echo 'Expected Database Path: ' . htmlspecialchars($dbPath);
+                    echo '<br>File exists: ' . (file_exists($dbPath) ? 'Yes' : 'No');
+                    echo '<br>File readable: ' . (is_readable($dbPath) ? 'Yes' : 'No');
+                    if (file_exists($dbPath)) {
+                        echo '<br>File permissions: ' . substr(sprintf('%o', fileperms($dbPath)), -4);
+                    }
+                    echo '</div>';
                 }
             ?>
         </div>

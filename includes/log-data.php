@@ -4,13 +4,34 @@
 
     function getLogsDbConnection(){
         // connect to db
-        $dbPath = __DIR__ . '/../assets/db/Logs.db';
+        $dbPath = __DIR__ . '/../assets/db/logs.db';
+        
+        // Check if database file exists
+        if (!file_exists($dbPath)) {
+            error_log('getLogsDbConnection error: Database file not found at ' . $dbPath);
+            return null;
+        }
+        
+        // Check if file is readable
+        if (!is_readable($dbPath)) {
+            error_log('getLogsDbConnection error: Database file not readable at ' . $dbPath);
+            return null;
+        }
+        
         try {
             $pdo = new PDO('sqlite:' . $dbPath);
             $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+            
+            // Verify that the logs table exists
+            $result = $pdo->query("SELECT name FROM sqlite_master WHERE type='table' AND name='logs'");
+            if ($result->fetch() === false) {
+                error_log('getLogsDbConnection error: logs table does not exist in database');
+                return null;
+            }
+            
             return $pdo;
         } catch (Exception $e) {
-            error_log('getLogsDbConnection error: ' . $e->getMessage());
+            error_log('getLogsDbConnection error: ' . $e->getMessage() . ' (Path: ' . $dbPath . ')');
             return null;
         }
     }
