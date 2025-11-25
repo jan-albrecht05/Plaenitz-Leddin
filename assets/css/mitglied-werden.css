@@ -100,8 +100,10 @@ input[type="radio"]{
 #auto-fill-address .info-text{
     text-decoration: underline;
 }
-#auto-fill-address:hover{
+#auto-fill-address:hover,
+#auto-fill-address:focus{
     color: var(--primary-color);
+    outline: none;
 }
 #form-buttons{
     display: flex;

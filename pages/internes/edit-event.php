@@ -3,6 +3,7 @@ session_start();
 
 // Include database helper functions
 require_once '../../includes/db_helper.php';
+require_once '../../includes/log-data.php';
 
 // Check if user is logged in
 if (!isset($_SESSION['user_id'])) {
@@ -73,10 +74,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $event_id !== null && isset($_POST[
 
         // Delete event from database
         $pdoDel->beginTransaction();
+        $titel = $event['titel'] ?? 'unknown';
         $deleteStmt = $pdoDel->prepare('DELETE FROM veranstaltungen WHERE id = :id');
         $deleteStmt->bindValue(':id', (int)$event_id, PDO::PARAM_INT);
         $deleteStmt->execute();
         $pdoDel->commit();
+        logAction(date('Y-m-d H:i:s'), 'delete_event', $_SESSION['name'] . ' deleted event ' . $titel, $_SERVER['REMOTE_ADDR'], $_SESSION['user_id']);
 
         // Redirect to events list
         header('Location: ../veranstaltungen.php?success=' . urlencode('Veranstaltung wurde gelöscht.'));
@@ -196,6 +199,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $event_id !== null && !isset($_POST
         $pdoUp->beginTransaction();
         $updateStmt->execute();
         $pdoUp->commit();
+        logAction(date('Y-m-d H:i:s'), 'edit_event', $_SESSION['name'] . ' edited event ' . $titel, $_SERVER['REMOTE_ADDR'], $_SESSION['user_id']);
 
         // After updating, redirect to the event view page
         header('Location: ../event.php?id=' . urlencode((string)$event_id) . '&success=' . urlencode('Veranstaltung wurde erfolgreich bearbeitet.'));

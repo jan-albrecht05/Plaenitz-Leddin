@@ -1,0 +1,94 @@
+#back-button{
+    background: transparent;
+    color: var(--text-color);
+    border: none;
+    transition: all 0.3s ease;
+}
+h1{
+    margin-bottom: 4rem;
+}
+#logs-container {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* Farben zuweisen */
+.logout .log-content,
+.login .log-content{
+    background-color: rgba(0, 255, 255, 0.5); /* Hellblau für Login-Informationen */
+}
+.login,
+.logout{
+    border-color: aqua !important;
+}
+.antrag .log-content{
+    background-color: rgba(0, 255, 0, 0.5); /* Hellgrün für Antrags-Informationen */
+}
+.antrag{
+    border-color: limegreen !important;
+}
+.activate_member .log-content,
+.deactivate_member .log-content{
+    background-color: rgba(120, 120, 120, 0.333); /* Hellblau für Login-Informationen */
+}
+.activate_member,
+.deactivate_member{
+    border-color: rgb(98, 98, 98) !important;
+}
+.create_event .log-content,
+.edit_event .log-content,
+.delete_event .log-content{
+    background-color: rgba(255, 166, 0, 0.226); /* Hellorange für Event-Informationen */
+}
+.create_event,
+.edit_event,
+.delete_event{
+    border-color: rgba(255, 166, 0, 0.831) !important;
+}
+
+.log-entry{
+    border-bottom: 3px solid;
+    border-left: 3px solid;
+    border-right: 3px solid;
+    border-top: 0px;
+    padding: 0;
+    border-radius: 0 0 10px 10px;
+    margin-top: -13px;
+    filter: drop-shadow(var(--shadow));
+    position: relative;
+    animation: appearFromBottom 0.3s ease-in-out;
+    animation-delay: 0.2s;
+}
+@keyframes appearFromBottom {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+.log-entry:first-child .spacer{
+    display: none;
+}
+.spacer{
+    height: 10px;
+    width: 100%;
+    border-radius: 0 0 10px 10px;
+}
+.log-content{
+    width: calc(100%-6px);
+    padding: 10px;
+}
+.log-text{
+    font-size: 120%;
+    white-space: pre-wrap; /* Erlaubt Zeilenumbrüche */
+    word-wrap: break-word; /* Lange Wörter umbrechen */
+}
+.log-bottom{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}

@@ -3,6 +3,7 @@
     
     // Include database helper functions
     require_once '../../includes/db_helper.php';
+    require_once '../../includes/log-data.php';
     
     if(isset($_SESSION['user_id'])) {
         header("Location: dashboard.php");
@@ -48,6 +49,8 @@
                 updateLastVisitedDate($user['id']);
                 $redirect = "";
             }
+            // log action
+            logAction(date('Y-m-d H:i:s'), 'login', $user['name'] . ' logged in', $_SERVER['REMOTE_ADDR'], $user['id']);
             
             header("Location: dashboard.php" . $redirect);
             exit();

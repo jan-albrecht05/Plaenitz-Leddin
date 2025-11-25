@@ -56,13 +56,10 @@ Mit dieser Website sollen Mitglieder verwaltet, Veranstaltungen geteilt und Übe
  - E-Mail Adresse und EmailJS hinzufügen
 ## Admin:
  - alles
- - Logs.db (Name, Aktion, Fehlermeldung)
 ## Veranstaltung erstellen/ändern
  - Tags hinzufügen
-## Dashboard:
- - PW-Change
 
-# Future Updates
+## config.db
  - config.db
    - tabicon
    - bannerbild

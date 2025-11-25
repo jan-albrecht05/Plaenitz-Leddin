@@ -202,6 +202,7 @@
             $nachricht = filter_input(INPUT_POST, 'nachricht', FILTER_UNSAFE_RAW);
             $date = gmdate('Y-m-d H:i:s'); // Use UTC time for consistency
 
+            require_once '../includes/log-data.php';
             // Check if required fields are filled
             if (true) {
                 try {
@@ -231,6 +232,9 @@
                     $stmt->bindValue(':date', $date, SQLITE3_TEXT);
                     // Execute the statement
                     $result = $stmt->execute();
+                    // log action
+                    logAction(date('Y-m-d H:i:s'), 'antrag', $vorname .' '. $nachname . ' hat eine Mitgliedschaftsanfrage gestellt', $_SERVER['REMOTE_ADDR'], $user['id']);
+            
                     // positive feedback
                     if ($result) {
                         echo '<div class="success-message center">

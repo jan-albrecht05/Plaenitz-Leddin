@@ -3,6 +3,7 @@ session_start();
 
 // Include database helper functions
 require_once '../../includes/db_helper.php';
+require_once '../../includes/log-data.php';
 
 // Check if user is logged in
 if (!isset($_SESSION['user_id'])) {
@@ -55,7 +56,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
-    // Insert event into database (locally)
+    // Insert event into database
     // Resolve path to events DB and create PDO connection
     $dbPath = __DIR__ . '/../../assets/db/veranstaltungen.db';
     if (!file_exists($dbPath) || !is_readable($dbPath)) {
@@ -75,18 +76,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     (titel, beschreibung, autor, datum, zeit, ort, cost, text, zielgruppe, banner_image_name, timecode_erstellt, tags, flag) 
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 
-        // Debug: dump params before execute
-        try {
-            ob_start();
-            $stmt->debugDumpParams();
-            $dbg = ob_get_clean();
-            error_log('veranstaltung-erstellen.php: prepared statement BEFORE execute:\n' . $dbg);
-        } catch (Exception $e) {
-            error_log('veranstaltung-erstellen.php: debugDumpParams before execute failed: ' . $e->getMessage());
-        }
-
         try {
             $stmt->execute([$titel, $untertitel, $_SESSION['name'], $datum, $uhrzeit, $ort, $kosten, $beschreibung, $zielgruppe, $coverImagePath, time(), $tags, 1]);
+            logAction(date('Y-m-d H:i:s'), 'create_event', $_SESSION['name'] . ' created event ' . $titel, $_SERVER['REMOTE_ADDR'], $_SESSION['user_id']);
             // Log last insert id for verification
             try {
                 $lastId = $pdo->lastInsertId();

@@ -3,6 +3,7 @@ session_start();
 
 // Include database helper functions
 require_once '../../includes/db_helper.php';
+require_once '../../includes/log-data.php';
 
 // Check if user is logged in
 if (!isset($_SESSION['user_id'])) {
@@ -67,7 +68,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['current_password'], $
         error_log("Dashboard PW Change: Calling updateLastVisitedDate");
         $visitResult = updateLastVisitedDate($userId);
         error_log("Dashboard PW Change: updateLastVisitedDate returned: " . ($visitResult ? 'true' : 'false'));
-        
+
+        // log action
+        logAction(date('Y-m-d H:i:s'), 'password_change', $_SESSION['name'] . ' changed password', $_SERVER['REMOTE_ADDR'], $_SESSION['user_id']);
+
         error_log("Dashboard PW Change: Redirecting to ?pw_changed=1");
         header("Location: dashboard.php?pw_changed=1");
         exit();
@@ -113,6 +117,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_member_submit'])
         $stmt->bindValue(':id', $targetId, PDO::PARAM_INT);
         
         $stmt->execute();
+
+        // log action
+        logAction(date('Y-m-d H:i:s'), 'edit_member', $_SESSION['name'] . ' updated member ' . $targetId, $_SERVER['REMOTE_ADDR'], $_SESSION['user_id']);
+            
         
         header('Location: dashboard.php?success=' . urlencode('Mitglied erfolgreich aktualisiert.'));
         exit();
@@ -159,20 +167,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['member_id'], $_POST['
     $isAdmin = hasAdminRole($currentUserId);
     $isVorstand = hasVorstandRole($currentUserId);
     $canModifyStatus = $isAdmin || $isVorstand;
-    $canChangeRoleOrDelete = $isAdmin;
+    // Delete should be allowed for Admins and Vorstand; role-changes remain Admin-only
+    $canDelete = $isAdmin || $isVorstand;
+    $canChangeRole = $isAdmin;
 
     try {
         if ($action === 'delete') {
-            if (!$canChangeRoleOrDelete) throw new Exception('Keine Berechtigung zum Löschen.');
+            if (!$canDelete) throw new Exception('Keine Berechtigung zum Löschen.');
             if ($targetId === $currentUserId) throw new Exception('Sie können sich nicht selbst löschen.');
             $stmt = $pdo->prepare('DELETE FROM mitglieder WHERE id = :id');
             $stmt->bindValue(':id', $targetId, PDO::PARAM_INT);
             $stmt->execute();
+            logAction(date('Y-m-d H:i:s'), 'delete_member', $_SESSION['name'] . ' deleted member ' . $targetId, $_SERVER['REMOTE_ADDR'], $_SESSION['user_id']);
             $respond(true, 'Benutzer gelöscht.');
         }
 
         if ($action === 'promote') {
-            if (!$canChangeRoleOrDelete) throw new Exception('Keine Berechtigung zum Promoten.');
+            if (!$canChangeRole) throw new Exception('Keine Berechtigung zum Promoten.');
             
             // Check if a temporary password was provided
             $tempPassword = $_POST['temp_password'] ?? null;
@@ -203,6 +214,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['member_id'], $_POST['
                 $stmt->execute();
                 
                 $pdo->commit();
+                logAction(date('Y-m-d H:i:s'), 'promote_member', $_SESSION['name'] . ' promoted member ' . $targetId . ' to vorstand', $_SERVER['REMOTE_ADDR'], $_SESSION['user_id']);
                 $respond(true, 'Benutzer zum Vorstand gemacht und Passwort gesetzt.');
             } catch (Exception $e) {
                 $pdo->rollBack();
@@ -211,7 +223,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['member_id'], $_POST['
         }
 
         if ($action === 'demote') {
-            if (!$canChangeRoleOrDelete) throw new Exception('Keine Berechtigung zum Demoten.');
+            if (!$canChangeRole) throw new Exception('Keine Berechtigung zum Demoten.');
             $stmt = $pdo->prepare('SELECT rolle FROM mitglieder WHERE id = :id LIMIT 1');
             $stmt->bindValue(':id', $targetId, PDO::PARAM_INT);
             $stmt->execute();
@@ -224,6 +236,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['member_id'], $_POST['
             $stmt->bindValue(':rolle', 'mitglied', PDO::PARAM_STR);
             $stmt->bindValue(':id', $targetId, PDO::PARAM_INT);
             $stmt->execute();
+            logAction(date('Y-m-d H:i:s'), 'demote_member', $_SESSION['name'] . ' demoted member ' . $targetId . ' from vorstand', $_SERVER['REMOTE_ADDR'], $_SESSION['user_id']);
             $respond(true, 'Benutzer gedemoted.');
         }
 
@@ -234,6 +247,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['member_id'], $_POST['
             $stmt->bindValue(':status', $newStatus, PDO::PARAM_INT);
             $stmt->bindValue(':id', $targetId, PDO::PARAM_INT);
             $stmt->execute();
+            logAction(date('Y-m-d H:i:s'), $action === 'activate' ? 'activate_member' : 'deactivate_member', $_SESSION['name'] . ' ' . ($action === 'activate' ? 'activated' : 'deactivated') . ' member ' . $targetId, $_SERVER['REMOTE_ADDR'], $_SESSION['user_id']);
             $msg = $action === 'activate' ? 'Benutzer aktiviert.' : 'Benutzer deaktiviert.';
             $respond(true, $msg);
         }
@@ -297,6 +311,10 @@ if ($needsPasswordSetup && !isset($_GET['neu']) && !isset($_GET['change_pw']) &&
         </div>
         <script>
             // Submit context action via AJAX and update UI without reload
+            // Expose current user id and admin-flag to client JS so the context menu can adapt
+            window.currentUserId = <?php echo json_encode($userId); ?>;
+            window.currentUserIsAdmin = <?php echo json_encode(hasAdminRole($userId)); ?>;
+            window.currentUserIsVorstand = <?php echo json_encode(hasVorstandRole($userId)); ?>;
             async function submitContextActionAjax(action, memberId, tempPassword) {
                 try {
                     const params = new URLSearchParams();
@@ -316,9 +334,19 @@ if ($needsPasswordSetup && !isset($_GET['neu']) && !isset($_GET['change_pw']) &&
                         body: params.toString()
                     });
 
-                    const data = await res.json();
-                    if (!data.success) {
-                        alert('Fehler: ' + (data.message || 'Unbekannter Fehler'));
+                    // Defensive parsing: some server responses may be HTML or error text.
+                    const raw = await res.text();
+                    let data = null;
+                    try {
+                        data = JSON.parse(raw);
+                    } catch (err) {
+                        console.error('submitContextActionAjax: failed to parse JSON response:', raw);
+                        alert('Server antwortete nicht mit JSON. Siehe Konsole für Details.');
+                        return;
+                    }
+
+                    if (!data || !data.success) {
+                        alert('Fehler: ' + (data && data.message ? data.message : 'Unbekannter Fehler'));
                         return;
                     }
 
@@ -507,6 +535,32 @@ if ($needsPasswordSetup && !isset($_GET['neu']) && !isset($_GET['change_pw']) &&
     <div class="popup" <?php if (isset($_GET['neu']) || isset($_GET['change_pw'])) echo 'style="display: flex;"'; ?> id="pw-change-popup">
         <div class="popup-content">
             <h2>Es scheint, als wäre dies ihr erster Login.</h2>
+            <h3>Bitte legen Sie sich ein neues Passwort fest.</h3>
+            <?php if (isset($_GET['error'])): ?>
+                <div class="error-message" style="background-color: #ffebee; border: 1px solid #ef5350; color: #c62828; padding: 10px; margin-bottom: 15px; border-radius: 4px;">
+                    <?php echo htmlspecialchars($_GET['error']); ?>
+                </div>
+            <?php endif; ?>
+            <form action="dashboard.php" method="post" id="pw-change-form">
+                <div class="form-group">
+                    <label for="current-password">Aktuelles Passwort:</label>
+                    <input type="password" id="current-password" name="current_password" required>
+                </div>
+                <div class="form-group">
+                    <label for="new-password">Neues Passwort:</label>
+                    <input type="password" id="new-password" name="new_password" required>
+                </div>
+                <div class="form-group">
+                    <label for="confirm-password">Neues Passwort bestätigen:</label>
+                    <input type="password" id="confirm-password" name="confirm_password" required>
+                </div>
+                <button type="submit" class="submit" onclick="console.log('Submit button clicked');">Passwort ändern</button>
+            </form>
+        </div>
+    </div>
+    <div class="popup" <?php if (isset($_GET['neu']) || isset($_GET['change_pw'])) echo 'style="display: flex;"'; ?> id="password-change-popup">
+        <div class="popup-content">
+            <h2>Passwort ändern</h2>
             <h3>Bitte legen Sie sich ein neues Passwort fest.</h3>
             <?php if (isset($_GET['error'])): ?>
                 <div class="error-message" style="background-color: #ffebee; border: 1px solid #ef5350; color: #c62828; padding: 10px; margin-bottom: 15px; border-radius: 4px;">
@@ -750,6 +804,10 @@ if ($needsPasswordSetup && !isset($_GET['neu']) && !isset($_GET['change_pw']) &&
             <form action="dashboard.php" method="post" id="member-context-menu-form">
                 <input type="hidden" id="context-member-id" name="member_id" value="">
                 <input type="hidden" id="context-action" name="action" value="">
+                <button type="button" id="edit-password-member">
+                    <span class="material-symbols-outlined">key</span>
+                    <span class="text">Passwort ändern</span>
+                </button>
                 <button type="button" id="edit-member">
                     <span class="material-symbols-outlined">edit</span>
                     <span class="text">bearbeiten</span>
