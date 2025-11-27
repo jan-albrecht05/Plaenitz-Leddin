@@ -60,17 +60,3 @@ Mit dieser Website sollen Mitglieder verwaltet, Veranstaltungen geteilt und Übe
  - Tags hinzufügen
 
 ## config.db
- - config.db
-   - tabicon
-   - bannerbild
-   - bannertext
-   - logo
-   - primary-color
-   - gif-anzeigen
-   - gif-auswahl
-   - Versionsnummer
- - gif.db
- - banner_img
- - banner_texte
- - tabicons
- - logos

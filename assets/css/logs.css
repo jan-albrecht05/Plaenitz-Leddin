@@ -46,6 +46,16 @@ h1{
 .delete_event{
     border-color: rgba(255, 166, 0, 0.831) !important;
 }
+.error-404 .log-content,
+.error-500 .log-content,
+.error-404AJAX{
+    background-color: rgba(255, 0, 0, 0.226); /* Hellrot für Fehler-Informationen */
+}
+.error-404,
+.error-500,
+.error-404AJAX{
+    border-color:red;
+}
 
 .log-entry{
     border-bottom: 3px solid;
