@@ -58,5 +58,13 @@ Mit dieser Website sollen Mitglieder verwaltet, Veranstaltungen geteilt und Übe
  - alles
 ## Veranstaltung erstellen/ändern
  - Tags hinzufügen
+## logs
+ - css für error-pages
+## Error pages:
+ - 400 bad request
+ - 401 unautorized
+ - 403 forbidden
+ - 500 internal server error
+ - 503 service unavaiable
 
 ## config.db
