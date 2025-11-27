@@ -61,7 +61,7 @@ logAction(
                 },
                 body: new URLSearchParams({
                     timecode: new Date().toISOString().slice(0, 19).replace('T', ' '),
-                    action: 'error-404',
+                    action: 'error-404AJAX',
                     text: userName + ' (client) hat versucht ' + requestedPage + ' aufzurufen.',
                     user_id: userId || ''
                 })
