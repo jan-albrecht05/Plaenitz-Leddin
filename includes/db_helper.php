@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /**
  * Database helper functions for user authentication and role management
  */
@@ -327,4 +327,3 @@ function userHasCompletedPasswordSetup($userId) {
         return false;
     }
 }
-?>

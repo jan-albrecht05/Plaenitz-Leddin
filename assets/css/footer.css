@@ -19,8 +19,8 @@ body {
     font-size: 90%;
     height: 5rem;
 }
-#footer #left, 
-#footer #middle, 
+#footer #left,
+#footer #middle,
 #footer #right{
     display: flex;
     flex-direction: column;

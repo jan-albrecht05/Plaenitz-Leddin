@@ -39,7 +39,7 @@ h4.date{
     width: 10%;
     text-align: right;
 }
-.line{
+#main .line{
     display: none;
 }
 

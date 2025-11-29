@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 // Log helper functions (can be included by other scripts)
 date_default_timezone_set('Europe/Berlin');
 require_once __DIR__ . '/db_helper.php';
@@ -130,4 +130,3 @@ if (realpath(__FILE__) === realpath($_SERVER['SCRIPT_FILENAME'])) {
     }
     exit();
 }
-?>
