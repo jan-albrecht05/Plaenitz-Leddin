@@ -21,10 +21,10 @@
     margin: 2rem 0;
 }
 .stat-card {
-    background: var(--secondary-bg);
+    background-color: #ffffff10;
     padding: 1.5rem;
     border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    box-shadow: var(--shadow);
 }
 .stat-card h3 {
     margin: 0 0 0.5rem 0;
@@ -39,14 +39,18 @@
 }
 
 /* Section styles */
-.section {
-    margin: 3rem 0;
+.section{
+    padding-top: 1rem;
 }
+
 .section h2 {
     margin-bottom: 1rem;
     display: flex;
     align-items: center;
     gap: 0.5rem;
+}
+.section:last-child {
+    margin-bottom: 0;
 }
 
 /* Logs table styles */
@@ -67,10 +71,13 @@
 }
 .logs-table td {
     padding: 0.75rem 1rem;
-    border-bottom: 1px solid var(--border-color);
 }
-.logs-table tr:hover {
-    background: var(--hover-bg);
+.logs-table tr:nth-child(2n) {
+    background-color: var(--lightgrey);
+}
+.logs-table tr:last-child {
+    border-bottom: 1px solid var(--lightgrey);
+    border-radius: 0px 0px 8px 8px;
 }
 
 /* Action badge styles */
@@ -81,11 +88,26 @@
     font-size: 0.8rem;
     font-weight: 600;
 }
-.action-login-success { background: var(--success-color, #d4edda); color: var(--primary-color); }
-.action-login-failed { background: #f8d7da; color: var(--orange, #ff6600); }
-.action-error-404 { background: #fff3cd; color: var(--orange, #ff6600); }
-.action-delete { background: #f8d7da; color: var(--orange, #ff6600); }
-.action-promote, .action-demote { background: #d1ecf1; color: var(--primary-color); }
+.action-login-success{ 
+    background: var(--success-color);
+    color: var(--primary-color);
+}
+.action-login-failed{
+    background: #f8d7da;
+    color: var(--orange);
+}
+.action-error-404 { 
+    background: #fff3cd; 
+    color: var(--orange);
+}
+.action-delete { 
+    background: #f8d7da; 
+    color: var(--orange);
+}
+.action-promote, .action-demote { 
+    background: #d1ecf1; 
+    color: var(--primary-color);
+}
 
 /* Error list styles */
 .error-list {
@@ -93,7 +115,7 @@
     padding: 0;
 }
 .error-item {
-    background: var(--secondary-bg, #f5f5f5);
+    background: var(#f5f5f5);
     padding: 1rem;
     margin: 0.5rem 0;
     border-radius: 4px;
@@ -113,7 +135,27 @@
     border-radius: 12px;
     font-weight: 600;
 }
+small{
+    color: var(--lightgrey);
+    display: block;
+    margin-top: 0.25rem;
+}
 /* Filter and Reset Button Styles */
+select, input[type="text"], input[type="number"], input[type="date"] {
+    padding: 0.5rem;
+    border-radius: 4px;
+    border: 1px solid var(--text-color);
+    font-size: 1rem;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+}
+
+.filters form > .filter-row{
+    margin-bottom: 1.5rem;
+    display: flex;
+    gap: 1rem;
+    width: 100%;
+}
 .filter-btn {
     padding: 0.5rem 1.5rem;
     background: var(--primary-color);
@@ -132,12 +174,11 @@
 
 .reset-btn {
     padding: 0.5rem 1.5rem;
-    background: var(--secondary-bg);
+    background: var(--bg-color);
     color: var(--text-primary);
-    border: none;
+    border: 1px solid var(--text-color);
     border-radius: 4px;
     text-decoration: none;
-    display: inline-block;
     margin-left: 0.5rem;
 }
 
@@ -147,9 +188,6 @@
     padding: 2rem;
     color: var(--text-secondary);
 }
-/* admin.css - Styles for the admin log analysis dashboard */
-
-/* Add your styles here. Example selectors below: */
 
 .admin-dashboard {
     max-width: 1200px;

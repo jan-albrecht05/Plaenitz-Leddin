@@ -19,6 +19,8 @@ logAction(
 );
 
 // Redirect to user-facing 404 page
+// Use relative path that works both on XAMPP subdirectory and live server root
+$basePath = rtrim(dirname($_SERVER['SCRIPT_NAME']), '/');
 http_response_code(404);
-header('Location: /plaenitz-leddin/404.php');
+header('Location: ' . $basePath . '/404.php');
 exit();

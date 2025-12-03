@@ -58,8 +58,6 @@ Mit dieser Website sollen Mitglieder verwaltet, Veranstaltungen geteilt und Übe
  - alles
 ## Veranstaltung erstellen/ändern
  - Tags hinzufügen
-## logs
- - css für error-pages
 ## Error pages:
  - 400 bad request
  - 401 unautorized

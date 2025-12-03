@@ -130,20 +130,14 @@ if ($memberPdo) {
             </a>
         </div>
         <div id="right">
-            <a href="dashboard.php" style="margin-right: 1rem; color: var(--text-primary); text-decoration: none;">
-                <span class="material-symbols-outlined">arrow_back</span>
-            </a>
             <a href="logout.php" id="logout-button">
                 <span class="material-symbols-outlined">logout</span>
             </a>
         </div>
     </div>
-
     <div id="main" class="admin-dashboard">
         <h1><span class="material-symbols-outlined">analytics</span> Log-Analyse Dashboard</h1>
-
         <!-- Statistics -->
-
         <div class="stats-grid">
             <div class="stat-card">
                 <h3>alle Mitglieder</h3>
@@ -165,11 +159,6 @@ if ($memberPdo) {
                 <h3>404-Fehler</h3>
                 <div class="value"><?php echo number_format($stats['errors_404']); ?></div>
             </div>
-
-            <div class="stat-card">
-                <h3>Zeitraum</h3>
-                <div class="value"><?php echo $filterDays === 0 ? 'Alle Zeit' : "Letzte {$filterDays} Tage"; ?></div>
-            </div>
             <div class="stat-card">
                 <h3>Unique Users</h3>
                 <div class="value"><?php echo number_format($stats['unique_users']); ?></div>
@@ -178,8 +167,11 @@ if ($memberPdo) {
                 <h3>Unique IPs</h3>
                 <div class="value"><?php echo number_format($stats['unique_ips']); ?></div>
             </div>
+            <div class="stat-card">
+                <h3>Zeitraum</h3>
+                <div class="value"><?php echo $filterDays === 0 ? 'Alle Zeit' : "Letzte {$filterDays} Tage"; ?></div>
+            </div>
         </div>
-
         <!-- Top Actions -->
         <div class="section">
             <h2><span class="material-symbols-outlined">bar_chart</span> Top Aktionen</h2>
@@ -204,7 +196,7 @@ if ($memberPdo) {
                 </tbody>
             </table>
         </div>
-
+        <hr>
         <!-- 404 Errors -->
         <?php if (count($error404Stats) > 0): ?>
         <div class="section">
@@ -214,7 +206,7 @@ if ($memberPdo) {
                 <li class="error-item">
                     <div>
                         <div class="error-url"><?php echo htmlspecialchars($error['url']); ?></div>
-                        <small style="color: var(--text-secondary);">Zuletzt: <?php echo htmlspecialchars($error['last_seen']); ?></small>
+                        <small>Zuletzt: <?php echo htmlspecialchars($error['last_seen']); ?></small>
                     </div>
                     <span class="error-count"><?php echo $error['count']; ?>×</span>
                 </li>
@@ -222,59 +214,61 @@ if ($memberPdo) {
             </ul>
         </div>
         <?php endif; ?>
-
         <!-- Filters -->
         <div class="filters">
             <form method="GET" action="admin.php">
-                <div class="filter-group">
-                    <label>Aktion</label>
-                    <select name="action">
-                        <option value="all" <?php echo $filterAction === 'all' ? 'selected' : ''; ?>>Alle</option>
-                        <option value="login-success" <?php echo $filterAction === 'login-success' ? 'selected' : ''; ?>>Login (erfolgreich)</option>
-                        <option value="login-failed" <?php echo $filterAction === 'login-failed' ? 'selected' : ''; ?>>Login (fehlgeschlagen)</option>
-                        <option value="error-404" <?php echo $filterAction === 'error-404' ? 'selected' : ''; ?>>404-Fehler</option>
-                        <option value="delete" <?php echo $filterAction === 'delete' ? 'selected' : ''; ?>>Löschen</option>
-                        <option value="promote" <?php echo $filterAction === 'promote' ? 'selected' : ''; ?>>Promote</option>
-                        <option value="demote" <?php echo $filterAction === 'demote' ? 'selected' : ''; ?>>Demote</option>
-                    </select>
-                </div>
-                <div class="filter-group">
-                    <label>Zeitraum</label>
-                    <select name="days">
-                        <option value="1" <?php echo $filterDays === 1 ? 'selected' : ''; ?>>Heute</option>
-                        <option value="7" <?php echo $filterDays === 7 ? 'selected' : ''; ?>>Letzte 7 Tage</option>
-                        <option value="30" <?php echo $filterDays === 30 ? 'selected' : ''; ?>>Letzte 30 Tage</option>
-                        <option value="90" <?php echo $filterDays === 90 ? 'selected' : ''; ?>>Letzte 90 Tage</option>
-                        <option value="0" <?php echo $filterDays === 0 ? 'selected' : ''; ?>>Alle</option>
-                    </select>
-                </div>
-                <?php if (count($users) > 0): ?>
-                <div class="filter-group">
-                    <label>Benutzer</label>
-                    <select name="user_id">
-                        <option value="">Alle</option>
-                        <?php foreach ($users as $user): ?>
-                        <option value="<?php echo $user['id']; ?>" <?php echo $filterUser == $user['id'] ? 'selected' : ''; ?>>
-                            <?php echo htmlspecialchars($user['nachname'] . ', ' . $user['name']); ?>
-                        </option>
-                        <?php endforeach; ?>
-                    </select>
-                </div>
-                <?php endif; ?>
-                <div class="filter-group">
-                    <label>Suche</label>
-                    <input type="text" name="search" value="<?php echo htmlspecialchars($searchTerm); ?>" placeholder="Text oder IP...">
-                </div>
-                <button type="submit" class="filter-btn">
-                    <span class="material-symbols-outlined">filter_alt</span>
-                    Filtern
-                </button>
-                <a href="admin.php" class="reset-btn">
-                    Zurücksetzen
-                </a>
+                <div class="filter-row">
+                    <div class="filter-group">
+                        <label>Aktion</label>
+                        <select name="action">
+                            <option value="all" <?php echo $filterAction === 'all' ? 'selected' : ''; ?>>Alle</option>
+                            <option value="login-success" <?php echo $filterAction === 'login-success' ? 'selected' : ''; ?>>Login (erfolgreich)</option>
+                            <option value="login-failed" <?php echo $filterAction === 'login-failed' ? 'selected' : ''; ?>>Login (fehlgeschlagen)</option>
+                            <option value="error-404" <?php echo $filterAction === 'error-404' ? 'selected' : ''; ?>>404-Fehler</option>
+                            <option value="delete" <?php echo $filterAction === 'delete' ? 'selected' : ''; ?>>Löschen</option>
+                            <option value="promote" <?php echo $filterAction === 'promote' ? 'selected' : ''; ?>>Promote</option>
+                            <option value="demote" <?php echo $filterAction === 'demote' ? 'selected' : ''; ?>>Demote</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Zeitraum</label>
+                        <select name="days">
+                            <option value="1" <?php echo $filterDays === 1 ? 'selected' : ''; ?>>Heute</option>
+                            <option value="7" <?php echo $filterDays === 7 ? 'selected' : ''; ?>>Letzte 7 Tage</option>
+                            <option value="30" <?php echo $filterDays === 30 ? 'selected' : ''; ?>>Letzte 30 Tage</option>
+                            <option value="90" <?php echo $filterDays === 90 ? 'selected' : ''; ?>>Letzte 90 Tage</option>
+                            <option value="0" <?php echo $filterDays === 0 ? 'selected' : ''; ?>>Alle</option>
+                        </select>
+                    </div>
+                    <?php if (count($users) > 0): ?>
+                        <div class="filter-group">
+                            <label>Benutzer</label>
+                            <select name="user_id">
+                                <option value="">Alle</option>
+                                <?php foreach ($users as $user): ?>
+                                    <option value="<?php echo $user['id']; ?>" <?php echo $filterUser == $user['id'] ? 'selected' : ''; ?>>
+                                        <?php echo htmlspecialchars($user['nachname'] . ', ' . $user['name']); ?>
+                                    </option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                            <?php endif; ?>
+                        </div>
+                        <div class="filter-row">
+                            <div class="filter-group">
+                                <label>Suche</label>
+                                <input type="text" name="search" value="<?php echo htmlspecialchars($searchTerm); ?>" placeholder="Text oder IP...">
+                            </div>
+                            <button type="submit" class="filter-btn center">
+                                <span class="material-symbols-outlined">filter_alt</span>
+                                Filtern
+                            </button>
+                            <a href="admin.php" class="reset-btn center">
+                                Zurücksetzen
+                            </a>
+                        </div>
             </form>
         </div>
-
         <!-- Recent Logs -->
         <div class="section">
             <h2><span class="material-symbols-outlined">list</span> Letzte Einträge (max. 100)</h2>
@@ -309,7 +303,6 @@ if ($memberPdo) {
             </table>
         </div>
     </div>
-
     <div id="footer" class="center">
         <?php include '../../pages/internes/footer.php'; ?>
     </div>

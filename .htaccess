@@ -1,3 +1,4 @@
 # Custom 404 error page with original URL passed to internal handler
 # Handler logs the error and redirects to display page
-ErrorDocument 404 /plaenitz-leddin/404-handler.php?url=%{REQUEST_URI}
+# Use absolute path from document root (works on both XAMPP and live server)
+ErrorDocument 404 /404-handler.php?url=%{REQUEST_URI}
