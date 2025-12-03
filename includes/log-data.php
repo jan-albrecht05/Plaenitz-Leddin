@@ -3,6 +3,44 @@
 date_default_timezone_set('Europe/Berlin');
 require_once __DIR__ . '/db_helper.php';
 
+/**
+ * Get the real client IP address, considering proxies and load balancers
+ * Returns sanitized IP or empty string
+ */
+function getRealClientIP() {
+    $ipHeaders = [
+        'HTTP_CF_CONNECTING_IP',    // Cloudflare
+        'HTTP_X_REAL_IP',            // Nginx proxy
+        'HTTP_X_FORWARDED_FOR',      // Most proxies/load balancers
+        'HTTP_CLIENT_IP',            // Some proxies
+        'HTTP_X_FORWARDED',
+        'HTTP_FORWARDED_FOR',
+        'HTTP_FORWARDED',
+        'REMOTE_ADDR'                // Fallback
+    ];
+    
+    foreach ($ipHeaders as $header) {
+        if (!empty($_SERVER[$header])) {
+            $ip = $_SERVER[$header];
+            
+            // Handle comma-separated list (X-Forwarded-For can contain multiple IPs)
+            if (strpos($ip, ',') !== false) {
+                $ips = array_map('trim', explode(',', $ip));
+                $ip = $ips[0]; // First IP is usually the client
+            }
+            
+            // Validate IP format
+            if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)) {
+                return $ip; // Public IP found
+            } elseif (filter_var($ip, FILTER_VALIDATE_IP)) {
+                return $ip; // Private/local IP (e.g., for testing)
+            }
+        }
+    }
+    
+    return ''; // No valid IP found
+}
+
 function getLogsDbConnection(){
     // connect to db
     $dbPath = __DIR__ . '/../assets/db/logs.db';
@@ -52,6 +90,11 @@ function logAction($timecode, $action, $text = '', $ip = '', $user_id = '') {
         } catch (Exception $e) {
             // fallback: use as-is
         }
+    }
+    
+    // If IP is empty, automatically detect the real client IP
+    if (empty($ip)) {
+        $ip = getRealClientIP();
     }
     
     $pdo = getLogsDbConnection();

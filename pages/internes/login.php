@@ -49,12 +49,15 @@
                 updateLastVisitedDate($user['id']);
                 $redirect = "";
             }
-            // log action
-            logAction(date('Y-m-d H:i:s'), 'login', $user['name'] . ' logged in', $_SERVER['REMOTE_ADDR'], $user['id']);
+            // log successful login
+            logAction('', 'login-success', $user['name'] . ' (' . $name . ' ' . $nachname . ') hat sich erfolgreich eingeloggt', '', $user['id']);
             
             header("Location: dashboard.php" . $redirect);
             exit();
         } else {
+            // log failed login attempt
+            logAction('', 'login-failed', 'Fehlgeschlagener Login-Versuch für: ' . $name . ' ' . $nachname, '', '');
+            
             $error = "Ungültiger Benutzername oder Passwort.";
             header("Location: login.php?error=" . urlencode($error));
             exit();

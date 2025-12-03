@@ -479,6 +479,11 @@ if ($needsPasswordSetup && !isset($_GET['neu']) && !isset($_GET['change_pw']) &&
             }
         </script>
         <div id="right">
+            <?php if (hasAdminRole($userId)): ?>
+            <a href="admin.php" style="margin-right: 1rem; display: flex; align-items: center; color: var(--text-primary); text-decoration: none; font-size: 0.9rem;">
+                <span class="material-symbols-outlined">analytics</span>
+            </a>
+            <?php endif; ?>
             <a href="logout.php" id="logout-button">
                 <span class="material-symbols-outlined">logout</span>
             </a>
@@ -711,7 +716,7 @@ if ($needsPasswordSetup && !isset($_GET['neu']) && !isset($_GET['change_pw']) &&
                             }
                             
                             // Format address
-                            $address1 = !empty($member['strasse']) ? htmlspecialchars($member['strasse']) . ', ' . htmlspecialchars($member['hausnummer']) : '';
+                            $address1 = !empty($member['strasse']) ? htmlspecialchars($member['strasse']) . ' ' . htmlspecialchars($member['hausnummer']) : '';
                             $address2 = (!empty($member['PLZ']) ? htmlspecialchars($member['PLZ']) . ' ' : '') . 
                                         (!empty($member['ort']) ? htmlspecialchars($member['ort']) : '').
                                         (!empty($member['adresszusatz']) ? '<br>'.htmlspecialchars($member['adresszusatz']) : '');

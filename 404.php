@@ -1,21 +1,3 @@
-<?php
-session_start();
-require_once __DIR__ . '/includes/log-data.php';
-
-// Log server-side (synchronous)
-$requestedPage = $_SERVER['REQUEST_URI'] ?? 'unknown';
-$userId = $_SESSION['user_id'] ?? '';
-$userName = $_SESSION['name'] ?? 'Gast';
-$ip = $_SERVER['REMOTE_ADDR'] ?? '';
-
-logAction(
-    date('Y-m-d H:i:s'),
-    'error-404',
-    $userName . ' hat versucht ' . $requestedPage . ' aufzurufen.',
-    $ip,
-    $userId
-);
-?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -43,31 +25,6 @@ logAction(
             </div>
         </div>
     </div>
-    <form id="hidden-form">
-        <input type="hidden" name="last-page" value="<?php echo htmlspecialchars($_SERVER['REQUEST_URI']); ?>">
-    </form>
-    <script>
-        // Optional: Send additional AJAX log for client-side tracking
-        (function() {
-            const requestedPage = <?php echo json_encode($requestedPage); ?>;
-            const userId = <?php echo json_encode($userId); ?>;
-            const userName = <?php echo json_encode($userName); ?>;
-            
-            // Send AJAX log (asynchronous, non-blocking)
-            fetch('/includes/log-data.php', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded'
-                },
-                body: new URLSearchParams({
-                    timecode: new Date().toISOString().slice(0, 19).replace('T', ' '),
-                    action: 'error-404AJAX',
-                    text: userName + ' (client) hat versucht ' + requestedPage + ' aufzurufen.',
-                    user_id: userId || ''
-                })
-            }).catch(err => console.warn('404 AJAX log failed:', err));
-        })();
-    </script>
     <div id="footer" class="center">
         <div id="mode-toggle">
             <span class="material-symbols-outlined">light_mode</span>
