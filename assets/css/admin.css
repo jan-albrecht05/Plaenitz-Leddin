@@ -80,6 +80,76 @@
     border-radius: 0px 0px 8px 8px;
 }
 
+/* Responsive table styles */
+@media (max-width: 768px) {
+    .logs-table {
+        border: 0;
+        margin: 1rem 0;
+    }
+    
+    .logs-table thead {
+        display: none;
+    }
+    
+    .logs-table tbody {
+        display: block;
+    }
+    
+    .logs-table tr {
+        display: block;
+        margin-bottom: 1rem;
+        background: var(--secondary-bg);
+        border: 1px solid var(--lightgrey);
+        border-radius: 8px;
+        padding: 1rem;
+    }
+    
+    .logs-table tr:nth-child(2n) {
+        background: var(--secondary-bg);
+    }
+    
+    .logs-table td {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.5rem 0;
+        border: none;
+        text-align: right;
+    }
+    
+    .logs-table td:before {
+        content: attr(data-label);
+        font-weight: bold;
+        text-align: left;
+        color: var(--text-secondary);
+        flex: 0 0 40%;
+    }
+    
+    .logs-table td:first-child {
+        padding-top: 0;
+    }
+    
+    .logs-table td:last-child {
+        padding-bottom: 0;
+    }
+    
+    .no-entries {
+        display: block;
+        text-align: center;
+    }
+    
+    .no-entries:before {
+        display: none;
+    }
+    .filter-row{
+        flex-direction: column;
+    }
+    .reset-btn{
+        margin-left: 0 !important;
+        margin-top: 1rem;
+        width: auto;
+    }
+}
+
 /* Action badge styles */
 .action-badge {
     display: inline-block;
@@ -90,7 +160,7 @@
 }
 .action-login-success{ 
     background: var(--success-color);
-    color: var(--primary-color);
+    color: #fff;
 }
 .action-login-failed{
     background: #f8d7da;
@@ -141,7 +211,10 @@ small{
     margin-top: 0.25rem;
 }
 /* Filter and Reset Button Styles */
-select, input[type="text"], input[type="number"], input[type="date"] {
+select,
+input[type="text"],
+input[type="number"],
+input[type="date"] {
     padding: 0.5rem;
     border-radius: 4px;
     border: 1px solid var(--text-color);
@@ -175,7 +248,7 @@ select, input[type="text"], input[type="number"], input[type="date"] {
 .reset-btn {
     padding: 0.5rem 1.5rem;
     background: var(--bg-color);
-    color: var(--text-primary);
+    color: #fff;
     border: 1px solid var(--text-color);
     border-radius: 4px;
     text-decoration: none;
@@ -277,5 +350,56 @@ select, input[type="text"], input[type="number"], input[type="date"] {
     .admin-dashboard .stats {
         flex-direction: column;
         gap: 1rem;
+    }
+    
+    /* Responsive filters */
+    .filters form > .filter-row {
+        flex-direction: column;
+    }
+    
+    .filter-group {
+        width: 100%;
+    }
+    
+    .filter-btn, .reset-btn {
+        width: auto;
+        justify-content: center;
+    }
+    
+    /* Stats grid responsive */
+    .stats-grid {
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 0.75rem;
+    }
+    
+    .stat-card {
+        padding: 1rem;
+    }
+    
+    .stat-card .value {
+        font-size: 1.5rem;
+    }
+    
+    /* Error list responsive */
+    .error-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+    
+    .error-count {
+        align-self: flex-end;
+    }
+    .filter-row label{
+        width: 30%;
+        display: inline-block;
+    }
+    .filter-btn{
+        margin-top: 1rem;
+    }
+    .filter-row select,
+    .filter-row input{
+        width: 60%;
+        margin-left: 5%;
     }
 }

@@ -55,7 +55,7 @@ Mit dieser Website sollen Mitglieder verwaltet, Veranstaltungen geteilt und Übe
 ## Kontakt
  - E-Mail Adresse und EmailJS hinzufügen
 ## Admin:
- - alles
+ - User-Actions
 ## Veranstaltung erstellen/ändern
  - Tags hinzufügen
 ## Error pages:
