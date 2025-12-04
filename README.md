@@ -50,19 +50,17 @@ Mit dieser Website sollen Mitglieder verwaltet, Veranstaltungen geteilt und Übe
 ## Made with ♥️ by [Jan](https://github.com/jan-albrecht05/)
 ---
 # To-Do:
+## Veranstaltung erstellen/ändern
+ - Tags hinzufügen
 ## Events Page:
  - Filter nach Tags
 ## Kontakt
  - E-Mail Adresse und EmailJS hinzufügen
 ## Admin:
  - User-Actions
-## Veranstaltung erstellen/ändern
- - Tags hinzufügen
-## Error pages:
- - 400 bad request
- - 401 unautorized
- - 403 forbidden
- - 500 internal server error
- - 503 service unavaiable
 
 ## config.db
+ - finishing UI
+ - whole scripts
+ - file uploads
+ - file paths

@@ -41,6 +41,7 @@
 /* Section styles */
 .section{
     padding-top: 1rem;
+    width: calc(100% - 1rem);
 }
 
 .section h2 {
@@ -58,7 +59,6 @@
     width: 100%;
     border-collapse: collapse;
     margin: 2rem 0;
-    background: var(--secondary-bg);
     border-radius: 8px;
     overflow: hidden;
 }
@@ -77,7 +77,6 @@
 }
 .logs-table tr:last-child {
     border-bottom: 1px solid var(--lightgrey);
-    border-radius: 0px 0px 8px 8px;
 }
 
 /* Responsive table styles */
@@ -85,6 +84,7 @@
     .logs-table {
         border: 0;
         margin: 1rem 0;
+        width: calc(100% - 1rem);
     }
     
     .logs-table thead {
@@ -296,11 +296,11 @@ input[type="date"] {
 
 .admin-dashboard {
     max-width: 1200px;
-    margin: 0 auto;
-    padding: 2rem;
     background: var(--bg-color);
     border-radius: 8px;
     box-shadow: var(--shadow);
+    padding-left: 1rem;
+    padding-right: 1rem;
 }
 
 .admin-dashboard h1 {
@@ -376,9 +376,6 @@ input[type="date"] {
 }
 
 @media (max-width: 800px) {
-    .admin-dashboard {
-        padding: 1rem;
-    }
     .admin-dashboard .stats {
         flex-direction: column;
         gap: 1rem;

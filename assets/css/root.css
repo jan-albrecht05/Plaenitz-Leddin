@@ -6,7 +6,7 @@
     --success-color: #28a745;
     --shadow-color: rgba(0, 0, 0, 0.1);
     --shadow: 0 5px 5px var(--shadow-color);
-    --lightgrey: #979797;
+    --lightgrey: #c5c5c5;
     --shadow-white: rgba(255, 255, 255) 40%;
     --orange: #ff6600;
 }

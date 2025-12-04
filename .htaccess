@@ -1,4 +1,11 @@
-# Custom 404 error page with original URL passed to internal handler
-# Handler logs the error and redirects to display page
+# Generic error handling with logging and redirection
+# All errors are logged and redirected to a user-friendly error page
 # Use absolute path from document root (works on both XAMPP and live server)
-ErrorDocument 404 /404-handler.php?url=%{REQUEST_URI}
+
+ErrorDocument 400 /error-handler.php?code=400&url=%{REQUEST_URI}
+ErrorDocument 401 /error-handler.php?code=401&url=%{REQUEST_URI}
+ErrorDocument 403 /error-handler.php?code=403&url=%{REQUEST_URI}
+ErrorDocument 404 /error-handler.php?code=404&url=%{REQUEST_URI}
+ErrorDocument 500 /error-handler.php?code=500&url=%{REQUEST_URI}
+ErrorDocument 502 /error-handler.php?code=502&url=%{REQUEST_URI}
+ErrorDocument 503 /error-handler.php?code=503&url=%{REQUEST_URI}

@@ -9,6 +9,7 @@ startSecureSession();
 require_once '../../includes/db_helper.php';
 require_once '../../includes/log-data.php';
 
+
 // Clean any previous output and BOM
 ob_clean();
 
@@ -25,6 +26,57 @@ if (!hasAdminOrVorstandRole($userId)) {
     session_destroy();
     header("Location: login.php?error=" . urlencode("Sie haben keine Berechtigung für diese Seite."));
     exit();
+}
+
+// Fetch comprehensive user statistics
+$usersCount = 0;
+$activeUsers = 0;
+$inactiveUsers = 0;
+$pendingUsers = 0;
+$adminCount = 0;
+$vorstandCount = 0;
+$memberCount = 0;
+
+$dbPathMembers = __DIR__ . '/../../assets/db/member.db';
+$pdo = new PDO('sqlite:' . $dbPathMembers);
+$pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+try {
+    // Total users
+    $stmt = $pdo->query('SELECT COUNT(*) AS count FROM mitglieder');
+    $row = $stmt->fetch(PDO::FETCH_ASSOC);
+    if ($row) {
+        $usersCount = (int)$row['count'];
+    }
+    
+    // Users by status
+    $stmt = $pdo->query('SELECT status, COUNT(*) AS count FROM mitglieder GROUP BY status');
+    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+        $status = (int)$row['status'];
+        $count = (int)$row['count'];
+        if ($status === 1) {
+            $activeUsers = $count;
+        } elseif ($status === 2) {
+            $inactiveUsers = $count;
+        } elseif ($status === 0) {
+            $pendingUsers = $count;
+        }
+    }
+    
+    // Users by role
+    $stmt = $pdo->query('SELECT rolle, COUNT(*) AS count FROM mitglieder GROUP BY rolle');
+    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+        $rolle = strtolower(trim((string)$row['rolle']));
+        $count = (int)$row['count'];
+        if ($rolle === 'admin') {
+            $adminCount = $count;
+        } elseif ($rolle === 'vorstand') {
+            $vorstandCount = $count;
+        } elseif ($rolle === 'mitglied') {
+            $memberCount = $count;
+        }
+    }
+} catch (Exception $e) {
+    error_log('dashboard: Fehler beim Abrufen der Statistiken: ' . $e->getMessage());
 }
 
 //get "?neu=" from URL
@@ -489,11 +541,6 @@ if ($needsPasswordSetup && !isset($_GET['neu']) && !isset($_GET['change_pw']) &&
             }
         </script>
         <div id="right">
-            <?php if (hasAdminRole($userId)): ?>
-            <a href="admin.php" style="margin-right: 1rem; display: flex; align-items: center; color: var(--text-primary); text-decoration: none; font-size: 0.9rem;">
-                <span class="material-symbols-outlined">analytics</span>
-            </a>
-            <?php endif; ?>
             <a href="logout.php" id="logout-button">
                 <span class="material-symbols-outlined">logout</span>
             </a>
@@ -600,6 +647,40 @@ if ($needsPasswordSetup && !isset($_GET['neu']) && !isset($_GET['change_pw']) &&
         </div>
     </div>
     <div id="main">
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h3>Gesamt-Mitglieder</h3>
+                <div class="value"><?php echo number_format($usersCount); ?></div>
+            </div>
+            <div class="stat-card">
+                <h3>Aktive Mitglieder</h3>
+                <div class="value"><?php echo number_format($activeUsers); ?></div>
+            </div>
+            <div class="stat-card">
+                <h3>Inaktive Mitglieder</h3>
+                <div class="value"><?php echo number_format($inactiveUsers); ?></div>
+            </div>
+            <div class="stat-card">
+                <h3>Ausstehende Mitglieder</h3>
+                <div class="value"><?php echo number_format($pendingUsers); ?></div>
+            </div>
+            <div class="stat-card">
+                <h3>Admins</h3>
+                <div class="value"><?php echo number_format($adminCount); ?></div>
+            </div>
+            <div class="stat-card">
+                <h3>Vorstand</h3>
+                <div class="value"><?php echo number_format($vorstandCount); ?></div>
+            </div>
+            <div class="stat-card">
+                <h3>Mitglieder (Rolle)</h3>
+                <div class="value"><?php echo number_format($memberCount); ?></div>
+            </div>
+            <div class="stat-card">
+                <h3>Aktivitätsrate</h3>
+                <div class="value"><?php echo $usersCount > 0 ? round(($activeUsers / $usersCount) * 100, 1) : 0; ?>%</div>
+            </div>
+        </div>
         <div id="member-output">
             <div id="member-output-heading">
                 <button class="member-button ganzer-name" onclick="window.location.href='dashboard.php?sort=nachname'">Name</button>
