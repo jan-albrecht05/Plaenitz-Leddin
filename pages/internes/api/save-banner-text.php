@@ -2,7 +2,8 @@
 /**
  * API endpoint to save banner text to config.db
  */
-session_start();
+require_once '../../../includes/session-config.php';
+startSecureSession();
 
 // Include database helper functions
 require_once '../../../includes/db_helper.php';

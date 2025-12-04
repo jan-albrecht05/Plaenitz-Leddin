@@ -1,3 +1,40 @@
+/**
+ * Sends a log action to the server via log-data.php endpoint
+ * @param {string} action - Action type (e.g., 'GPS-request', 'GPS-success')
+ * @param {string} text - Description of the action
+ */
+function logAction(action, text) {
+    if (!action) return; // Don't log if no action provided
+    
+    fetch('../../includes/log-data.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json; charset=utf-8'
+        },
+        body: JSON.stringify({
+            action: action,
+            text: text || ''
+        })
+    })
+    .then(response => {
+        if (!response.ok) {
+            console.warn('Logging failed with status:', response.status);
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.status === 'success') {
+            console.log('Action logged:', action);
+        } else {
+            console.warn('Logging returned error:', data.text);
+        }
+    })
+    .catch(error => {
+        console.warn('Error sending log:', error);
+        // Fail silently - don't disrupt user experience
+    });
+}
+
 function autoFillAddress() {
     if (!navigator.geolocation) {
         alert('Geolocation wird von Ihrem Browser nicht unterstützt.');
@@ -12,6 +49,7 @@ function autoFillAddress() {
     }
 
     console.log("Requesting location...");
+    logAction("GPS-request", "Mitglied-werden: Nutzer hat Standortabfrage gestartet");
     navigator.geolocation.getCurrentPosition(async (position) => {
         try {
             const lat = position.coords.latitude;
@@ -35,7 +73,16 @@ function autoFillAddress() {
                 throw new Error(`HTTP ${response.status}: ${response.statusText}`);
             }
 
-            const data = await response.json();
+            const responseText = await response.text();
+            console.log('Raw response:', responseText);
+            
+            let data;
+            try {
+                data = JSON.parse(responseText);
+            } catch (e) {
+                console.error('JSON parsing failed. Response was:', responseText);
+                throw new Error('Invalid JSON response: ' + e.message);
+            }
             console.log('Response data:', data);
             
             if (data.success && data.address) {
@@ -55,6 +102,7 @@ function autoFillAddress() {
                 });
 
                 console.log('Address filled successfully:', data.address);
+                logAction("GPS-success", "Mitglied-werden: Adresse erfolgreich ermittelt für " + lat + ", " + lon);
             } else {
                 throw new Error(data.error || 'Adresse konnte nicht ermittelt werden.');
             }

@@ -1,5 +1,6 @@
 <?php
-session_start();
+require_once '../../includes/session-config.php';
+startSecureSession();
 header('Content-Type: application/json; charset=utf-8');
 
 require_once __DIR__ . '/../../includes/db_helper.php';

@@ -1,5 +1,6 @@
 <?php
-session_start();
+require_once '../includes/session-config.php';
+startSecureSession();
 
 // Include database helper functions
 require_once '../includes/db_helper.php';
@@ -41,9 +42,6 @@ if ($event_id !== null) {
         // If a participation POST was sent, process it here before selecting the event
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['participate'])) {
             $postedId = (int)($_POST['event_id'] ?? $event_id);
-            if (session_status() !== PHP_SESSION_ACTIVE) {
-                session_start();
-            }
             if (!isset($_SESSION['participated_events']) || !is_array($_SESSION['participated_events'])) {
                 $_SESSION['participated_events'] = [];
             }
@@ -293,10 +291,6 @@ $event_title = $event['titel'] ?? 'Veranstaltung';
         // Increment view count
         if ($event) {
             try {
-                if (session_status() !== PHP_SESSION_ACTIVE) {
-                    session_start();
-                }
-
                 if (!isset($_SESSION['viewed_events']) || !is_array($_SESSION['viewed_events'])) {
                     $_SESSION['viewed_events'] = [];
                 }

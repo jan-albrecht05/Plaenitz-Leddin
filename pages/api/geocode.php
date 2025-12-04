@@ -1,12 +1,20 @@
 <?php
+// Start output buffering to catch any stray output
+ob_start();
+
+require_once '../../includes/log-data.php';
 /**
  * Reverse Geocoding Proxy for OpenStreetMap Nominatim API
  * Avoids CORS issues by proxying requests server-side
  */
 
-// Enable error reporting for debugging
+// Disable error reporting output (log to file instead)
 error_reporting(E_ALL);
-ini_set('display_errors', 1);
+ini_set('display_errors', 0); // Don't display errors - log to file instead
+ini_set('log_errors', 1);
+
+// Clean any previous output and BOM
+ob_clean();
 
 header('Content-Type: application/json; charset=utf-8');
 header('Access-Control-Allow-Origin: *');
@@ -39,6 +47,7 @@ try {
     $lat = floatval($input['lat'] ?? 0);
     $lon = floatval($input['lon'] ?? 0);
     
+    logAction("", "GPS-request", "Geocoding request received for coordinates: $lat, $lon", "", "");
     error_log("Geocoding API: Received coordinates lat=$lat, lon=$lon");
 
     if (!$lat || !$lon) {
@@ -146,12 +155,20 @@ try {
     ];
 
     error_log('Geocoding API: Returning success response');
+    logAction("", "GPS-success", "Geocoding successful for coordinates: $lat, $lon", "", "");
+    
+    // Clean buffer and send clean JSON
+    ob_clean();
     echo json_encode($result, JSON_UNESCAPED_UNICODE);
+    ob_end_flush();
 
 } catch (Exception $e) {
     error_log('Geocoding API: Exception caught: ' . $e->getMessage());
     error_log('Geocoding API: Stack trace: ' . $e->getTraceAsString());
     http_response_code(500);
+    
+    // Clean buffer and send clean JSON
+    ob_clean();
     echo json_encode([
         'success' => false,
         'error' => 'Geocoding service error: ' . $e->getMessage(),
@@ -160,4 +177,5 @@ try {
             'line' => $e->getLine()
         ]
     ]);
+    ob_end_flush();
 }

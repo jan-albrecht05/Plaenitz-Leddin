@@ -1,6 +1,7 @@
 <?php
 // Internal 404 handler - logs error and redirects to display page
-session_start();
+require_once __DIR__ . '/includes/session-config.php';
+startSecureSession();
 require_once __DIR__ . '/includes/log-data.php';
 
 // Get the original requested URL from query parameter (passed by .htaccess)

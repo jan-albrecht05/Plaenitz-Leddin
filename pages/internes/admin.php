@@ -1,5 +1,6 @@
 <?php
-session_start();
+require_once '../../includes/session-config.php';
+startSecureSession();
 
 // Include database helper functions
 require_once '../../includes/db_helper.php';
@@ -7,7 +8,7 @@ require_once '../../includes/log-data.php';
 
 // Check if user is logged in and is admin
 if (!isset($_SESSION['user_id'])) {
-    header("Location: login.php");
+    header("Location: login.php?redirect=admin.php");
     exit();
 }
 
@@ -67,6 +68,28 @@ $statsQuery = "
     WHERE datetime(timecode) >= datetime('now', '-{$filterDays} days')
 ";
 $stats = $pdo->query($statsQuery)->fetch(PDO::FETCH_ASSOC);
+
+// Get active sessions (users with successful login in the last 30 minutes)
+$activeSessionsQuery = "
+    SELECT COUNT(DISTINCT user_id) as active_sessions
+    FROM logs
+    WHERE action = 'login-success'
+    AND user_id IS NOT NULL
+    AND user_id != ''
+    AND datetime(timecode) >= datetime('now', '-30 minutes')
+";
+$activeSessions = $pdo->query($activeSessionsQuery)->fetch(PDO::FETCH_ASSOC)['active_sessions'] ?? 0;
+
+// Get active sessions (users with successful login in the last 30 minutes)
+$activeSessionsQuery = "
+    SELECT COUNT(DISTINCT user_id) as active_sessions
+    FROM logs
+    WHERE action = 'login-success'
+    AND user_id IS NOT NULL
+    AND user_id != ''
+    AND datetime(timecode) >= datetime('now', '-30 minutes')
+";
+$activeSessions = $pdo->query($activeSessionsQuery)->fetch(PDO::FETCH_ASSOC)['active_sessions'] ?? 0;
 
 // Get action breakdown
 $actionQuery = "
@@ -285,6 +308,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['member_id'], $_POST['
             <div class="stat-card">
                 <h3>alle Mitglieder</h3>
                 <div class="value"><?php echo number_format($usersCount); ?></div>
+            </div>
+            <div class="stat-card">
+                <h3>Aktive Sessions</h3>
+                <div class="value"><?php echo number_format($activeSessions); ?></div>
+                <small style="font-size: 0.75rem; color: var(--text-secondary);">letzte 30 Min.</small>
             </div>
             <div class="stat-card">
                 <h3>Gesamt-Einträge</h3>

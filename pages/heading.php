@@ -23,7 +23,10 @@
             <button id="mitglied-werden" onclick="location.href='../pages/mitglied-werden.php'">Mitglied werden</button>
             <?php
             // Ensure session and helpers are available
-            if (session_status() === PHP_SESSION_NONE) { session_start(); }
+            if (session_status() === PHP_SESSION_NONE) {
+                @require_once __DIR__ . '/../includes/session-config.php';
+                startSecureSession();
+            }
             @require_once __DIR__ . '/../includes/db_helper.php';
 
             $user_id = $_SESSION['user_id'] ?? null;

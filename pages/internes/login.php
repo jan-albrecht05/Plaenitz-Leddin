@@ -1,12 +1,13 @@
 <?php
-    session_start();
-    
-    // Include database helper functions
+require_once '../../includes/session-config.php';
+startSecureSession();    // Include database helper functions
     require_once '../../includes/db_helper.php';
     require_once '../../includes/log-data.php';
     
     if(isset($_SESSION['user_id'])) {
-        header("Location: dashboard.php");
+        // User is already logged in - redirect to appropriate page based on role
+        $targetPage = hasAdminRole($_SESSION['user_id']) ? 'admin.php' : 'dashboard.php';
+        header("Location: " . $targetPage);
         exit();
     }
 
@@ -20,6 +21,7 @@
             exit();
         }
 
+        $redirect = $_GET['redirect'] ?? '';
         // Split fullname into name and nachname: last token = nachname, rest = name
         $parts = preg_split('/\s+/', $fullname);
         if (count($parts) < 2) {
@@ -39,20 +41,28 @@
             $_SESSION['user_id'] = $user['id'];
             $_SESSION['name'] = $user['name'];
             
-            // Check if user has completed password setup (has last_visited_date in DB)
-            // If not, redirect with ?neu=1 to show password change popup
-            // DO NOT update last_visited_date here - it will be set after successful password change
-            if (!userHasCompletedPasswordSetup($user['id'])) {
-                $redirect = "?neu=1";
+            // Determine redirect based on role and password setup status
+            $userId = $user['id'];
+            $isAdmin = hasAdminRole($userId);
+            $hasCompletedSetup = userHasCompletedPasswordSetup($userId);
+            
+            // Determine target page based on role
+            $targetPage = $isAdmin ? 'admin.php' : 'dashboard.php';
+            
+            // Check if user needs to complete password setup
+            if (!$hasCompletedSetup) {
+                $redirect = $targetPage . '?neu=1';
+                // DO NOT update last_visited_date here - it will be set after successful password change
             } else {
                 // User already has last_visited_date, update it now
-                updateLastVisitedDate($user['id']);
-                $redirect = "";
+                updateLastVisitedDate($userId);
+                $redirect = $targetPage;
             }
-            // log successful login
-            logAction('', 'login-success', $user['name'] . ' (' . $name . ' ' . $nachname . ') hat sich erfolgreich eingeloggt', '', $user['id']);
             
-            header("Location: dashboard.php" . $redirect);
+            // log successful login
+            logAction('', 'login-success', $user['name'] . ' (' . $name . ' ' . $nachname . ') hat sich erfolgreich eingeloggt', '', $userId);
+            
+            header("Location: " . $redirect);
             exit();
         } else {
             // log failed login attempt

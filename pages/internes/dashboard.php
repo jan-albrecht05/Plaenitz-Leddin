@@ -1,9 +1,16 @@
 <?php
-session_start();
+// Start output buffering to catch any stray output
+ob_start();
+
+require_once '../../includes/session-config.php';
+startSecureSession();
 
 // Include database helper functions
 require_once '../../includes/db_helper.php';
 require_once '../../includes/log-data.php';
+
+// Clean any previous output and BOM
+ob_clean();
 
 // Check if user is logged in
 if (!isset($_SESSION['user_id'])) {
@@ -143,8 +150,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['member_id'], $_POST['
 
     $respond = function($success, $message) use ($isAjax) {
         if ($isAjax) {
+            // Clean buffer and send clean JSON
+            ob_clean();
             header('Content-Type: application/json; charset=utf-8');
             echo json_encode(['success' => (bool)$success, 'message' => $message]);
+            ob_end_flush();
             exit();
         } else {
             if ($success) header('Location: dashboard.php?success=' . urlencode($message));

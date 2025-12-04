@@ -1,5 +1,6 @@
 <?php
-session_start();
+require_once '../../includes/session-config.php';
+startSecureSession();
 
 require_once '../../includes/log-data.php';
 

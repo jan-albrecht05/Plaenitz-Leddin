@@ -162,6 +162,30 @@
     background: var(--success-color);
     color: #fff;
 }
+.action-logout{
+    background: var(--success-color);
+    color: #fff;
+}
+.action-password_change{
+    background: #f8cb02;
+    color: #fff;
+}
+.action-promote_member{
+    background: #f8cb02;
+    color: #fff;
+}
+.action-demote_member{
+    background: #f8cb02;
+    color: #fff;
+}
+.action-activate_member{
+    color: var(--success-color);
+    background-color: #fff;
+}
+.action-deactivate_member{
+    background: #fff;
+    color: red;
+}
 .action-login-failed{
     background: #f8d7da;
     color: var(--orange);
@@ -177,6 +201,14 @@
 .action-promote, .action-demote { 
     background: #d1ecf1; 
     color: var(--primary-color);
+}
+.action-GPS-success{
+    background: #1184ff;
+    color: #fff;
+}
+.action-GPS-request{
+    background: #35d3ff;
+    color: #fff;
 }
 
 /* Error list styles */
