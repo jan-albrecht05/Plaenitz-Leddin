@@ -61,17 +61,20 @@
     <div id="main">
         <h1>Internes Konfigurationsmenü</h1>
         <hr>
+
+        <!-- ===== VORSTAND SECTION (ALWAYS FIRST) ===== -->
+        <?php if ($canEditUI || $canEditConfig) { ?>
+
+        <!-- ===== OBERFLÄCHE / UI SECTION (VORSTAND can edit if allowed) ===== -->
         <h2>Oberfläche</h2>
-        <?php
-            // if user is allowed to edit UI
-            if ($canEditUI) {
-        ?>
-        <section> <!-- ICONS -->
+        <?php if ($canEditUI) { ?>
+
+        <section> <!-- TABICON -->
             <h3>
                 Tabicon
                 <p class="info"><span class="material-symbols-outlined">info</span><span class="infotext">Das kleine Bildchen neben dem Seitemnamen im Tab.</span></p>
             </h3>
-            <div id="tabicon-drop-zone" class="file-drop-zone center">
+            <div id="tabicon-drop-zone" class="file-drop-zone">
                 <span class="material-symbols-outlined">upload_file</span>
                 <p>Datei hierher ziehen oder klicken zum Auswählen</p>
                 <input type="file" id="tabicon-file-input" accept="image/*" style="display: none;">
@@ -80,7 +83,6 @@
                 <summary>verwendete Tabicons anzeigen <span class="material-symbols-outlined">keyboard_arrow_down</span></summary>
                 <div id="tabicon-list">
                     <?php
-                        // Load all icons from config.db icons table
                         try {
                             $stmt = $config->prepare('SELECT * FROM icons ORDER BY datum DESC');
                             $result = $stmt->execute();
@@ -88,7 +90,6 @@
                             $iconCount = 0;
                             while ($row = $result->fetchArray(SQLITE3_ASSOC)) {
                                 $iconCount++;
-                                // Build relative path from root (config.php is in pages/internes/)
                                 $iconPath = '../../assets/icons/tabicons/' . ltrim($row['link'], '/\\');
                                 echo '<div class="tabicon-item">';
                                     echo '<img src="' . htmlspecialchars($iconPath) . '" alt="Tabicon">';
@@ -96,7 +97,6 @@
                                     if (!empty($row['dimensions'])) {
                                         echo '<p class="dimensions">' . htmlspecialchars($row['dimensions']) . '</p>';
                                     }
-                                    // Display upload date if available
                                     if (!empty($row['datum'])) {
                                         $date = date('d.m.Y', strtotime($row['datum']));
                                         echo '<p class="date">' . htmlspecialchars($date) . '</p>';
@@ -104,24 +104,24 @@
                                 echo '</div>';
                             }
                             
-                            // Show message if no icons found
                             if ($iconCount === 0) {
-                                echo '<p class="no-icons">Keine Tabicons gefunden.</p>';
+                                echo '<p class="no-items">Keine Tabicons gefunden.</p>';
                             }
                         } catch (Exception $e) {
-                            error_log('Error loading icons from config.db: ' . $e->getMessage());
+                            error_log('Error loading icons: ' . $e->getMessage());
                             echo '<p class="error">Fehler beim Laden der Tabicons.</p>';
                         }
                     ?>
                 </div>
             </details>
         </section>
-        <section> <!-- LOGOS -->
+
+        <section> <!-- LOGO -->
             <h3>
                 Logo
                 <p class="info"><span class="material-symbols-outlined">info</span><span class="infotext">Das Logo am oberen Bildschirmrand.</span></p>
             </h3>
-            <div id="logo-drop-zone" class="file-drop-zone center">
+            <div id="logo-drop-zone" class="file-drop-zone">
                 <span class="material-symbols-outlined">upload_file</span>
                 <p>Datei hierher ziehen oder klicken zum Auswählen</p>
                 <input type="file" id="logo-file-input" accept="image/*" style="display: none;">
@@ -130,7 +130,6 @@
                 <summary>verwendete Logos anzeigen <span class="material-symbols-outlined">keyboard_arrow_down</span></summary>
                 <div id="logos-list">
                     <?php
-                        // Load all logos from config.db logos table
                         try {
                             $stmt = $config->prepare('SELECT * FROM logos ORDER BY datum DESC');
                             $result = $stmt->execute();
@@ -138,15 +137,13 @@
                             $logoCount = 0;
                             while ($row = $result->fetchArray(SQLITE3_ASSOC)) {
                                 $logoCount++;
-                                // Build relative path from root (config.php is in pages/internes/)
-                                $iconPath = '../../assets/icons/logos/' . ltrim($row['link'], '/\\');
+                                $logoPath = '../../assets/icons/logos/' . ltrim($row['link'], '/\\');
                                 echo '<div class="logos-item">';
-                                    echo '<img src="' . htmlspecialchars($iconPath) . '" alt="Logo">';
+                                    echo '<img src="' . htmlspecialchars($logoPath) . '" alt="Logo">';
                                     echo '<h4 class="bildname">' . htmlspecialchars(basename($row['name'])) . '</h4>';
                                     if (!empty($row['dimensions'])) {
                                         echo '<p class="dimensions">' . htmlspecialchars($row['dimensions']) . '</p>';
                                     }
-                                    // Display upload date if available
                                     if (!empty($row['datum'])) {
                                         $date = date('d.m.Y', strtotime($row['datum']));
                                         echo '<p class="date">' . htmlspecialchars($date) . '</p>';
@@ -154,42 +151,40 @@
                                 echo '</div>';
                             }
                             
-                            // Show message if no logos found
                             if ($logoCount === 0) {
-                                echo '<p class="no-logos">Keine Logos gefunden.</p>';
+                                echo '<p class="no-items">Keine Logos gefunden.</p>';
                             }
                         } catch (Exception $e) {
-                            error_log('Error loading icons from config.db: ' . $e->getMessage());
-                            echo '<p class="error">Fehler beim Laden der Tabicons.</p>';
+                            error_log('Error loading logos: ' . $e->getMessage());
+                            echo '<p class="error">Fehler beim Laden der Logos.</p>';
                         }
                     ?>
                 </div>
             </details>
         </section>
-        <section> <!-- Banner-TEXT -->
+
+        <section> <!-- BANNER TEXT -->
             <h3>
                 Banner Text
                 <p class="info"><span class="material-symbols-outlined">info</span><span class="infotext">Der Spruch auf jeder Seite im Banner.</span></p>
             </h3>
-            <form id="banner-text-form" prevent-default="true">
-                <input type="text" id="banner-text-input" placeholder="Geben Sie den Banner-Text hier ein..." value="<?php $bannerText = getConfigValue('banner_text');echo htmlspecialchars($bannerText !== null ? $bannerText : ''); ?>">
+            <form id="banner-text-form">
+                <input type="text" id="banner-text-input" placeholder="Geben Sie den Banner-Text hier ein..." value="<?php $bannerText = getConfigValue('banner_text'); echo htmlspecialchars($bannerText !== null ? $bannerText : ''); ?>">
                 <button type="submit">Banner-Text speichern</button>
             </form>
             <details>
                 <summary>verwendete Texte anzeigen <span class="material-symbols-outlined">keyboard_arrow_down</span></summary>
                 <div id="texte-list">
                     <?php
-                        // Load all Texte from config.db logos table
                         try {
                             $stmt = $config->prepare('SELECT * FROM banner_texte ORDER BY datum DESC');
                             $result = $stmt->execute();
                             
-                            $logoCount = 0;
+                            $textCount = 0;
                             while ($row = $result->fetchArray(SQLITE3_ASSOC)) {
-                                $logoCount++;
+                                $textCount++;
                                 echo '<div class="text-item">';
                                     echo '<h4 class="banner-text">' . htmlspecialchars($row['inhalt']) . '</h4>';
-                                    // Display creation date if available
                                     if (!empty($row['datum'])) {
                                         $date = date('d.m.Y', strtotime($row['datum']));
                                         echo '<p class="date">' . htmlspecialchars($date) . '</p>';
@@ -197,24 +192,335 @@
                                 echo '</div>';
                             }
                             
-                            // Show message if no logos found
-                            if ($logoCount === 0) {
-                                echo '<p class="no-logos">Keine Logos gefunden.</p>';
+                            if ($textCount === 0) {
+                                echo '<p class="no-items">Keine Texte gefunden.</p>';
                             }
                         } catch (Exception $e) {
-                            error_log('Error loading icons from config.db: ' . $e->getMessage());
-                            echo '<p class="error">Fehler beim Laden der Tabicons.</p>';
+                            error_log('Error loading texts: ' . $e->getMessage());
+                            echo '<p class="error">Fehler beim Laden der Texte.</p>';
                         }
                     ?>
                 </div>
             </details>
         </section>
-        <?php
-            }
-            else{
-                echo '<h3>Sie haben aktuell keine Berechtigung zur Bearbeitung der Benutzeroberfläche.</h3>';
-            };
-        ?>
+
+        <section> <!-- BANNER IMAGE -->
+            <h3>
+                Banner-Bild
+                <p class="info"><span class="material-symbols-outlined">info</span><span class="infotext">Das Hintergrundbild des Banners auf der Startseite.</span></p>
+            </h3>
+            <div id="banner-image-drop-zone" class="file-drop-zone">
+                <span class="material-symbols-outlined">upload_file</span>
+                <p>Bild hierher ziehen oder klicken zum Auswählen</p>
+                <input type="file" id="banner-image-file-input" accept="image/*" style="display: none;">
+            </div>
+            <details>
+                <summary>verwendete Banner-Bilder anzeigen <span class="material-symbols-outlined">keyboard_arrow_down</span></summary>
+                <div id="banner-images-list">
+                    <?php
+                        try {
+                            $stmt = $config->prepare('SELECT * FROM banner_images ORDER BY datum DESC');
+                            $result = $stmt->execute();
+                            
+                            $imageCount = 0;
+                            while ($row = $result->fetchArray(SQLITE3_ASSOC)) {
+                                $imageCount++;
+                                $imagePath = '../../assets/images/banner/' . ltrim($row['link'], '/\\');
+                                echo '<div class="banner-image-item">';
+                                    echo '<img src="' . htmlspecialchars($imagePath) . '" alt="Banner-Bild">';
+                                    if (!empty($row['datum'])) {
+                                        $date = date('d.m.Y', strtotime($row['datum']));
+                                        echo '<p class="date">' . htmlspecialchars($date) . '</p>';
+                                    }
+                                echo '</div>';
+                            }
+                            
+                            if ($imageCount === 0) {
+                                echo '<p class="no-items">Keine Banner-Bilder gefunden.</p>';
+                            }
+                        } catch (Exception $e) {
+                            error_log('Error loading banner images: ' . $e->getMessage());
+                            echo '<p class="error">Fehler beim Laden der Banner-Bilder.</p>';
+                        }
+                    ?>
+                </div>
+            </details>
+        </section>
+
+        <section> <!-- GIF SECTION -->
+            <h3>
+                GIFs
+                <p class="info"><span class="material-symbols-outlined">info</span><span class="infotext">Animierte GIFs für die Website.</span></p>
+            </h3>
+            
+            <div class="config-item">
+                <label for="show-gif-toggle">
+                    GIFs anzeigen
+                    <p class="info"><span class="material-symbols-outlined">info</span><span class="infotext">Aktivieren oder deaktivieren Sie die Anzeige von GIFs.</span></p>
+                </label>
+                <label class="switch">
+                    <input type="checkbox" id="show-gif-toggle" data-config-key="show_gif" <?php echo filter_var(getConfigValue('show_gif'), FILTER_VALIDATE_BOOLEAN) ? 'checked' : ''; ?>>
+                    <span class="slider"></span>
+                </label>
+            </div>
+
+            <div class="config-item">
+                <label for="auto-rotate-gif-toggle">
+                    GIF-Wechsel nach Jahreszeit
+                    <p class="info"><span class="material-symbols-outlined">info</span><span class="infotext">GIFs werden je nach Jahreszeit automatisch gewechselt.</span></p>
+                </label>
+                <label class="switch">
+                    <input type="checkbox" id="auto-rotate-gif-toggle" data-config-key="auto_rotate_gif" <?php echo filter_var(getConfigValue('auto_rotate_gif'), FILTER_VALIDATE_BOOLEAN) ? 'checked' : ''; ?>>
+                    <span class="slider"></span>
+                </label>
+            </div>
+
+            <div id="gif-drop-zone" class="file-drop-zone">
+                <span class="material-symbols-outlined">upload_file</span>
+                <p>GIF hierher ziehen oder klicken zum Auswählen</p>
+                <input type="file" id="gif-file-input" accept=".gif" style="display: none;">
+            </div>
+            <details>
+                <summary>verwendete GIFs anzeigen <span class="material-symbols-outlined">keyboard_arrow_down</span></summary>
+                <div id="gifs-list">
+                    <?php
+                        try {
+                            $stmt = $config->prepare('SELECT * FROM gifs ORDER BY datum DESC');
+                            $result = $stmt->execute();
+                            
+                            $gifCount = 0;
+                            while ($row = $result->fetchArray(SQLITE3_ASSOC)) {
+                                $gifCount++;
+                                $gifPath = '../../assets/images/gifs/' . ltrim($row['link'], '/\\');
+                                $season = htmlspecialchars($row['typ'] ?? 'Keine Jahreszeit');
+                                echo '<div class="gif-item">';
+                                    echo '<img src="' . htmlspecialchars($gifPath) . '" alt="GIF">';
+                                    echo '<h4>' . htmlspecialchars(basename($row['name'])) . '</h4>';
+                                    echo '<p class="season">Jahreszeit: ' . $season . '</p>';
+                                    if (!empty($row['datum'])) {
+                                        $date = date('d.m.Y', strtotime($row['datum']));
+                                        echo '<p class="date">' . htmlspecialchars($date) . '</p>';
+                                    }
+                                echo '</div>';
+                            }
+                            
+                            if ($gifCount === 0) {
+                                echo '<p class="no-items">Keine GIFs gefunden.</p>';
+                            }
+                        } catch (Exception $e) {
+                            error_log('Error loading gifs: ' . $e->getMessage());
+                            echo '<p class="error">Fehler beim Laden der GIFs.</p>';
+                        }
+                    ?>
+                </div>
+            </details>
+        </section>
+
+        <?php } else {
+            echo '<h3>Sie haben aktuell keine Berechtigung zur Bearbeitung der Benutzeroberfläche.</h3>';
+        } ?>
+
+        <section> <!-- COLOR MANAGEMENT -->
+            <h3>
+                Farben
+                <p class="info"><span class="material-symbols-outlined">info</span><span class="infotext">Verwenden Sie die Farbhistorie, um zwischen gespeicherten Farben zu wechseln.</span></p>
+            </h3>
+            <div class="color-picker-container">
+                <input type="color" id="color-input" value="#<?php $color = getConfigValue('primary_color'); echo htmlspecialchars($color !== null ? ltrim($color, '#') : '007ACC'); ?>">
+                <button id="color-save-btn">Farbe speichern</button>
+            </div>
+            <details>
+                <summary>Farbhistorie anzeigen <span class="material-symbols-outlined">keyboard_arrow_down</span></summary>
+                <div id="color-history-list">
+                    <?php
+                        try {
+                            $stmt = $config->prepare('SELECT * FROM colors ORDER BY datum DESC LIMIT 20');
+                            $result = $stmt->execute();
+                            
+                            $colorCount = 0;
+                            while ($row = $result->fetchArray(SQLITE3_ASSOC)) {
+                                $colorCount++;
+                                $farbcode = htmlspecialchars($row['farbcode']);
+                                $date = date('d.m.Y H:i', strtotime($row['datum']));
+                                echo '<div class="color-history-item" style="border-left: 4px solid ' . $farbcode . ';">';
+                                    echo '<span class="color-code">' . $farbcode . '</span>';
+                                    echo '<span class="color-date">' . $date . '</span>';
+                                echo '</div>';
+                            }
+                            
+                            if ($colorCount === 0) {
+                                echo '<p class="no-items">Keine Farben in der Historie.</p>';
+                            }
+                        } catch (Exception $e) {
+                            error_log('Error loading colors: ' . $e->getMessage());
+                            echo '<p class="error">Fehler beim Laden der Farbhistorie.</p>';
+                        }
+                    ?>
+                </div>
+            </details>
+        </section>
+
+        <!-- ===== BENACHRICHTIGUNGEN (VORSTAND SECTION) ===== -->
+        <h2>Benachrichtigungen</h2>
+        <?php if ($canEditConfig) { ?>
+        <section> <!-- NOTIFICATIONS -->
+            <h3>
+                Mitteilungen für Besucher
+                <p class="info"><span class="material-symbols-outlined">info</span><span class="infotext">Erstellen Sie zeitgesteuerte Benachrichtigungen für die Website.<br>Diese werden allen Besuchern auf der Startseite angezeigt.</span></p>
+            </h3>
+            <form id="notification-form">
+                <input type="text" id="notification-heading" placeholder="Überschrift (z.B. 'Mitteilung')">
+                <textarea id="notification-text" placeholder="Nachrichtentext..."></textarea>
+                <div class="date-time-group">
+                    <input type="datetime-local" id="notification-start" placeholder="Startzeit">
+                    <input type="datetime-local" id="notification-end" placeholder="Endzeit">
+                </div>
+                <button type="submit">Benachrichtigung erstellen</button>
+            </form>
+            <details>
+                <summary>Benachrichtigungen anzeigen <span class="material-symbols-outlined">keyboard_arrow_down</span></summary>
+                <div id="notification-list">
+                    <?php
+                        try {
+                            $stmt = $config->prepare("SELECT * FROM messages WHERE typ = 'notification' ORDER BY startzeit DESC");
+                            $result = $stmt->execute();
+                            
+                            $notificationCount = 0;
+                            while ($row = $result->fetchArray(SQLITE3_ASSOC)) {
+                                $notificationCount++;
+                                $isActive = strtotime($row['startzeit']) <= time() && time() <= strtotime($row['endzeit']) ? 'active' : 'inactive';
+                                echo '<div class="message-item ' . $isActive . '">';
+                                    echo '<h4>' . htmlspecialchars($row['heading']) . '</h4>';
+                                    echo '<p>' . htmlspecialchars($row['text']) . '</p>';
+                                    echo '<span class="message-time">Von: ' . date('d.m.Y H:i', strtotime($row['startzeit'])) . '</span>';
+                                    echo '<span class="message-time">Bis: ' . date('d.m.Y H:i', strtotime($row['endzeit'])) . '</span>';
+                                    echo '<button class="edit-message-btn" data-message-id="' . htmlspecialchars($row['id']) . '">Bearbeiten</button>';
+                                    echo '<button class="delete-message-btn" data-message-id="' . htmlspecialchars($row['id']) . '" data-message-type="notification">Löschen</button>';
+                                echo '</div>';
+                            }
+                            
+                            if ($notificationCount === 0) {
+                                echo '<p class="no-items">Keine Benachrichtigungen gefunden.</p>';
+                            }
+                        } catch (Exception $e) {
+                            error_log('Error loading notifications: ' . $e->getMessage());
+                            echo '<p class="error">Fehler beim Laden der Benachrichtigungen.</p>';
+                        }
+                    ?>
+                </div>
+            </details>
+        </section>
+        <?php } else if (hasVorstandRole($userId)) {
+            echo '<h3>Sie haben aktuell keine Berechtigung zur Bearbeitung der Benachrichtigungen. Der Admin muss diese zuerst freischalten.</h3>';
+        } ?>
+
+        <?php } else {
+            echo '<h3>Sie haben nicht die erforderliche Berechtigung zur Bearbeitung der Konfiguration.</h3>';
+        } ?>
+
+        <!-- ===== ADMIN SECTION (ONLY FOR ADMINS) ===== -->
+        <?php if (hasAdminRole($userId)) { ?>
+
+        <h2>Administration</h2>
+
+        <section> <!-- SYSTEM CONFIGURATION -->
+            <h3>Systemkonfiguration</h3>
+            
+            <div class="config-group">
+                <div class="config-item">
+                    <label for="show-error-toggle">
+                        Wartungsmitteilungen anzeigen
+                        <p class="info"><span class="material-symbols-outlined">info</span><span class="infotext">Zeigt Wartungsmitteilungen auf der Website an.</span></p>
+                    </label>
+                    <label class="switch">
+                        <input type="checkbox" id="show-error-toggle" data-config-key="show_error" <?php echo filter_var(getConfigValue('show_error'), FILTER_VALIDATE_BOOLEAN) ? 'checked' : ''; ?>>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+
+                <div class="config-item">
+                    <label for="show-notification-toggle">
+                        Benachrichtigungen anzeigen
+                        <p class="info"><span class="material-symbols-outlined">info</span><span class="infotext">Zeigt aktive Benachrichtigungen auf der Website an.</span></p>
+                    </label>
+                    <label class="switch">
+                        <input type="checkbox" id="show-notification-toggle" data-config-key="show_notification" <?php echo filter_var(getConfigValue('show_notification'), FILTER_VALIDATE_BOOLEAN) ? 'checked' : ''; ?>>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+
+                <div class="config-item">
+                    <label for="vorstand-edit-ui-toggle">
+                        Vorstand darf Oberfläche bearbeiten
+                        <p class="info"><span class="material-symbols-outlined">info</span><span class="infotext">Erlaubt Vorstandsmitgliedern, Logo, Icon und Banner-Text zu ändern.</span></p>
+                    </label>
+                    <label class="switch">
+                        <input type="checkbox" id="vorstand-edit-ui-toggle" data-config-key="vorstand_can_edit_UI" <?php echo $vorstandCanEditUI ? 'checked' : ''; ?>>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+
+                <div class="config-item">
+                    <label for="vorstand-edit-config-toggle">
+                        Vorstand darf Konfiguration bearbeiten
+                        <p class="info"><span class="material-symbols-outlined">info</span><span class="infotext">Erlaubt Vorstandsmitgliedern, Benachrichtigungen und Wartungsmitteilungen zu verwalten.</span></p>
+                    </label>
+                    <label class="switch">
+                        <input type="checkbox" id="vorstand-edit-config-toggle" data-config-key="vorstand_can_edit_config" <?php echo $vorstandCanEditConfig ? 'checked' : ''; ?>>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+            </div>
+        </section>
+
+        <section> <!-- MAINTENANCE MESSAGES -->
+            <h3>
+                Wartungsmitteilungen
+                <p class="info"><span class="material-symbols-outlined">info</span><span class="infotext">Zeigen Sie Wartungsmitteilungen zu bestimmten Zeiten an.</span></p>
+            </h3>
+            <form id="maintenance-form">
+                <input type="text" id="maintenance-heading" placeholder="Überschrift (z.B. 'Wartungsarbeiten')">
+                <textarea id="maintenance-text" placeholder="Nachrichtentext..."></textarea>
+                <div class="date-time-group">
+                    <input type="datetime-local" id="maintenance-start" placeholder="Startzeit">
+                    <input type="datetime-local" id="maintenance-end" placeholder="Endzeit">
+                </div>
+                <button type="submit">Wartungsmitteilung erstellen</button>
+            </form>
+            <details>
+                <summary>Wartungsmitteilungen anzeigen <span class="material-symbols-outlined">keyboard_arrow_down</span></summary>
+                <div id="maintenance-list">
+                    <?php
+                        try {
+                            $stmt = $config->prepare("SELECT * FROM messages WHERE typ = 'maintenance' ORDER BY startzeit DESC");
+                            $result = $stmt->execute();
+                            
+                            $maintenanceCount = 0;
+                            while ($row = $result->fetchArray(SQLITE3_ASSOC)) {
+                                $maintenanceCount++;
+                                $isActive = strtotime($row['startzeit']) <= time() && time() <= strtotime($row['endzeit']) ? 'active' : 'inactive';
+                                echo '<div class="message-item ' . $isActive . '">';
+                                    echo '<h4>' . htmlspecialchars($row['heading']) . '</h4>';
+                                    echo '<p>' . htmlspecialchars($row['text']) . '</p>';
+                                    echo '<span class="message-time">Von: ' . date('d.m.Y H:i', strtotime($row['startzeit'])) . '</span>';
+                                    echo '<span class="message-time">Bis: ' . date('d.m.Y H:i', strtotime($row['endzeit'])) . '</span>';
+                                    echo '<button class="delete-message-btn" data-message-id="' . htmlspecialchars($row['id']) . '" data-message-type="maintenance">Löschen</button>';
+                                echo '</div>';
+                            }
+                            
+                            if ($maintenanceCount === 0) {
+                                echo '<p class="no-items">Keine Wartungsmitteilungen gefunden.</p>';
+                            }
+                        } catch (Exception $e) {
+                            error_log('Error loading maintenance: ' . $e->getMessage());
+                            echo '<p class="error">Fehler beim Laden der Wartungsmitteilungen.</p>';
+                        }
+                    ?>
+                </div>
+            </details>
+        </section>
+
+        <?php } ?>
     </div>
     <div id="footer" class="center">
         <?php
