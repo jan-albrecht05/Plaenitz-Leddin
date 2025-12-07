@@ -9,6 +9,8 @@
     --lightgrey: #c5c5c5;
     --shadow-white: rgba(255, 255, 255) 40%;
     --orange: #ff6600;
+    --mg-orange: rgba(255, 166, 0, 0.447);
+    --mg-red: rgba(255, 0, 0, 0.447);
 }
 [data-theme="dark"]{
     --bg-color: #262626;

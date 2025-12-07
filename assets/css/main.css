@@ -93,6 +93,49 @@ a{
     margin-inline: auto;
     margin-top: 5rem;
 }
+/* messages */
+.maintanance,
+#main .notification{
+    width: 100%;
+    border: 1px solid;
+    border-radius: 5px;
+    display: flex;
+    flex-direction: row;
+}
+.mg-left{
+    width: 20%;
+}
+.maintanance{
+    background-color: var(--mg-red);
+    border-color: red;
+}
+#main .notification{
+    background-color: var(--mg-orange);
+    border-color: var(--orange);
+}
+.maintanance .mg-left{
+    background-color: var(--mg-red);
+}
+#main .notification .mg-left{
+    background-color: var(--mg-orange);
+}
+.mg-right{
+    width: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    align-items: start;
+    color: black;
+    padding: 1rem;
+}
+.mg-right p{
+    margin: 0;
+}
+#zeitraum{
+    margin-top: 1rem;
+    color: var(--lightgrey);
+}
+
 .section{
     font-size: 120%;
     margin-bottom: 5rem;

@@ -218,6 +218,18 @@ if (!file_exists($dbPath)) {
         <h1>Zwei Dörfer, eine Gemeinschaft</h1>
     </div>
     <div id="main">
+        <div class="notification">
+            <div class="mg-left" class="center">
+                <span class="mmaterial-symbols-outlined"></span>
+            </div>
+            <div class="mg-right">
+                <h2>Wartungsarbeiten</h2>
+                <p>
+                    Es finden Wartungsarbeiten im Zeitraum vom XX.XX bis zum YY.YY statt.
+                </p>
+                <span id="zeitraum">XX.XX. - YY.YY.</span>
+            </div>
+        </div>
         <div class="section" id="willkommen">
             <h1>Willkommen</h1>
             <p>Wir sind ein Verein, der sich der Förderung und Unterstützung der Gemeinschaft in den Dörfern Plänitz und Leddin widmet. Unser Ziel ist es, das soziale Miteinander zu stärken und gemeinsame Aktivitäten zu organisieren.</p>
