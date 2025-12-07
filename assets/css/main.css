@@ -104,6 +104,8 @@ a{
 }
 .mg-left{
     width: 20%;
+    color: var(--lightgrey);
+    font-size: 5rem;
 }
 .maintanance{
     background-color: var(--mg-red);

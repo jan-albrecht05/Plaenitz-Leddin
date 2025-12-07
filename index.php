@@ -219,8 +219,8 @@ if (!file_exists($dbPath)) {
     </div>
     <div id="main">
         <div class="notification">
-            <div class="mg-left" class="center">
-                <span class="mmaterial-symbols-outlined"></span>
+            <div class="mg-left center">
+                <span class="material-symbols-outlined">warning</span>
             </div>
             <div class="mg-right">
                 <h2>Wartungsarbeiten</h2>
