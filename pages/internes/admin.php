@@ -5,6 +5,7 @@ startSecureSession();
 // Include database helper functions
 require_once '../../includes/db_helper.php';
 require_once '../../includes/log-data.php';
+require_once '../../includes/ip-blocker.php';
 
 // Check if user is logged in and is admin
 if (!isset($_SESSION['user_id'])) {
@@ -17,6 +18,9 @@ if (!hasAdminRole($userId)) {
     header("Location: dashboard.php");
     exit();
 }
+
+// Get user name for logging
+$userName = $_SESSION['name'] ?? 'Admin';
 
 // Get log database connection
 $pdo = getLogsDbConnection();
@@ -272,6 +276,152 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['member_id'], $_POST['
         $respond(false, $e->getMessage());
     }
 }
+
+// Handle IP blocking/unblocking
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ip_action'], $_POST['ip_address'])) {
+    $ipAction = $_POST['ip_action'];
+    $ipAddress = $_POST['ip_address'];
+    
+    $isAjax = (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest')
+        || (strpos($_SERVER['HTTP_ACCEPT'] ?? '', 'application/json') !== false);
+    
+    $respond = function($success, $message) use ($isAjax) {
+        if ($isAjax) {
+            header('Content-Type: application/json; charset=utf-8');
+            echo json_encode(['success' => (bool)$success, 'message' => $message]);
+            exit();
+        } else {
+            if ($success) header('Location: admin.php?success=' . urlencode($message));
+            else header('Location: admin.php?error=' . urlencode($message));
+            exit();
+        }
+    };
+    
+    try {
+        if ($ipAction === 'block') {
+            $result = blockIP($ipAddress);
+            if ($result) {
+                logAction('', 'ip-blocked', $userName . ' hat IP ' . $ipAddress . ' blockiert', '', $userId);
+                $respond(true, 'IP-Adresse erfolgreich blockiert: ' . $ipAddress);
+            } else {
+                $respond(false, 'Fehler beim Blockieren der IP-Adresse.');
+            }
+        } elseif ($ipAction === 'unblock') {
+            $result = unblockIP($ipAddress);
+            if ($result) {
+                logAction('', 'ip-unblocked', $userName . ' hat IP ' . $ipAddress . ' entblockt', '', $userId);
+                $respond(true, 'IP-Adresse erfolgreich entblockt: ' . $ipAddress);
+            } else {
+                $respond(false, 'Fehler beim Entblocken der IP-Adresse.');
+            }
+        } else {
+            $respond(false, 'Unbekannte IP-Aktion.');
+        }
+    } catch (Exception $e) {
+        error_log('IP blocker error: ' . $e->getMessage());
+        $respond(false, $e->getMessage());
+    }
+}
+
+// Handle log deletion by action type
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_logs_action'])) {
+    $actionToDelete = $_POST['delete_logs_action'];
+    
+    $isAjax = (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest')
+        || (strpos($_SERVER['HTTP_ACCEPT'] ?? '', 'application/json') !== false);
+    
+    try {
+        $logPdo = getLogsDbConnection();
+        if (!$logPdo) {
+            if ($isAjax) {
+                header('Content-Type: application/json; charset=utf-8');
+                echo json_encode(['success' => false, 'message' => 'Log-Datenbank nicht verfügbar.', 'count' => 0]);
+            } else {
+                header('Location: admin.php?error=' . urlencode('Log-Datenbank nicht verfügbar.'));
+            }
+            exit();
+        }
+        
+        // Count before deletion
+        $countStmt = $logPdo->prepare('SELECT COUNT(*) as count FROM logs WHERE action = :action');
+        $countStmt->bindValue(':action', $actionToDelete, PDO::PARAM_STR);
+        $countStmt->execute();
+        $count = $countStmt->fetch(PDO::FETCH_ASSOC)['count'];
+        
+        // Delete logs
+        $deleteStmt = $logPdo->prepare('DELETE FROM logs WHERE action = :action');
+        $deleteStmt->bindValue(':action', $actionToDelete, PDO::PARAM_STR);
+        $deleteStmt->execute();
+        
+        // Close immediately
+        $logPdo = null;
+        
+        // Send response FIRST
+        if ($isAjax) {
+            header('Content-Type: application/json; charset=utf-8');
+            echo json_encode(['success' => true, 'message' => $count . ' Log-Einträge erfolgreich gelöscht.', 'count' => $count]);
+        } else {
+            header('Location: admin.php?success=' . urlencode($count . ' Log-Einträge erfolgreich gelöscht.'));
+        }
+        
+        // Flush response to client immediately
+        if (function_exists('fastcgi_finish_request')) {
+            fastcgi_finish_request();
+        } else {
+            if (ob_get_level() > 0) ob_end_flush();
+            flush();
+        }
+        
+        // NOW log to file in background (non-blocking, no DB lock)
+        try {
+            $logDir = __DIR__ . '/../../assets/db';
+            $logFile = $logDir . '/deletion-queue.log';
+            $timestamp = date('Y-m-d H:i:s');
+            $logEntry = json_encode([
+                'timestamp' => $timestamp,
+                'user_id' => $userId,
+                'user_name' => $userName,
+                'action' => 'logs-deleted',
+                'deleted_action' => $actionToDelete,
+                'count' => $count,
+                'ip' => $_SERVER['REMOTE_ADDR'] ?? ''
+            ]) . PHP_EOL;
+            
+            file_put_contents($logFile, $logEntry, FILE_APPEND | LOCK_EX);
+            
+            // Trigger background processing after 5 seconds (non-blocking)
+            $phpPath = 'php'; // Adjust if needed (e.g., 'C:\xampp\php\php.exe')
+            $scriptPath = realpath(__DIR__ . '/../../includes/process-deletion-queue.php');
+            
+            if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+                // Windows: Use START command to run in background
+                $command = 'start /B timeout /T 5 /NOBREAK >nul 2>&1 && ' . $phpPath . ' "' . $scriptPath . '" >nul 2>&1';
+                pclose(popen($command, 'r'));
+            } else {
+                // Linux/Unix: Use nohup and sleep
+                $command = '(sleep 5 && ' . $phpPath . ' "' . $scriptPath . '" > /dev/null 2>&1 &) &';
+                exec($command);
+            }
+        } catch (Exception $logError) {
+            // Silent fail - user already got success response
+            error_log('Background logging failed: ' . $logError->getMessage());
+        }
+        
+        exit();
+        
+    } catch (Exception $e) {
+        if ($isAjax) {
+            header('Content-Type: application/json; charset=utf-8');
+            echo json_encode(['success' => false, 'message' => $e->getMessage(), 'count' => 0]);
+        } else {
+            header('Location: admin.php?error=' . urlencode($e->getMessage()));
+        }
+        exit();
+    }
+}
+
+// Get list of blocked IPs
+$blockedIPs = getBlockedIPs();
 ?>
 <!DOCTYPE html>
 <html lang="de">
@@ -287,6 +437,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['member_id'], $_POST['
         <link rel="stylesheet" href="../../assets/css/dashboard.css">
         <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" />
         <script src="../../assets/js/dashboard.js" defer></script>
+        <script src="../../assets/js/block-IP.js" defer></script>
 </head>
 <body>
     <div id="heading">
@@ -353,6 +504,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['member_id'], $_POST['
                         <th>Aktion</th>
                         <th>Anzahl</th>
                         <th>Anteil</th>
+                        <th>Aktionen</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -363,6 +515,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['member_id'], $_POST['
                         <td data-label="Aktion"><span class="action-badge action-<?php echo htmlspecialchars($action['action']); ?>"><?php echo htmlspecialchars($action['action']); ?></span></td>
                         <td data-label="Anzahl"><?php echo number_format($action['count']); ?></td>
                         <td data-label="Anteil"><?php echo $percentage; ?>%</td>
+                        <td data-label="Aktionen">
+                            <button class="del-log center" onclick="deleteLogsByAction('<?php echo htmlspecialchars($action['action'], ENT_QUOTES); ?>', <?php echo $action['count']; ?>)" 
+                                    title="Alle Logs dieser Aktion löschen">
+                                <span class="material-symbols-outlined" style="font-size: 18px;">delete</span>
+                                Löschen
+                            </button>
+                        </td>
                     </tr>
                     <?php endforeach; ?>
                 </tbody>
@@ -460,7 +619,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['member_id'], $_POST['
                         <td data-label="Zeit"><?php echo htmlspecialchars($log['timecode']); ?></td>
                         <td data-label="Aktion"><span class="action-badge action-<?php echo htmlspecialchars($log['action']); ?>"><?php echo htmlspecialchars($log['action']); ?></span></td>
                         <td data-label="Details"><?php echo htmlspecialchars($log['text']); ?></td>
-                        <td data-label="IP"><?php echo htmlspecialchars($log['ip']); ?></td>
+                        <td data-label="IP">
+                            <span class="ip-address" oncontextmenu="showIPBlockMenu(event, '<?php echo htmlspecialchars($log['ip'], ENT_QUOTES); ?>'); return false;">
+                                <?php echo htmlspecialchars($log['ip']); ?>
+                            </span>
+                            <?php if (in_array($log['ip'], $blockedIPs)): ?>
+                                <span class="material-symbols-outlined" style="color: #f44336; font-size: 16px; vertical-align: middle;" title="Diese IP ist blockiert">block</span>
+                            <?php endif; ?>
+                        </td>
                         <td data-label="User-ID"><?php echo htmlspecialchars($log['user_id'] ?: '-'); ?></td>
                     </tr>
                     <?php endforeach; ?>
@@ -475,7 +641,46 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['member_id'], $_POST['
             </table>
         </div>
         
-        <!-- Context Menu -->
+        <!-- Blocked IPs Section -->
+        <div class="section">
+            <h2><span class="material-symbols-outlined">block</span> Blockierte IP-Adressen</h2>
+            <?php if (count($blockedIPs) > 0): ?>
+                <ul class="error-list">
+                    <?php foreach ($blockedIPs as $ip): ?>
+                    <li class="error-item">
+                        <div>
+                            <div class="error-url"><?php echo htmlspecialchars($ip); ?></div>
+                            <small>Blockiert in .htaccess</small>
+                        </div>
+                        <button onclick="unblockIPConfirm('<?php echo htmlspecialchars($ip, ENT_QUOTES); ?>')" style="background: #4caf50; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer;">
+                            <span class="material-symbols-outlined" style="vertical-align: middle; font-size: 18px;">check_circle</span>
+                            Entblocken
+                        </button>
+                    </li>
+                    <?php endforeach; ?>
+                </ul>
+            <?php else: ?>
+                <p style="text-align: center; color: #666; padding: 20px;">Keine IPs blockiert</p>
+            <?php endif; ?>
+        </div>
+        
+        <!-- IP-Block Context Menu -->
+        <div id="ip-context-menu" class="context-menu" style="display: none;" data-blocked-ips='<?php echo json_encode($blockedIPs); ?>'>
+            <button type="button" id="block-ip-btn" onclick="blockIPConfirm()">
+                <span class="material-symbols-outlined">block</span>
+                <span class="text">IP blockieren</span>
+            </button>
+            <button type="button" id="unblock-ip-btn" onclick="unblockIPConfirm()" style="display: none;">
+                <span class="material-symbols-outlined">check_circle</span>
+                <span class="text">IP entblocken</span>
+            </button>
+            <button type="button" onclick="copyIPToClipboard()">
+                <span class="material-symbols-outlined">content_copy</span>
+                <span class="text">IP kopieren</span>
+            </button>
+        </div>
+        
+        <!-- Member Context Menu -->
         <div id="member-context-menu" class="context-menu">
             <form action="admin.php" method="post" id="member-context-menu-form">
                 <input type="hidden" id="context-member-id" name="member_id" value="">
@@ -608,7 +813,40 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['member_id'], $_POST['
         </div>
 
         <script>
-            const currentUserId = <?php echo json_encode($userId); ?>;
+            // Log deletion function
+            function deleteLogsByAction(action, count) {
+                if (!confirm('Möchten Sie wirklich alle ' + count + ' Log-Einträge der Aktion "' + action + '" löschen?\n\nDiese Aktion kann nicht rückgängig gemacht werden!')) {
+                    return;
+                }
+                
+                fetch('admin.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json'
+                    },
+                    body: 'delete_logs_action=' + encodeURIComponent(action)
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('HTTP ' + response.status + ': ' + response.statusText);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        alert('✓ ' + data.count + ' Log-Einträge erfolgreich gelöscht.');
+                        location.reload();
+                    } else {
+                        alert('✗ Fehler beim Löschen: ' + (data.message || 'Unbekannter Fehler'));
+                    }
+                })
+                .catch(error => {
+                    console.error('Lösch-Fehler:', error);
+                    alert('✗ Fehler beim Löschen der Logs:\n' + error.message + '\n\nMöglicherweise haben Sie keine Berechtigung oder die Verbindung wurde unterbrochen.');
+                });
+            }
             
             // Member info display functions
             function showMemberInfo(memberId) {
@@ -975,9 +1213,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['member_id'], $_POST['
                 document.addEventListener('keydown', (event) => {
                     if (event.key === 'Escape') {
                         closeContextMenu();
+                        closeIPContextMenu();
                         cancelPromote();
                         closeEditPopup();
                         closeMemberInfo();
+                    }
+                });
+                
+                // Close IP menu on outside click
+                document.addEventListener('click', (event) => {
+                    const ipMenu = document.getElementById('ip-context-menu');
+                    if (ipMenu && ipMenu.style.display !== 'none' && !ipMenu.contains(event.target) && !event.target.closest('[onclick*="showIPBlockMenu"]')) {
+                        closeIPContextMenu();
                     }
                 });
             });

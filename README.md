@@ -41,8 +41,9 @@ Mit dieser Website sollen Mitglieder verwaltet, Veranstaltungen geteilt und Übe
  - Statusverwaltung der Nutzer (aktiv <> inaktiv)
 
 ## 🖥️ Admin-Funktionen
- - Nutzerverwaltung
+ - erweiterte Nutzerverwaltung
  - Einsehen der Logs um Fehler zu beheben
+ - Blockieren von IP-Adressen per [```.htaccess```](/.htaccess)
 
 # Contribution:
 > Schreibt mir gern oder eröffnet ein ```Issue```, wenn euch etwas aufgefallen ist oder ihr tolle Ideen habt!
@@ -58,6 +59,7 @@ Mit dieser Website sollen Mitglieder verwaltet, Veranstaltungen geteilt und Übe
  - E-Mail Adresse und EmailJS hinzufügen
 ## Admin:
  - User-Actions
+ - Table-width abchecken (localhost ok - net wierd)
 
 ## config.db
  - finishing UI

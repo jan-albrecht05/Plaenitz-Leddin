@@ -1,4 +1,71 @@
 
+/* IP Context Menu Styles */
+.context-menu {
+    position: absolute;
+    background: var(--bg-color);
+    border: 1px solid var(--lightgrey);
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    padding: 0.5rem 0;
+    min-width: 200px;
+    z-index: 10000;
+    display: none;
+}
+
+.context-menu button {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: none;
+    background: transparent;
+    color: var(--text-color);
+    text-align: left;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 0.95rem;
+    transition: background-color 0.2s ease;
+}
+
+.context-menu button:hover {
+    background: var(--lightgrey);
+}
+
+.context-menu button .material-symbols-outlined {
+    font-size: 20px;
+    color: var(--primary-color);
+}
+
+.context-menu button#block-ip-btn .material-symbols-outlined {
+    color: #f44336;
+}
+
+.context-menu button#unblock-ip-btn .material-symbols-outlined {
+    color: #4caf50;
+}
+
+.context-menu button .text {
+    flex: 1;
+}
+
+.ip-address:hover{
+    cursor: pointer;
+}
+.del-log{
+    background: #616161;
+    color: white; 
+    border: none; 
+    padding: 6px 12px; 
+    border-radius: 4px; 
+    cursor: pointer; 
+    gap: 4px; 
+    font-size: 0.9rem;
+    transition: all 0.3s;
+}
+.del-log:hover{
+    background: #f44336;
+}
+
 /* Stats grid and cards */
 .stats-grid {
     display: grid;
@@ -228,6 +295,18 @@
 .action-delete_member{
     background: #83000b;
     color: red;
+}
+.action-logs-deleted{
+    background: #ff5722;
+    color: #fff;
+}
+.action-ip-blocked{
+    background: #83000b;
+    color: rgb(252, 54, 54);
+}
+.action-ip-unblocked{
+    background: #00a600;
+    color: #fff;
 }
 /* Error list styles */
 .error-list {
