@@ -323,103 +323,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ip_action'], $_POST['
     }
 }
 
-// Handle log deletion by action type
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_logs_action'])) {
-    $actionToDelete = $_POST['delete_logs_action'];
-    
-    $isAjax = (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest')
-        || (strpos($_SERVER['HTTP_ACCEPT'] ?? '', 'application/json') !== false);
-    
-    try {
-        $logPdo = getLogsDbConnection();
-        if (!$logPdo) {
-            if ($isAjax) {
-                header('Content-Type: application/json; charset=utf-8');
-                echo json_encode(['success' => false, 'message' => 'Log-Datenbank nicht verfügbar.', 'count' => 0]);
-            } else {
-                header('Location: admin.php?error=' . urlencode('Log-Datenbank nicht verfügbar.'));
-            }
-            exit();
-        }
-        
-        // Count before deletion
-        $countStmt = $logPdo->prepare('SELECT COUNT(*) as count FROM logs WHERE action = :action');
-        $countStmt->bindValue(':action', $actionToDelete, PDO::PARAM_STR);
-        $countStmt->execute();
-        $count = $countStmt->fetch(PDO::FETCH_ASSOC)['count'];
-        
-        // Delete logs
-        $deleteStmt = $logPdo->prepare('DELETE FROM logs WHERE action = :action');
-        $deleteStmt->bindValue(':action', $actionToDelete, PDO::PARAM_STR);
-        $deleteStmt->execute();
-        
-        // Close immediately
-        $logPdo = null;
-        
-        // Send response FIRST
-        if ($isAjax) {
-            header('Content-Type: application/json; charset=utf-8');
-            echo json_encode(['success' => true, 'message' => $count . ' Log-Einträge erfolgreich gelöscht.', 'count' => $count]);
-        } else {
-            header('Location: admin.php?success=' . urlencode($count . ' Log-Einträge erfolgreich gelöscht.'));
-        }
-        
-        // Flush response to client immediately
-        if (function_exists('fastcgi_finish_request')) {
-            fastcgi_finish_request();
-        } else {
-            if (ob_get_level() > 0) ob_end_flush();
-            flush();
-        }
-        
-        // NOW log to file in background (non-blocking, no DB lock)
-        try {
-            $logDir = __DIR__ . '/../../assets/db';
-            $logFile = $logDir . '/deletion-queue.log';
-            $timestamp = date('Y-m-d H:i:s');
-            $logEntry = json_encode([
-                'timestamp' => $timestamp,
-                'user_id' => $userId,
-                'user_name' => $userName,
-                'action' => 'logs-deleted',
-                'deleted_action' => $actionToDelete,
-                'count' => $count,
-                'ip' => $_SERVER['REMOTE_ADDR'] ?? ''
-            ]) . PHP_EOL;
-            
-            file_put_contents($logFile, $logEntry, FILE_APPEND | LOCK_EX);
-            
-            // Trigger background processing after 5 seconds (non-blocking)
-            $phpPath = 'php'; // Adjust if needed (e.g., 'C:\xampp\php\php.exe')
-            $scriptPath = realpath(__DIR__ . '/../../includes/process-deletion-queue.php');
-            
-            if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
-                // Windows: Use START command to run in background
-                $command = 'start /B timeout /T 5 /NOBREAK >nul 2>&1 && ' . $phpPath . ' "' . $scriptPath . '" >nul 2>&1';
-                pclose(popen($command, 'r'));
-            } else {
-                // Linux/Unix: Use nohup and sleep
-                $command = '(sleep 5 && ' . $phpPath . ' "' . $scriptPath . '" > /dev/null 2>&1 &) &';
-                exec($command);
-            }
-        } catch (Exception $logError) {
-            // Silent fail - user already got success response
-            error_log('Background logging failed: ' . $logError->getMessage());
-        }
-        
-        exit();
-        
-    } catch (Exception $e) {
-        if ($isAjax) {
-            header('Content-Type: application/json; charset=utf-8');
-            echo json_encode(['success' => false, 'message' => $e->getMessage(), 'count' => 0]);
-        } else {
-            header('Location: admin.php?error=' . urlencode($e->getMessage()));
-        }
-        exit();
-    }
-}
-
 // Get list of blocked IPs
 $blockedIPs = getBlockedIPs();
 ?>
@@ -438,6 +341,11 @@ $blockedIPs = getBlockedIPs();
         <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" />
         <script src="../../assets/js/dashboard.js" defer></script>
         <script src="../../assets/js/block-IP.js" defer></script>
+        <script>
+            // expose current user for logging and client-side helpers
+            window.currentUserId = <?php echo json_encode($userId); ?>;
+            window.currentUserName = <?php echo json_encode($userName); ?>;
+        </script>
 </head>
 <body>
     <div id="heading">
@@ -818,33 +726,75 @@ $blockedIPs = getBlockedIPs();
                 if (!confirm('Möchten Sie wirklich alle ' + count + ' Log-Einträge der Aktion "' + action + '" löschen?\n\nDiese Aktion kann nicht rückgängig gemacht werden!')) {
                     return;
                 }
-                
-                fetch('admin.php', {
+
+                const params = new URLSearchParams();
+                params.append('action', 'delete_logs');
+                params.append('log_type', action);
+
+                fetch('../../includes/delete-logs.php', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/x-www-form-urlencoded',
                         'X-Requested-With': 'XMLHttpRequest',
                         'Accept': 'application/json'
                     },
-                    body: 'delete_logs_action=' + encodeURIComponent(action)
+                    body: params.toString()
                 })
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('HTTP ' + response.status + ': ' + response.statusText);
+                .then(async response => {
+                    const raw = await response.text();
+                    const cleaned = raw.replace(/^\uFEFF/, ''); // strip UTF-8 BOM if present
+                    let data;
+                    try {
+                        data = JSON.parse(cleaned);
+                    } catch (e) {
+                        throw new Error('Ungültige Antwort vom Server: ' + raw.slice(0, 200));
                     }
-                    return response.json();
-                })
-                .then(data => {
+
+                    if (!response.ok) {
+                        const message = data.message || ('HTTP ' + response.status);
+                        throw new Error(message);
+                    }
+
                     if (data.success) {
-                        alert('✓ ' + data.count + ' Log-Einträge erfolgreich gelöscht.');
-                        location.reload();
+                        const deletedCount = typeof data.deleted !== 'undefined' ? data.deleted : (data.count || 0);
+                        const logPromise = logDeletionOutcome(true, action, deletedCount);
+                        Promise.resolve(logPromise).finally(() => location.reload());
                     } else {
-                        alert('✗ Fehler beim Löschen: ' + (data.message || 'Unbekannter Fehler'));
+                        const message = data.message || 'Unbekannter Fehler';
+                        alert('✗ Fehler beim Löschen: ' + message);
+                        logDeletionOutcome(false, action, message);
                     }
                 })
                 .catch(error => {
                     console.error('Lösch-Fehler:', error);
                     alert('✗ Fehler beim Löschen der Logs:\n' + error.message + '\n\nMöglicherweise haben Sie keine Berechtigung oder die Verbindung wurde unterbrochen.');
+                    logDeletionOutcome(false, action, error.message);
+                });
+            }
+
+            function logDeletionOutcome(success, logType, detail) {
+                const params = new URLSearchParams();
+                const safeName = window.currentUserName || 'Admin';
+                const safeDetail = (typeof detail === 'number' ? detail + ' Einträge' : detail || '');
+                const text = success
+                    ? safeName + ' hat ' + safeDetail + ' der Aktion "' + logType + '" gelöscht.'
+                    : safeName + ' konnte Logs der Aktion "' + logType + '" nicht löschen: ' + safeDetail;
+
+                params.append('action', success ? 'logs-delete-success' : 'logs-delete-error');
+                params.append('text', text);
+                if (window.currentUserId) {
+                    params.append('user_id', window.currentUserId);
+                }
+
+                return fetch('../../includes/log-data.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'Accept': 'application/json'
+                    },
+                    body: params.toString()
+                }).catch(() => {
+                    // Logging failure is non-blocking for the UI
                 });
             }
             

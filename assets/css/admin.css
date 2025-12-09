@@ -243,6 +243,10 @@
     background: #f8d7da;
     color: var(--orange);
 }
+.action-error-403 { 
+    background: #fff3cd; 
+    color: var(--orange);
+}
 .action-error-404 { 
     background: #fff3cd; 
     color: var(--orange);
@@ -296,10 +300,6 @@
     background: #83000b;
     color: red;
 }
-.action-logs-deleted{
-    background: #ff5722;
-    color: #fff;
-}
 .action-ip-blocked{
     background: #83000b;
     color: rgb(252, 54, 54);
@@ -307,6 +307,14 @@
 .action-ip-unblocked{
     background: #00a600;
     color: #fff;
+}
+.action-logs-delete-success{
+    background: #ffbb00;
+    color: #085000;
+}
+.action-logs-delete-failed{
+    background: #ffbb00;
+    color: rgb(150, 0, 0);
 }
 /* Error list styles */
 .error-list {
