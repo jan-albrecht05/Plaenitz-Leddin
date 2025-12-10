@@ -1,4 +1,6 @@
-
+*{
+    scrollbar-width: thin;
+}
 /* IP Context Menu Styles */
 .context-menu {
     position: absolute;
@@ -316,6 +318,30 @@
     background: #ffbb00;
     color: rgb(150, 0, 0);
 }
+.action-member-promote{
+    background: #fff;
+    color: #008000;
+}
+.action-member-promote::before{
+    content: "✨";
+    margin-right: 4px;
+}
+.action-member-make-admin{
+    background: #fff;
+    color: #0066ff;
+}
+.action-member-make-admin::before{
+    content: "🛡️";
+    margin-right: 4px;
+}
+.action-member-remove-admin{
+    background: #fff;
+    color: #0066ff;
+}
+.action-member-remove-admin::before{
+    content: "⚠️";
+    margin-right: 4px;
+}
 /* Error list styles */
 .error-list {
     list-style: none;
@@ -478,6 +504,14 @@ input[type="date"] {
     margin-bottom: 0.5rem;
     padding: 0.5rem 1rem;
     border-radius: 4px;
+}
+
+#member-output{
+    margin-top: 3rem;
+    margin-bottom: 3rem;
+}
+#after-members-hr{
+    margin-bottom: 3rem;
 }
 
 @media (max-width: 800px) {

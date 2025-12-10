@@ -6,19 +6,22 @@ document.querySelectorAll('.member').forEach(member => {
 });
 
 // function to open context menu
-function opencontextMenu(memberId) {
+function opencontextMenu(memberId, event) {
     const contextMenu = document.getElementById('member-context-menu');
     contextMenu.style.display = 'block';
     // position context menu at mouse position (left/right)
-    if (window.innerWidth - event.pageX < contextMenu.offsetWidth) {
+    if (event && window.innerWidth - event.pageX < contextMenu.offsetWidth) {
         contextMenu.style.left = (event.pageX - contextMenu.offsetWidth) + 'px';
-    } else {
+    } else if (event) {
         contextMenu.style.left = event.pageX + 'px';
     }
-    contextMenu.style.top = event.pageY + 'px';
+    if (event) {
+        contextMenu.style.top = event.pageY + 'px';
+    }
     contextMenu.setAttribute('data-member-id', memberId);
     document.getElementById("context-member-id").value = memberId;
     contextMenuOpen = true;
+    
     // Show the "change password" button only if the context menu is opened on the current user's own account
     try {
         const editPassBtn = document.getElementById('edit-password-member');
@@ -30,57 +33,78 @@ function opencontextMenu(memberId) {
             }
         }
     } catch (e) {
-        // ignore errors here; feature is best-effort
         console.warn('opencontextMenu: unable to toggle edit-password-member button', e);
     }
-    // show/hide context menu items based on member status
+    
+    // Get member element and extract status/role
     const memberElement = document.querySelector(`.member[data-member-id='${memberId}']`);
-    const statusText = memberElement.querySelector('.status-text').innerText;
+    if (!memberElement) return;
+    
+    const statusText = memberElement.querySelector('.status-text')?.innerText || '';
+    const rolleText = memberElement.querySelector('.role-text')?.innerText || '';
+    
+    // Get all button references
+    const activateBtn = document.getElementById('activate-member');
+    const deactivateBtn = document.getElementById('deactivate-member');
+    const upBtn = document.getElementById('up-member');
+    const downBtn = document.getElementById('down-member');
+    const makeAdminBtn = document.getElementById('make-admin-member');
+    const removeAdminBtn = document.getElementById('remove-admin-member');
+    const deleteBtn = document.getElementById('delete-member');
+    
+    // STEP 1: Hide ALL buttons first (bulletproof reset)
+    if (activateBtn) activateBtn.style.display = 'none';
+    if (deactivateBtn) deactivateBtn.style.display = 'none';
+    if (upBtn) upBtn.style.display = 'none';
+    if (downBtn) downBtn.style.display = 'none';
+    if (makeAdminBtn) makeAdminBtn.style.display = 'none';
+    if (removeAdminBtn) removeAdminBtn.style.display = 'none';
+    if (deleteBtn) deleteBtn.style.display = 'none';
+    
+    // STEP 2: Show correct buttons based on status
     if (statusText === 'Aktiv') {
-        document.getElementById('deactivate-member').style.display = 'flex';
-        document.getElementById('activate-member').style.display = 'none';
+        if (deactivateBtn) deactivateBtn.style.display = 'flex';
     } else {
-        document.getElementById('deactivate-member').style.display = 'none';
-        document.getElementById('activate-member').style.display = 'flex';
-        document.getElementById('up-member').style.display = 'none';
-        document.getElementById('down-member').style.display = 'none';
+        if (activateBtn) activateBtn.style.display = 'flex';
     }
-    const rolleText = memberElement.querySelector('.role-text').innerText;
-    // Only admins are allowed to change roles — hide promote/demote for non-admin users
-    try {
-        const isAdmin = !!window.currentUserIsAdmin;
-        const upBtn = document.getElementById('up-member');
-        const downBtn = document.getElementById('down-member');
-        if (!isAdmin) {
-            if (upBtn) upBtn.style.display = 'none';
-            if (downBtn) downBtn.style.display = 'none';
-        } else {
-            if (rolleText === 'Mitglied') {
-                if (upBtn) upBtn.style.display = 'flex';
-                if (downBtn) downBtn.style.display = 'none';
-            } else if (rolleText === 'Vorstand') {
-                if (upBtn) upBtn.style.display = 'none';
-                if (downBtn) downBtn.style.display = 'flex';
-            } else if (rolleText === 'Admin') {
-                document.getElementById('member-context-menu').style.display = 'none';
-            }
-        }
-    } catch (e) {
-        console.warn('opencontextMenu: role button toggle failed', e);
-    }
-    // Show/hide delete button: allowed for admin OR vorstand
-    try {
-        const deleteBtn = document.getElementById('delete-member');
+    
+    // STEP 3: Show role-specific buttons (only for active members)
+    if (statusText === 'Aktiv') {
         const isAdmin = !!window.currentUserIsAdmin;
         const isVorstand = !!window.currentUserIsVorstand;
-        if (deleteBtn) {
-            if (isAdmin || isVorstand) deleteBtn.style.display = 'flex';
-            else deleteBtn.style.display = 'none';
+        const isOwnAccount = (window.currentUserId && parseInt(window.currentUserId, 10) === parseInt(memberId, 10));
+        
+        if (rolleText === 'Mitglied') {
+            // Mitglied kann zu Vorstand befördert werden (nur von Admin)
+            if (upBtn && isAdmin) upBtn.style.display = 'flex';
+            // Mitglied kann Admin-Rolle bekommen
+            if (makeAdminBtn) makeAdminBtn.style.display = 'flex';
+        } else if (rolleText === 'Vorstand') {
+            // Vorstand kann zu Mitglied degradiert werden (nur von Admin)
+            if (downBtn && isAdmin) downBtn.style.display = 'flex';
+            // Vorstand kann Admin-Rolle bekommen
+            if (makeAdminBtn) makeAdminBtn.style.display = 'flex';
+        } else if (rolleText === 'Admin') {
+            // Admin kann Admin-Rolle verlieren (aber nicht bei sich selbst)
+            if (removeAdminBtn && !isOwnAccount) removeAdminBtn.style.display = 'flex';
+        }
+        
+        // Show delete button for admin or vorstand (aber nicht für den eigenen Account)
+        if (deleteBtn && (isAdmin || isVorstand) && !isOwnAccount) {
+            deleteBtn.style.display = 'flex';
+        }
+    }
+    
+    // Show the "change password" button (already handled above)
+    try {
+        const editPassBtn = document.getElementById('edit-password-member');
+        if (editPassBtn && typeof window.currentUserId !== 'undefined' && 
+            parseInt(window.currentUserId, 10) === parseInt(memberId, 10)) {
+            editPassBtn.style.display = 'flex';
         }
     } catch (e) {
-        console.warn('opencontextMenu: delete button toggle failed', e);
+        console.warn('opencontextMenu: password button toggle failed', e);
     }
-
 }
 
 // Close context menu function

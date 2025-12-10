@@ -58,7 +58,7 @@ Mit dieser Website sollen Mitglieder verwaltet, Veranstaltungen geteilt und Übe
 ## Kontakt
  - E-Mail Adresse und EmailJS hinzufügen
 ## Admin:
- - User-Actions
+ - Member Edit Form korrigieren
  - Table-width abchecken (localhost ok - net wierd)
 
 ## config.db

@@ -20,5 +20,5 @@ ErrorDocument 503 /error-handler.php?code=503&url=%{REQUEST_URI}
 # Blocked IPs - Managed by Admin Panel
 <RequireAll>
     Require all granted
-        </RequireAll>
+                </RequireAll>
 # End Blocked IPs

@@ -309,7 +309,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['member_id'], $_POST['
             $stmt->bindValue(':status', $newStatus, PDO::PARAM_INT);
             $stmt->bindValue(':id', $targetId, PDO::PARAM_INT);
             $stmt->execute();
-            logAction(date('Y-m-d H:i:s'), $action === 'activate' ? 'activate_member' : 'deactivate_member', $_SESSION['name'] . ' ' . ($action === 'activate' ? 'activated' : 'deactivated') . ' member ' . $targetId, $_SERVER['REMOTE_ADDR'], $_SESSION['user_id']);
+            // Logging removed - handled by admin.php
             $msg = $action === 'activate' ? 'Benutzer aktiviert.' : 'Benutzer deaktiviert.';
             $respond(true, $msg);
         }
@@ -814,7 +814,7 @@ if ($needsPasswordSetup && !isset($_GET['neu']) && !isset($_GET['change_pw']) &&
                             
                             $hasAddress = !empty($address1) || !empty($address2);
                             ?>
-                            <div class="member" data-member-id="<?php echo (int)$member['id']; ?>" <?php echo $dataAttrs; ?> oncontextmenu="opencontextMenu('<?php echo htmlspecialchars($member['id']); ?>'); return false;">
+                            <div class="member" data-member-id="<?php echo (int)$member['id']; ?>" <?php echo $dataAttrs; ?> oncontextmenu="opencontextMenu('<?php echo htmlspecialchars($member['id']); ?>', event); return false;">
                                 <div class="member-top">
                                     <div class="ganzer-name">
                                         <h2 class="nachname"><?php echo htmlspecialchars($member['titel'] ?? '') . ' ' . htmlspecialchars($member['nachname'] ?? ''); ?>, <?php echo htmlspecialchars($member['name'] ?? ''); ?></h2>
@@ -829,7 +829,7 @@ if ($needsPasswordSetup && !isset($_GET['neu']) && !isset($_GET['change_pw']) &&
                                             <span class="status-text"><?php echo $statusText; ?></span>
                                         </div>
                                     </div>
-                                    <button class="edit-button" onclick="opencontextMenu('<?php echo htmlspecialchars($member['id']); ?>')">
+                                    <button class="edit-button" onclick="opencontextMenu('<?php echo htmlspecialchars($member['id']); ?>', event)">
                                         <span class="material-symbols-outlined">more_vert</span>
                                     </button>
                                 </div>
