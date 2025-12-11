@@ -9,6 +9,14 @@
     <link rel="stylesheet" href="../assets/css/heading.css">
     <link rel="stylesheet" href="../assets/css/footer.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" />
+    <style>
+        h2{
+            border-left: 5px solid var(--primary-color);
+            padding-left: 10px;
+            border-radius: 2px;
+            margin-top: 3rem;
+        }
+    </style>
 </head>
 <body>
     <div id="heading">

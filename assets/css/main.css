@@ -105,6 +105,8 @@ a{
 .mg-left{
     width: 20%;
     color: var(--lightgrey);
+}
+.mg-left span.material-symbols-outlined{
     font-size: 5rem;
 }
 .maintanance{
@@ -299,6 +301,9 @@ button.submit{
         background-position: 50% 20%;
         max-height: 200px;
         padding-left: 5%;
+    }
+    .mg-left span.material-symbols-outlined{
+        font-size: 3rem;
     }
     #cookie-banner{
         flex-direction: column;
