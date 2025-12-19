@@ -92,6 +92,8 @@ try {
             error_log('Warning: Could not delete file: ' . $filePath);
         }
     }
+
+    logAction('', 'delete_image', "Deleted image ID {$imageId} of type {$imageType}", $_SERVER['REMOTE_ADDR'] ?? '', $userId);
     
     echo json_encode(['success' => true, 'message' => 'Bild wurde gelöscht']);
     

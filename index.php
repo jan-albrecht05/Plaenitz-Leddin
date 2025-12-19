@@ -4,6 +4,37 @@ startSecureSession();
 
 // Include database helper functions
 require_once 'includes/db_helper.php';
+require_once 'includes/config-helper.php';
+
+// Get config values
+$tabicon = getConfigValue('tabicon') ?? 'favicon.ico';
+$logo = getConfigValue('logo') ?? 'logo.png';
+$bannerImage = getConfigValue('banner_image') ?? '';
+$bannerText = getConfigValue('banner_text') ?? 'Zwei Dörfer, eine Gemeinschaft';
+$primaryColor = getConfigValue('primary_color') ?? '#4a6fa5';
+$showNotification = filter_var(getConfigValue('show_notification'), FILTER_VALIDATE_BOOLEAN);
+$showError = filter_var(getConfigValue('show_error'), FILTER_VALIDATE_BOOLEAN);
+$showGIF = filter_var(getConfigValue('show_gif'), FILTER_VALIDATE_BOOLEAN);
+$currentGIF = getConfigValue('current_gif');
+$version = getConfigValue('system_version');
+
+// Get active messages
+$activeNotification = null;
+$activeMaintenance = null;
+
+if ($showNotification) {
+    $notifications = getActiveMessagesByType('notification');
+    if (!empty($notifications)) {
+        $activeNotification = $notifications[0]; // Take first active notification
+    }
+}
+
+if ($showError) {
+    $maintenanceMessages = getActiveMessagesByType('maintenance');
+    if (!empty($maintenanceMessages)) {
+        $activeMaintenance = $maintenanceMessages[0]; // Take first active maintenance
+    }
+}
 
 if(isset($_SESSION['user_id'])) {
     // User is logged in, check roles from database
@@ -69,6 +100,8 @@ if (!file_exists($dbPath)) {
         $events = [];
     }
 }
+// render the page with config.db
+
 
 ?>
 <!DOCTYPE html>
@@ -77,12 +110,16 @@ if (!file_exists($dbPath)) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Plänitz-Leddin</title>
+    <link rel="icon" type="image/x-icon" href="assets/icons/tabicons/<?php echo htmlspecialchars($tabicon); ?>">
     <link rel="stylesheet" href="assets/css/root.css">
     <link rel="stylesheet" href="assets/css/main.css">
     <link rel="stylesheet" href="assets/css/heading.css">
     <link rel="stylesheet" href="assets/css/footer.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" />
     <style>
+        :root {
+            --primary-color: <?php echo htmlspecialchars($primaryColor); ?>;
+        }
         #startseite a{
             color: var(--primary-color);
         }
@@ -96,7 +133,7 @@ if (!file_exists($dbPath)) {
     <div id="heading">
         <div id="left">
             <a href="#">
-                <img src="assets/icons/logo.png" alt="Plänitz-Leddin Logo">
+                <img src="assets/icons/logos/<?php echo htmlspecialchars($logo); ?>" alt="Plänitz-Leddin Logo">
             </a>
         </div>
         <div id="right">
@@ -214,22 +251,47 @@ if (!file_exists($dbPath)) {
         </div>
         <script src="assets/js/notifications.js"></script>
     </div>
-    <div class="banner">
-        <h1>Zwei Dörfer, eine Gemeinschaft</h1>
+    <div class="banner" <?php if (!empty($bannerImage)): ?>style="background-image: url('assets/images/banner/<?php echo htmlspecialchars($bannerImage); ?>');"<?php endif; ?>>
+        <h1><?php echo htmlspecialchars($bannerText); ?></h1>
     </div>
     <div id="main">
-        <div class="notification">
+        <?php if ($activeMaintenance): ?>
+        <div class="<?php echo htmlspecialchars($activeMaintenance['typ']); ?>">
             <div class="mg-left center">
                 <span class="material-symbols-outlined">warning</span>
             </div>
             <div class="mg-right">
-                <h2>Wartungsarbeiten</h2>
-                <p>
-                    Es finden Wartungsarbeiten im Zeitraum vom XX.XX bis zum YY.YY statt.
-                </p>
-                <span id="zeitraum">XX.XX. - YY.YY.</span>
+                <h2><?php echo htmlspecialchars($activeMaintenance['heading']); ?></h2>
+                <p><?php echo nl2br(htmlspecialchars($activeMaintenance['text'])); ?></p>
+                <span id="zeitraum">
+                    <?php 
+                    $start = new DateTime($activeMaintenance['startzeit']);
+                    $end = new DateTime($activeMaintenance['endzeit']);
+                    echo $start->format('d.m.Y') . ' - ' . $end->format('d.m.Y');
+                    ?>
+                </span>
             </div>
         </div>
+        <?php endif; ?>
+        <?php if ($activeNotification): ?>
+        <div class="<?php echo htmlspecialchars($activeNotification['typ']); ?>">
+            <div class="mg-left center">
+                <span class="material-symbols-outlined">campaign</span>
+            </div>
+            <div class="mg-right">
+                <h2><?php echo htmlspecialchars($activeNotification['heading']); ?></h2>
+                <p><?php echo nl2br(htmlspecialchars($activeNotification['text'])); ?></p>
+                <span id="zeitraum">
+                    <?php 
+                    $start = new DateTime($activeNotification['startzeit']);
+                    $end = new DateTime($activeNotification['endzeit']);
+                    echo $start->format('d.m.Y') . ' - ' . $end->format('d.m.Y');
+                    ?>
+                </span>
+            </div>
+        </div>
+        <?php endif; ?>
+
         <div class="section" id="willkommen">
             <h1>Willkommen</h1>
             <p>Wir sind ein Verein, der sich der Förderung und Unterstützung der Gemeinschaft in den Dörfern Plänitz und Leddin widmet. Unser Ziel ist es, das soziale Miteinander zu stärken und gemeinsame Aktivitäten zu organisieren.</p>
@@ -280,9 +342,11 @@ if (!file_exists($dbPath)) {
         </div>
     </div>
     <div id="footer" class="center">
+        <?php if ($showGIF && !empty($currentGIF)): ?>
         <div id="footer-gif">
-            <img src="assets/GIFs/autumn.gif" alt="">
+            <img src="assets/images/gifs/<?php echo htmlspecialchars($currentGIF); ?>" alt="">
         </div>
+        <?php endif; ?>
         <div id="left">
             <div id="mode-toggle">
                 <span class="material-symbols-outlined">light_mode</span>
@@ -303,7 +367,7 @@ if (!file_exists($dbPath)) {
         </div>
         <div id="middle">
             <span>&copy; 2025-<?php echo date("Y"); ?> Gemeinsam für Plänitz-Leddin.<br> Alle Rechte vorbehalten.</span>
-            <a href="https://github.com/jan-albrecht05/Plaenitz-Leddin/commits/main/">Version 0.9</a>
+            <a href="https://github.com/jan-albrecht05/Plaenitz-Leddin/commits/main/">Version <?php echo htmlspecialchars($version); ?></a>
         </div>
         <div id="right">
             <a href="pages/kontakt.php">Kontakt<span class="material-symbols-outlined">open_in_new</span></a>

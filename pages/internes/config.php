@@ -76,8 +76,24 @@
         </div>
     </div>
     <div id="main">
+        <button id="back-button" class="center" onclick="location.href=window.history.back();">
+            <span class="material-symbols-outlined">arrow_back</span> 
+            <span>Zurück</span>
+        </button>
         <h1>Internes Konfigurationsmenü</h1>
         <hr>
+        <div class="maintanance" style="height: auto; margin-bottom: 20px;">
+            <div class="mg-left center">
+                <span class="material-symbols-outlined">warning</span>
+            </div>
+            <div class="mg-right" style="margin-bottom: 20px; font-size: 20px;">
+                <h2>Achtung</h2>
+                <p>
+                    Änderungen treten sofort auf der gesamten Website in Kraft und können die Funktionalität der Website beeinträchtigen.<br>
+                    Bitte seien Sie vorsichtig und ändern Sie nur Einstellungen, deren Auswirkungen Sie verstehen.
+                </p>
+            </div>
+        </div>
 
         <!-- ===== VORSTAND SECTION (ALWAYS FIRST) ===== -->
         <?php if ($canEditUI || $canEditConfig) { ?>
@@ -424,6 +440,14 @@
                     ?>
                 </div>
             </details>
+        </section>
+        <section> <!-- Kosten pro Jahr -->
+            <h3>Mitgleidskosten pro Jahr</h3>
+            <p>Aktuelle Kosten: <strong><?php echo htmlspecialchars(getConfigValue('kosten_pro_jahr').'€' ?? 'Unbekannt'); ?></strong></p>
+            <form id="cost-form">
+                <input type="text" id="cost-input" placeholder="Neue Kosten eingeben...">
+                <button type="submit">Kosten aktualisieren</button>
+            </form>
         </section>
         <?php } else if (hasVorstandRole($userId)) {
             echo '<h3>Sie haben aktuell keine Berechtigung zur Bearbeitung der Benachrichtigungen. Der Admin muss diese zuerst freischalten.</h3>';

@@ -62,7 +62,5 @@ Mit dieser Website sollen Mitglieder verwaltet, Veranstaltungen geteilt und Übe
  - Table-width abchecken (localhost ok - net wierd)
 
 ## config.db
- - finishing UI
- - whole scripts
- - file uploads
- - file paths
+ - banner text maximal 35 buchstaben
+ - einzelne Seiten überarbeiten dass config values benutzt werden

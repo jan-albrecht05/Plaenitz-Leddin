@@ -242,7 +242,7 @@ if ($filterUser !== '') {
 }
 
 if ($searchTerm !== '') {
-    $where[] = "(text LIKE :search OR ip LIKE :search)";
+    $where[] = "(text LIKE :search OR ip LIKE :search OR action LIKE :search)";
     $params[':search'] = '%' . $searchTerm . '%';
 }
 
@@ -1073,9 +1073,14 @@ $blockedIPs = getBlockedIPs();
                             <option value="login-success" <?php echo $filterAction === 'login-success' ? 'selected' : ''; ?>>Login (erfolgreich)</option>
                             <option value="login-failed" <?php echo $filterAction === 'login-failed' ? 'selected' : ''; ?>>Login (fehlgeschlagen)</option>
                             <option value="error-404" <?php echo $filterAction === 'error-404' ? 'selected' : ''; ?>>404-Fehler</option>
-                            <option value="delete" <?php echo $filterAction === 'delete' ? 'selected' : ''; ?>>Löschen</option>
-                            <option value="promote" <?php echo $filterAction === 'promote' ? 'selected' : ''; ?>>Promote</option>
-                            <option value="demote" <?php echo $filterAction === 'demote' ? 'selected' : ''; ?>>Demote</option>
+                            <option value="activate-member" <?php echo $filterAction === 'activate-member' ? 'selected' : ''; ?>>Aktivieren</option>
+                            <option value="deactivate-member" <?php echo $filterAction === 'deactivate-member' ? 'selected' : ''; ?>>Deaktivieren</option>
+                            <option value="promote-member" <?php echo $filterAction === 'promote-member' ? 'selected' : ''; ?>>Befördern</option>
+                            <option value="demote-member" <?php echo $filterAction === 'demote-member' ? 'selected' : ''; ?>>Degradieren</option>
+                            <option value="member-make-admin" <?php echo $filterAction === 'member-make-admin' ? 'selected' : ''; ?>>Admin hinzufügen</option>
+                            <option value="member-remove-admin" <?php echo $filterAction === 'member-remove-admin' ? 'selected' : ''; ?>>Admin entfernen</option>
+                            <option value="delete-member" <?php echo $filterAction === 'delete-member' ? 'selected' : ''; ?>>Mitglied löschen</option>
+                            <option value="edit-member" <?php echo $filterAction === 'edit-member' ? 'selected' : ''; ?>>Mitglied bearbeiten</option>
                         </select>
                     </div>
                     <div class="filter-group">
@@ -1089,32 +1094,32 @@ $blockedIPs = getBlockedIPs();
                         </select>
                     </div>
                     <?php if (count($users) > 0): ?>
-                        <div class="filter-group">
-                            <label>Benutzer</label>
-                            <select name="user_id">
-                                <option value="">Alle</option>
-                                <?php foreach ($users as $user): ?>
-                                    <option value="<?php echo $user['id']; ?>" <?php echo $filterUser == $user['id'] ? 'selected' : ''; ?>>
-                                        <?php echo htmlspecialchars($user['nachname'] . ', ' . $user['name']); ?>
-                                    </option>
-                                    <?php endforeach; ?>
-                                </select>
-                            </div>
-                            <?php endif; ?>
-                        </div>
-                        <div class="filter-row">
-                            <div class="filter-group">
-                                <label>Suche</label>
-                                <input type="text" name="search" value="<?php echo htmlspecialchars($searchTerm); ?>" placeholder="Text oder IP...">
-                            </div>
-                            <button type="submit" class="filter-btn center">
-                                <span class="material-symbols-outlined">filter_alt</span>
-                                Filtern
-                            </button>
-                            <a href="admin.php" class="reset-btn center">
-                                Zurücksetzen
-                            </a>
-                        </div>
+                    <div class="filter-group">
+                        <label>Benutzer</label>
+                        <select name="user_id">
+                            <option value="">Alle</option>
+                            <?php foreach ($users as $user): ?>
+                                <option value="<?php echo $user['id']; ?>" <?php echo $filterUser == $user['id'] ? 'selected' : ''; ?>>
+                                    <?php echo htmlspecialchars($user['nachname'] . ', ' . $user['name']); ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <?php endif; ?>
+                </div>
+                <div class="filter-row">
+                    <div class="filter-group">
+                        <label>Suche</label>
+                        <input type="text" name="search" value="<?php echo htmlspecialchars($searchTerm); ?>" placeholder="Text oder IP...">
+                    </div>
+                    <button type="submit" class="filter-btn center">
+                        <span class="material-symbols-outlined">filter_alt</span>
+                        Filtern
+                    </button>
+                    <a href="admin.php" class="reset-btn center">
+                        Zurücksetzen
+                    </a>
+                </div>
             </form>
         </div>
         <!-- Recent Logs -->

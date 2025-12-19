@@ -1,4 +1,6 @@
 ﻿<?php
+    require_once __DIR__ . '/log-data.php';
+    
     // conn to config.db
     $config = null;
     try {
@@ -69,6 +71,8 @@
             $stmt->bindValue(':key', $key, SQLITE3_TEXT);
             $stmt->bindValue(':value', (string)$value, SQLITE3_TEXT);
             $stmt->execute();
+            $currentUserId = isset($_SESSION['user_id']) ? (int)$_SESSION['user_id'] : '';
+            logAction('', 'set_config_'.$key, "$key → $value", '', $currentUserId);
             return true;
         } catch (Exception $e) {
             error_log("setConfigValue error for key '$key': " . $e->getMessage());
@@ -101,6 +105,8 @@
             $stmt->bindValue(':typ', $typ, SQLITE3_TEXT);
             $stmt->bindValue(':datum', date('Y-m-d H:i:s'), SQLITE3_TEXT);
             $stmt->execute();
+            $currentUserId = isset($_SESSION['user_id']) ? (int)$_SESSION['user_id'] : '';
+            logAction('', 'add_image_history_'.$table, "Table: $table, Name: $name", '', $currentUserId);
             return true;
         } catch (Exception $e) {
             error_log("addImageToHistory error for table '$table': " . $e->getMessage());
@@ -151,6 +157,8 @@
             $stmt = $config->prepare('DELETE FROM ' . $table . ' WHERE id = :id');
             $stmt->bindValue(':id', $id, SQLITE3_INTEGER);
             $stmt->execute();
+            $currentUserId = isset($_SESSION['user_id']) ? (int)$_SESSION['user_id'] : '';
+            logAction('', 'delete_image_history_'.$table, "Table: $table, ID: $id", '', $currentUserId);
             return true;
         } catch (Exception $e) {
             error_log("deleteImageFromHistory error for table '$table': " . $e->getMessage());
@@ -175,6 +183,7 @@
             $stmt->bindValue(':farbcode', $farbcode, SQLITE3_TEXT);
             $stmt->bindValue(':datum', date('Y-m-d H:i:s'), SQLITE3_TEXT);
             $stmt->execute();
+            $currentUserId = isset($_SESSION['user_id']) ? (int)$_SESSION['user_id'] : '';
             return true;
         } catch (Exception $e) {
             error_log("addColorToHistory error: " . $e->getMessage());
@@ -233,6 +242,8 @@
             $stmt->bindValue(':endzeit', $endzeit, SQLITE3_TEXT);
             $stmt->bindValue(':autor', $autor, SQLITE3_INTEGER);
             $stmt->execute();
+            $currentUserId = isset($_SESSION['user_id']) ? (int)$_SESSION['user_id'] : '';
+            logAction('', 'add_message', "Type: $typ, Heading: $heading", '', $currentUserId);
             return true;
         } catch (Exception $e) {
             error_log("addMessage error: " . $e->getMessage());
@@ -320,6 +331,8 @@
             $stmt->bindValue(':startzeit', $startzeit, SQLITE3_TEXT);
             $stmt->bindValue(':endzeit', $endzeit, SQLITE3_TEXT);
             $stmt->execute();
+            $currentUserId = isset($_SESSION['user_id']) ? (int)$_SESSION['user_id'] : '';
+            logAction('', 'update_message', "ID: $id, Heading: $heading", '', $currentUserId);
             return true;
         } catch (Exception $e) {
             error_log("updateMessage error: " . $e->getMessage());
@@ -343,6 +356,8 @@
             $stmt = $config->prepare('DELETE FROM messages WHERE id = :id');
             $stmt->bindValue(':id', $id, SQLITE3_INTEGER);
             $stmt->execute();
+            $currentUserId = isset($_SESSION['user_id']) ? (int)$_SESSION['user_id'] : '';
+            logAction('', 'delete_message', "ID: $id", '', $currentUserId);
             return true;
         } catch (Exception $e) {
             error_log("deleteMessage error: " . $e->getMessage());
@@ -367,6 +382,8 @@
             $stmt->bindValue(':inhalt', $text, SQLITE3_TEXT);
             $stmt->bindValue(':datum', date('Y-m-d H:i:s'), SQLITE3_TEXT);
             $stmt->execute();
+            $currentUserId = isset($_SESSION['user_id']) ? (int)$_SESSION['user_id'] : '';
+            logAction('', 'add_banner_text', "Text: $text", '', $currentUserId);
             return true;
         } catch (Exception $e) {
             error_log("addBannerTextToHistory error: " . $e->getMessage());

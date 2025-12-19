@@ -94,13 +94,14 @@ a{
     margin-top: 5rem;
 }
 /* messages */
-.maintanance,
+.maintenance,
 #main .notification{
     width: 100%;
     border: 1px solid;
     border-radius: 5px;
     display: flex;
     flex-direction: row;
+    margin-bottom: 1rem;
 }
 .mg-left{
     width: 20%;
@@ -109,7 +110,7 @@ a{
 .mg-left span.material-symbols-outlined{
     font-size: 5rem;
 }
-.maintanance{
+.maintenance{
     background-color: var(--mg-red);
     border-color: red;
 }
@@ -117,7 +118,7 @@ a{
     background-color: var(--mg-orange);
     border-color: var(--orange);
 }
-.maintanance .mg-left{
+.maintenance .mg-left{
     background-color: var(--mg-red);
 }
 #main .notification .mg-left{

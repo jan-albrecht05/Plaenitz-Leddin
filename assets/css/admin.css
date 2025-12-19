@@ -342,6 +342,96 @@
     content: "⚠️";
     margin-right: 4px;
 }
+/* CONFIGS */
+.action-add_banner_text,
+.action-set_config_banner_text{
+    background: var(--primary-color);
+    color: #333;
+}
+.action-set_config_logo{
+    background: pink;
+    color: #333;
+}
+.action-delete_image{
+    background: var(--mg-red);
+    color: #fff;
+}
+.action-set_config_banner_image{
+    background: rgb(150, 255, 229);
+    color: #333;
+}
+.action-set_config_banner_image::before{
+    content: "🖼️";
+    margin-right: 4px;
+}
+.action-set_config_current_gif{
+    background: #616161;
+    color: #d8d8d8;
+}
+.action-set_config_show_gif{
+    background: #ff9ae2;
+    color: #9c1fa0;
+}
+.action-set_config_auto_rotate_gif{
+    background-image: linear-gradient(60deg, rgb(0, 132, 255) 0%, white 100%);
+    color: #000;
+}
+.action-add_message,
+.action-update_message,
+.action-delete_message{
+    background-image: linear-gradient(60deg, var(--mg-orange) 0%, var(--mg-red) 100%);
+    color: #fff;
+}
+.action-add_message::before{
+    content: "➕";
+    margin-right: 4px;
+}
+.action-update_message::before{
+    content: "🔁";
+    margin-right: 4px;
+}
+.action-delete_message::before,
+.action-delete_image_history::before,
+.action-delete_image::before{
+    content: "⛔";
+    margin-right: 4px;
+}
+.action-set_config_primary_color,
+.action-add-color-history{
+    background-color: #fff;
+    color: blueviolet;
+}
+.action-set_config_primary_color::before,
+.action-add-color-history::before{
+    content: "🎨";
+    margin-right: 4px;
+}
+.action-set_config_system_version{
+    background: #000;
+    color: yellow;
+}
+.action-set_config_system_version::before{
+    content: "🚩";
+    margin-right: 4px;
+}
+.action-set_config_show_error,
+.action-set_config_show_notification,
+.action-set_config_vorstand_can_edit_UI,
+.action-set_config_vorstand_can_edit_config{
+    background: red;
+    color: #fff;
+}
+.action-set_config_show_error::before,
+.action-set_config_show_notification::before,
+.action-set_config_vorstand_can_edit_UI::before,
+.action-set_config_vorstand_can_edit_config::before{
+    content: "⚠️";
+    margin-right: 4px;
+}
+.action-set_config_kosten_pro_jahr{
+    background: #eeff00;
+    color: #3dd800;
+}
 /* Error list styles */
 .error-list {
     list-style: none;

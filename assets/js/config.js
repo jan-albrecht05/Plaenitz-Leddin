@@ -233,6 +233,31 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
+    // ===== COST FORM =====
+    const costForm = document.getElementById('cost-form');
+    if (costForm) {
+        costForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const costInput = document.getElementById('cost-input');
+            const cost = costInput.value.trim();
+            
+            if (!cost) {
+                showMessage('Bitte geben Sie die Kosten ein.', 'error');
+                return;
+            }
+            
+            // Validate that it's a number
+            const costNumber = parseFloat(cost.replace(',', '.'));
+            if (isNaN(costNumber) || costNumber < 0) {
+                showMessage('Bitte geben Sie einen gültigen Betrag ein.', 'error');
+                return;
+            }
+            
+            saveConfigValue('kosten_pro_jahr', costNumber);
+        });
+    }
+    
     // ===== NOTIFICATION FORM =====
     const notificationForm = document.getElementById('notification-form');
     if (notificationForm) {
@@ -304,6 +329,7 @@ function saveConfigValue(key, value) {
         headers: {
             'Content-Type': 'application/json',
         },
+        credentials: 'same-origin', // Ensure cookies are sent
         body: JSON.stringify({
             config_key: key,
             config_value: value

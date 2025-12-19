@@ -1,3 +1,7 @@
+section{
+    margin-bottom: 3rem;
+    margin-top: 2rem;
+}
 h3{
     display: flex;
     align-items: center;
@@ -288,7 +292,6 @@ form.inline button{
 .config-group{
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
     margin-top: 1rem;
     margin-bottom: 2rem;
 }
@@ -300,6 +303,7 @@ form.inline button{
     background-color: var(--secondary-bg);
     border-radius: 5px;
     border-left: 4px solid var(--primary-color);
+    margin-bottom: 1rem;
 }
 .config-item label:first-child{
     display: flex;
@@ -413,7 +417,7 @@ input:checked + .slider:before {
     transition: border-color 0.3s;
 }
 .message-item.active{
-    border-left-color: var(--success-color, #28a745);
+    border-left-color: var(--success-color);
 }
 .message-item.inactive{
     border-left-color: var(--orange, #ff9800);
@@ -446,7 +450,7 @@ input:checked + .slider:before {
     background-color: #c82333;
 }
 .edit-message-btn{
-    background-color: var(--primary-color);
+    background-color: var(--success-color);
 }
 
 .no-icons,

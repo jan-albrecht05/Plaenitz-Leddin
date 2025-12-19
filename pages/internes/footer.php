@@ -1,4 +1,9 @@
-<div id="left">
+    <?php if ($showGIF && !empty($currentGIF)): ?>
+    <div id="footer-gif">
+        <img src="assets/images/gifs/<?php echo htmlspecialchars($currentGIF); ?>" alt="">
+    </div>
+    <?php endif; ?>
+        <div id="left">
             <div id="mode-toggle">
                 <span class="material-symbols-outlined">light_mode</span>
                 <label class="switch">

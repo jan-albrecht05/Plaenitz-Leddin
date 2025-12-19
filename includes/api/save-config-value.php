@@ -9,14 +9,16 @@ require_once '../db_helper.php';
 require_once '../config-helper.php';
 
 // Clear any output from includes
-ob_end_clean();
+while (ob_get_level()) {
+    ob_end_clean();
+}
 
 header('Content-Type: application/json');
 
 // Check if user is logged in
 if (!isset($_SESSION['user_id'])) {
     http_response_code(401);
-    echo json_encode(['success' => false, 'error' => 'Nicht autorisiert']);
+    echo json_encode(['success' => false, 'error' => 'Nicht autorisiert - Session verloren']);
     exit();
 }
 
