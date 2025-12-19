@@ -48,13 +48,30 @@
     <link rel="stylesheet" href="../../assets/css/heading.css">
     <link rel="stylesheet" href="../../assets/css/footer.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" />
+    <?php
+        // load values from config
+        // set tabicon:
+        $tabicon = getConfigValue('tabicon');
+        if ($tabicon) {
+            echo '<link rel="icon" type="image/png" href="../../assets/icons/tabicons/' . htmlspecialchars($tabicon) . '">';
+        }
+        // set primary color:
+        $primaryColor = getConfigValue('primary_color');
+        if ($primaryColor) {
+            echo '<style>:root { --primary-color: ' . htmlspecialchars($primaryColor) . '; }</style>';
+        }else {
+            echo '<style>:root { --primary-color: #00b300; }</style>'; // default color
+        }
+        // set logo:
+        $logo = getConfigValue('logo');
+    ?>
 </head>
 <body>
     <script src="../../assets/js/config.js"></script>
     <div id="heading">
         <div id="left">
             <a href="../../index.php">
-                <img src="../../assets/icons/logo.png" alt="">
+                <img src="<?php echo '../../assets/icons/logos/' . htmlspecialchars($logo); ?>" alt="">
             </a>
         </div>
     </div>
@@ -84,14 +101,14 @@
                 <div id="tabicon-list">
                     <?php
                         try {
-                            $stmt = $config->prepare('SELECT * FROM icons ORDER BY datum DESC');
+                            $stmt = $config->prepare('SELECT rowid as id, * FROM icons ORDER BY datum DESC');
                             $result = $stmt->execute();
                             
                             $iconCount = 0;
                             while ($row = $result->fetchArray(SQLITE3_ASSOC)) {
                                 $iconCount++;
                                 $iconPath = '../../assets/icons/tabicons/' . ltrim($row['link'], '/\\');
-                                echo '<div class="tabicon-item">';
+                                echo '<div class="tabicon-item" data-image-id="' . htmlspecialchars($row['id']) . '">';
                                     echo '<img src="' . htmlspecialchars($iconPath) . '" alt="Tabicon">';
                                     echo '<h4 class="bildname">' . htmlspecialchars(basename($row['name'])) . '</h4>';
                                     if (!empty($row['dimensions'])) {
@@ -131,14 +148,14 @@
                 <div id="logos-list">
                     <?php
                         try {
-                            $stmt = $config->prepare('SELECT * FROM logos ORDER BY datum DESC');
+                            $stmt = $config->prepare('SELECT rowid as id, * FROM logos ORDER BY datum DESC');
                             $result = $stmt->execute();
                             
                             $logoCount = 0;
                             while ($row = $result->fetchArray(SQLITE3_ASSOC)) {
                                 $logoCount++;
                                 $logoPath = '../../assets/icons/logos/' . ltrim($row['link'], '/\\');
-                                echo '<div class="logos-item">';
+                                echo '<div class="logos-item" data-image-id="' . htmlspecialchars($row['id']) . '">';
                                     echo '<img src="' . htmlspecialchars($logoPath) . '" alt="Logo">';
                                     echo '<h4 class="bildname">' . htmlspecialchars(basename($row['name'])) . '</h4>';
                                     if (!empty($row['dimensions'])) {
@@ -219,14 +236,14 @@
                 <div id="banner-images-list">
                     <?php
                         try {
-                            $stmt = $config->prepare('SELECT * FROM banner_images ORDER BY datum DESC');
+                            $stmt = $config->prepare('SELECT rowid as id, * FROM banner_images ORDER BY datum DESC');
                             $result = $stmt->execute();
                             
                             $imageCount = 0;
                             while ($row = $result->fetchArray(SQLITE3_ASSOC)) {
                                 $imageCount++;
                                 $imagePath = '../../assets/images/banner/' . ltrim($row['link'], '/\\');
-                                echo '<div class="banner-image-item">';
+                                echo '<div class="banner-image-item" data-image-id="' . htmlspecialchars($row['id']) . '">';
                                     echo '<img src="' . htmlspecialchars($imagePath) . '" alt="Banner-Bild">';
                                     if (!empty($row['datum'])) {
                                         $date = date('d.m.Y', strtotime($row['datum']));
@@ -252,7 +269,45 @@
                 GIFs
                 <p class="info"><span class="material-symbols-outlined">info</span><span class="infotext">Animierte GIFs für die Website.</span></p>
             </h3>
-            
+            <div id="gif-drop-zone" class="file-drop-zone">
+                <span class="material-symbols-outlined">upload_file</span>
+                <p>GIF hierher ziehen oder klicken zum Auswählen</p>
+                <input type="file" id="gif-file-input" accept=".gif" style="display: none;">
+            </div>
+            <details>
+                <summary>verwendete GIFs anzeigen <span class="material-symbols-outlined">keyboard_arrow_down</span></summary>
+                <div id="gifs-list">
+                    <?php
+                        try {
+                            $stmt = $config->prepare('SELECT rowid as id, * FROM gifs ORDER BY datum DESC');
+                            $result = $stmt->execute();
+                            
+                            $gifCount = 0;
+                            while ($row = $result->fetchArray(SQLITE3_ASSOC)) {
+                                $gifCount++;
+                                $gifPath = '../../assets/images/gifs/' . ltrim($row['link'], '/\\');
+                                $season = htmlspecialchars($row['type'] ?? 'Keine Jahreszeit');
+                                echo '<div class="gif-item" data-image-id="' . htmlspecialchars($row['id']) . '">';
+                                    echo '<img src="' . htmlspecialchars($gifPath) . '" alt="GIF">';
+                                    echo '<h4>' . htmlspecialchars(basename($row['name'])) . '</h4>';
+                                    echo '<p class="season">Jahreszeit: ' . $season . '</p>';
+                                    if (!empty($row['datum'])) {
+                                        $date = date('d.m.Y', strtotime($row['datum']));
+                                        echo '<p class="date">' . htmlspecialchars($date) . '</p>';
+                                    }
+                                echo '</div>';
+                            }
+                            
+                            if ($gifCount === 0) {
+                                echo '<p class="no-items">Keine GIFs gefunden.</p>';
+                            }
+                        } catch (Exception $e) {
+                            error_log('Error loading gifs: ' . $e->getMessage());
+                            echo '<p class="error">Fehler beim Laden der GIFs.</p>';
+                        }
+                    ?>
+                </div>
+            </details>
             <div class="config-item">
                 <label for="show-gif-toggle">
                     GIFs anzeigen
@@ -274,46 +329,6 @@
                     <span class="slider"></span>
                 </label>
             </div>
-
-            <div id="gif-drop-zone" class="file-drop-zone">
-                <span class="material-symbols-outlined">upload_file</span>
-                <p>GIF hierher ziehen oder klicken zum Auswählen</p>
-                <input type="file" id="gif-file-input" accept=".gif" style="display: none;">
-            </div>
-            <details>
-                <summary>verwendete GIFs anzeigen <span class="material-symbols-outlined">keyboard_arrow_down</span></summary>
-                <div id="gifs-list">
-                    <?php
-                        try {
-                            $stmt = $config->prepare('SELECT * FROM gifs ORDER BY datum DESC');
-                            $result = $stmt->execute();
-                            
-                            $gifCount = 0;
-                            while ($row = $result->fetchArray(SQLITE3_ASSOC)) {
-                                $gifCount++;
-                                $gifPath = '../../assets/images/gifs/' . ltrim($row['link'], '/\\');
-                                $season = htmlspecialchars($row['typ'] ?? 'Keine Jahreszeit');
-                                echo '<div class="gif-item">';
-                                    echo '<img src="' . htmlspecialchars($gifPath) . '" alt="GIF">';
-                                    echo '<h4>' . htmlspecialchars(basename($row['name'])) . '</h4>';
-                                    echo '<p class="season">Jahreszeit: ' . $season . '</p>';
-                                    if (!empty($row['datum'])) {
-                                        $date = date('d.m.Y', strtotime($row['datum']));
-                                        echo '<p class="date">' . htmlspecialchars($date) . '</p>';
-                                    }
-                                echo '</div>';
-                            }
-                            
-                            if ($gifCount === 0) {
-                                echo '<p class="no-items">Keine GIFs gefunden.</p>';
-                            }
-                        } catch (Exception $e) {
-                            error_log('Error loading gifs: ' . $e->getMessage());
-                            echo '<p class="error">Fehler beim Laden der GIFs.</p>';
-                        }
-                    ?>
-                </div>
-            </details>
         </section>
 
         <?php } else {
@@ -420,9 +435,63 @@
 
         <!-- ===== ADMIN SECTION (ONLY FOR ADMINS) ===== -->
         <?php if (hasAdminRole($userId)) { ?>
-
+        <hr>
         <h2>Administration</h2>
 
+        <section> <!-- Version -->
+            <h3>Systemversion</h3>
+            <p>Aktuelle Version: <strong><?php echo htmlspecialchars(getConfigValue('system_version') ?? 'Unbekannt'); ?></strong></p>
+            <form id="version-form">
+                <input type="text" id="version-input" placeholder="Neue Version eingeben...">
+                <button type="submit">Version aktualisieren</button>
+            </form>
+        </section>
+        <section> <!-- MAINTENANCE MESSAGES -->
+            <h3>
+                Wartungsmitteilungen
+                <p class="info"><span class="material-symbols-outlined">info</span><span class="infotext">Zeigen Sie Wartungsmitteilungen zu bestimmten Zeiten an.</span></p>
+            </h3>
+            <form id="maintenance-form">
+                <input type="text" id="maintenance-heading" placeholder="Überschrift (z.B. 'Wartungsarbeiten')">
+                <textarea id="maintenance-text" placeholder="Nachrichtentext..."></textarea>
+                <div class="date-time-group">
+                    <input type="datetime-local" id="maintenance-start" placeholder="Startzeit">
+                    <input type="datetime-local" id="maintenance-end" placeholder="Endzeit">
+                </div>
+                <button type="submit">Wartungsmitteilung erstellen</button>
+            </form>
+            <details>
+                <summary>Wartungsmitteilungen anzeigen <span class="material-symbols-outlined">keyboard_arrow_down</span></summary>
+                <div id="maintenance-list">
+                    <?php
+                        try {
+                            $stmt = $config->prepare("SELECT * FROM messages WHERE typ = 'maintenance' ORDER BY startzeit DESC");
+                            $result = $stmt->execute();
+                            
+                            $maintenanceCount = 0;
+                            while ($row = $result->fetchArray(SQLITE3_ASSOC)) {
+                                $maintenanceCount++;
+                                $isActive = strtotime($row['startzeit']) <= time() && time() <= strtotime($row['endzeit']) ? 'active' : 'inactive';
+                                echo '<div class="message-item ' . $isActive . '">';
+                                    echo '<h4>' . htmlspecialchars($row['heading']) . '</h4>';
+                                    echo '<p>' . htmlspecialchars($row['text']) . '</p>';
+                                    echo '<span class="message-time">Von: ' . date('d.m.Y H:i', strtotime($row['startzeit'])) . '</span>';
+                                    echo '<span class="message-time">Bis: ' . date('d.m.Y H:i', strtotime($row['endzeit'])) . '</span>';
+                                    echo '<button class="delete-message-btn" data-message-id="' . htmlspecialchars($row['id']) . '" data-message-type="maintenance">Löschen</button>';
+                                echo '</div>';
+                            }
+                            
+                            if ($maintenanceCount === 0) {
+                                echo '<p class="no-items">Keine Wartungsmitteilungen gefunden.</p>';
+                            }
+                        } catch (Exception $e) {
+                            error_log('Error loading maintenance: ' . $e->getMessage());
+                            echo '<p class="error">Fehler beim Laden der Wartungsmitteilungen.</p>';
+                        }
+                    ?>
+                </div>
+            </details>
+        </section>
         <section> <!-- SYSTEM CONFIGURATION -->
             <h3>Systemkonfiguration</h3>
             
@@ -471,53 +540,6 @@
                     </label>
                 </div>
             </div>
-        </section>
-
-        <section> <!-- MAINTENANCE MESSAGES -->
-            <h3>
-                Wartungsmitteilungen
-                <p class="info"><span class="material-symbols-outlined">info</span><span class="infotext">Zeigen Sie Wartungsmitteilungen zu bestimmten Zeiten an.</span></p>
-            </h3>
-            <form id="maintenance-form">
-                <input type="text" id="maintenance-heading" placeholder="Überschrift (z.B. 'Wartungsarbeiten')">
-                <textarea id="maintenance-text" placeholder="Nachrichtentext..."></textarea>
-                <div class="date-time-group">
-                    <input type="datetime-local" id="maintenance-start" placeholder="Startzeit">
-                    <input type="datetime-local" id="maintenance-end" placeholder="Endzeit">
-                </div>
-                <button type="submit">Wartungsmitteilung erstellen</button>
-            </form>
-            <details>
-                <summary>Wartungsmitteilungen anzeigen <span class="material-symbols-outlined">keyboard_arrow_down</span></summary>
-                <div id="maintenance-list">
-                    <?php
-                        try {
-                            $stmt = $config->prepare("SELECT * FROM messages WHERE typ = 'maintenance' ORDER BY startzeit DESC");
-                            $result = $stmt->execute();
-                            
-                            $maintenanceCount = 0;
-                            while ($row = $result->fetchArray(SQLITE3_ASSOC)) {
-                                $maintenanceCount++;
-                                $isActive = strtotime($row['startzeit']) <= time() && time() <= strtotime($row['endzeit']) ? 'active' : 'inactive';
-                                echo '<div class="message-item ' . $isActive . '">';
-                                    echo '<h4>' . htmlspecialchars($row['heading']) . '</h4>';
-                                    echo '<p>' . htmlspecialchars($row['text']) . '</p>';
-                                    echo '<span class="message-time">Von: ' . date('d.m.Y H:i', strtotime($row['startzeit'])) . '</span>';
-                                    echo '<span class="message-time">Bis: ' . date('d.m.Y H:i', strtotime($row['endzeit'])) . '</span>';
-                                    echo '<button class="delete-message-btn" data-message-id="' . htmlspecialchars($row['id']) . '" data-message-type="maintenance">Löschen</button>';
-                                echo '</div>';
-                            }
-                            
-                            if ($maintenanceCount === 0) {
-                                echo '<p class="no-items">Keine Wartungsmitteilungen gefunden.</p>';
-                            }
-                        } catch (Exception $e) {
-                            error_log('Error loading maintenance: ' . $e->getMessage());
-                            echo '<p class="error">Fehler beim Laden der Wartungsmitteilungen.</p>';
-                        }
-                    ?>
-                </div>
-            </details>
         </section>
 
         <?php } ?>

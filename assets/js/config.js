@@ -54,6 +54,38 @@ function showMessage(message, type) {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
+    // Create context menu element
+    const contextMenu = document.createElement('div');
+    contextMenu.className = 'context-menu';
+    contextMenu.id = 'image-context-menu';
+    contextMenu.innerHTML = `
+        <div class="context-menu-item" data-action="use">
+            <span class="material-symbols-outlined">check_circle</span>
+            Als aktuell setzen
+        </div>
+        <div class="context-menu-item delete" data-action="delete">
+            <span class="material-symbols-outlined">delete</span>
+            Löschen
+        </div>
+    `;
+    document.body.appendChild(contextMenu);
+
+    // Close context menu when clicking outside
+    document.addEventListener('click', function() {
+        contextMenu.classList.remove('active');
+    });
+
+    // Prevent default context menu
+    document.addEventListener('contextmenu', function(e) {
+        const contextable = e.target.closest('.image-item-contextable');
+        if (contextable) {
+            e.preventDefault();
+        }
+    });
+
+    // Initialize context menu for existing images on page load
+    initializeContextMenuForExistingImages();
+
     // ===== DRAG AND DROP SETUP =====
     const dropZones = document.querySelectorAll('.file-drop-zone');
     
@@ -97,6 +129,69 @@ document.addEventListener('DOMContentLoaded', function() {
             zone.querySelector('input[type="file"]').click();
         }, false);
     });
+
+    // ===== FILE UPLOAD HANDLERS =====
+    // Tabicon upload
+    const tabiconInput = document.getElementById('tabicon-file-input');
+    if (tabiconInput) {
+        tabiconInput.addEventListener('change', function() {
+            if (this.files.length > 0) {
+                uploadFile(this.files[0], 'tabicon', null, 'icons');
+            }
+        });
+    }
+
+    // Logo upload
+    const logoInput = document.getElementById('logo-file-input');
+    if (logoInput) {
+        logoInput.addEventListener('change', function() {
+            if (this.files.length > 0) {
+                uploadFile(this.files[0], 'logo', null, 'logos');
+            }
+        });
+    }
+
+    // Banner image upload
+    const bannerImageInput = document.getElementById('banner-image-file-input');
+    if (bannerImageInput) {
+        bannerImageInput.addEventListener('change', function() {
+            if (this.files.length > 0) {
+                uploadFile(this.files[0], 'banner_image', null, 'banner_images');
+            }
+        });
+    }
+
+    // GIF upload
+    const gifInput = document.getElementById('gif-file-input');
+    if (gifInput) {
+        gifInput.addEventListener('change', function() {
+            if (this.files.length > 0) {
+                const season = prompt('Für welche Jahreszeit ist dieses GIF?\nMögliche Werte: Frühling, Sommer, Herbst, Winter, Ganzjährig');
+                if (season) {
+                    uploadFile(this.files[0], 'gif', season, 'gifs');
+                }
+            }
+        });
+    }
+
+    // ===== VERSION FORM =====
+    const versionForm = document.getElementById('version-form');
+    if (versionForm) {
+        versionForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const versionInput = document.getElementById('version-input');
+            const version = versionInput.value.trim();
+            
+            if (!version) {
+                showMessage('Bitte geben Sie eine Version ein.', 'error');
+                return;
+            }
+            
+            saveConfigValue('system_version', version);
+            versionInput.value = '';
+        });
+    }
 
     // ===== TOGGLE SWITCHES =====
     const toggleSwitches = document.querySelectorAll('.switch input[data-config-key]');
@@ -338,3 +433,296 @@ function convertToDateTime(dateTimeLocal) {
     
     return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
 }
+
+// Upload file function
+function uploadFile(file, uploadType, season = null, listType = null) {
+    // Validate file type
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml', 'image/x-icon', 'image/vnd.microsoft.icon'];
+    if (!allowedTypes.includes(file.type)) {
+        showMessage('Ungültiger Dateityp. Nur Bilder sind erlaubt.', 'error');
+        return;
+    }
+
+    // Validate file size (max 5MB for most, 10MB for banner images)
+    const maxSize = (uploadType === 'banner_image') ? 10 * 1024 * 1024 : 5 * 1024 * 1024;
+    if (file.size > maxSize) {
+        const maxMB = maxSize / (1024 * 1024);
+        showMessage(`Datei zu groß. Maximum: ${maxMB}MB`, 'error');
+        return;
+    }
+
+    // Create FormData
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('upload_type', uploadType);
+    if (season) {
+        formData.append('season', season);
+    }
+
+    // Show loading message
+    showMessage('Upload läuft...', 'success');
+
+    // Upload file
+    fetch('../../includes/api/upload-file.php', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => {
+        return response.text().then(text => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return text;
+        });
+    })
+    .then(text => {
+        try {
+            return JSON.parse(text);
+        } catch (e) {
+            throw new Error('Ungültige JSON-Antwort');
+        }
+    })
+    .then(data => {
+        if (data.success) {
+            showMessage('Datei erfolgreich hochgeladen!', 'success');
+            
+            // Reload the specific list instead of the whole page
+            if (listType) {
+                reloadImageList(listType);
+            }
+        } else {
+            showMessage('Fehler: ' + (data.error || 'Unbekannter Fehler'), 'error');
+        }
+    })
+    .catch(error => {
+        showMessage('Fehler beim Hochladen der Datei: ' + error.message, 'error');
+    });
+}
+
+// Reload image list dynamically
+function reloadImageList(listType) {
+    const listMappings = {
+        'icons': { containerId: 'tabicon-list', pathPrefix: '../../assets/icons/tabicons/' },
+        'logos': { containerId: 'logos-list', pathPrefix: '../../assets/icons/logos/' },
+        'banner_images': { containerId: 'banner-images-list', pathPrefix: '../../assets/images/banner/' },
+        'gifs': { containerId: 'gifs-list', pathPrefix: '../../assets/images/gifs/' }
+    };
+    
+    const mapping = listMappings[listType];
+    if (!mapping) return;
+    
+    fetch(`../../includes/api/get-images.php?type=${listType}`)
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            const container = document.getElementById(mapping.containerId);
+            if (!container) return;
+            
+            if (data.images.length === 0) {
+                container.innerHTML = '<p class="no-items">Keine Einträge gefunden.</p>';
+                return;
+            }
+            
+            container.innerHTML = '';
+            data.images.forEach((image, index) => {
+                const itemDiv = document.createElement('div');
+                itemDiv.className = listType === 'icons' ? 'tabicon-item' : 
+                                   listType === 'logos' ? 'logos-item' : 
+                                   listType === 'banner_images' ? 'banner-image-item' : 'gif-item';
+                
+                // Add context menu class for all except first (current) image
+                if (index > 0) {
+                    itemDiv.classList.add('image-item-contextable');
+                    itemDiv.dataset.imageId = image.id;
+                    itemDiv.dataset.imageType = listType;
+                }
+                
+                const imgPath = mapping.pathPrefix + image.link;
+                let html = `<img src="${imgPath}" alt="${image.name}">`;
+                
+                if (listType !== 'banner_images') {
+                    html += `<h4 class="bildname">${image.name}</h4>`;
+                }
+                
+                if (listType === 'gifs' && image.type) {
+                    html += `<p class="season">Jahreszeit: ${image.type}</p>`;
+                }
+                
+                if (image.dimensions) {
+                    html += `<p class="dimensions">${image.dimensions}</p>`;
+                }
+                
+                if (image.datum) {
+                    const date = new Date(image.datum);
+                    const formattedDate = date.toLocaleDateString('de-DE');
+                    html += `<p class="date">${formattedDate}</p>`;
+                }
+                
+                itemDiv.innerHTML = html;
+                
+                // Add context menu event listener for items that can have it
+                if (index > 0) {
+                    itemDiv.addEventListener('contextmenu', function(e) {
+                        e.preventDefault();
+                        showContextMenu(e, image.id, listType);
+                    });
+                }
+                
+                container.appendChild(itemDiv);
+            });
+        }
+    })
+    .catch(error => {
+        console.error('Error reloading list:', error);
+    });
+}
+
+// Show context menu
+function showContextMenu(event, imageId, imageType) {
+    const contextMenu = document.getElementById('image-context-menu');
+    
+    if (!contextMenu) {
+        return;
+    }
+    
+    // Position context menu (use clientX/Y for fixed positioning)
+    contextMenu.style.left = event.clientX + 'px';
+    contextMenu.style.top = event.clientY + 'px';
+    contextMenu.classList.add('active');
+    
+    // Remove old event listeners
+    const newMenu = contextMenu.cloneNode(true);
+    contextMenu.parentNode.replaceChild(newMenu, contextMenu);
+    
+    // Add new event listeners
+    const useButton = newMenu.querySelector('[data-action="use"]');
+    const deleteButton = newMenu.querySelector('[data-action="delete"]');
+    
+    useButton.addEventListener('click', function(e) {
+        e.stopPropagation();
+        setCurrentImage(imageId, imageType);
+        newMenu.classList.remove('active');
+    });
+    
+    deleteButton.addEventListener('click', function(e) {
+        e.stopPropagation();
+        if (confirm('Möchten Sie dieses Bild wirklich löschen?')) {
+            deleteImage(imageId, imageType);
+        }
+        newMenu.classList.remove('active');
+    });
+}
+
+// Set image as current
+function setCurrentImage(imageId, imageType) {
+    fetch('../../includes/api/set-current-image.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            image_id: imageId,
+            image_type: imageType
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showMessage('Bild wurde als aktuell gesetzt!', 'success');
+            reloadImageList(imageType);
+        } else {
+            showMessage('Fehler: ' + (data.error || 'Unbekannter Fehler'), 'error');
+        }
+    })
+    .catch(error => {
+        showMessage('Fehler beim Setzen des Bildes: ' + error.message, 'error');
+    });
+}
+
+// Delete image
+function deleteImage(imageId, imageType) {
+    fetch('../../includes/api/delete-image.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            image_id: imageId,
+            image_type: imageType
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showMessage('Bild wurde gelöscht!', 'success');
+            reloadImageList(imageType);
+        } else {
+            showMessage('Fehler: ' + (data.error || 'Unbekannter Fehler'), 'error');
+        }
+    })
+    .catch(error => {
+        showMessage('Fehler beim Löschen des Bildes: ' + error.message, 'error');
+    });
+}
+
+// Initialize context menu for images that are already on the page
+function initializeContextMenuForExistingImages() {
+    const listMappings = {
+        'tabicon-list': 'icons',
+        'logos-list': 'logos',
+        'banner-images-list': 'banner_images',
+        'gifs-list': 'gifs'
+    };
+    
+    Object.keys(listMappings).forEach(containerId => {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+        
+        const imageType = listMappings[containerId];
+        const items = container.children;
+        
+        // Skip first item (current image), add context menu to rest
+        for (let i = 1; i < items.length; i++) {
+            const item = items[i];
+            
+            // Skip if it's the "no items" message
+            if (item.classList.contains('no-items')) continue;
+            
+            // Add context menu class
+            item.classList.add('image-item-contextable');
+            
+            // Try to get image ID from data attribute
+            const imageId = item.dataset.imageId;
+            
+            if (imageId) {
+                item.addEventListener('contextmenu', function(e) {
+                    e.preventDefault();
+                    showContextMenu(e, imageId, imageType);
+                });
+            }
+        }
+    });
+}
+// hide context menu on scroll, click somewhere else and [esc] key
+window.addEventListener('scroll', function() {
+    const contextMenu = document.getElementById('image-context-menu');
+    if (contextMenu) {
+        contextMenu.classList.remove('active');
+    }
+});
+
+window.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        const contextMenu = document.getElementById('image-context-menu');
+        if (contextMenu) {
+            contextMenu.classList.remove('active');
+        }
+    }
+});
+
+window.addEventListener('click', function() {
+    const contextMenu = document.getElementById('image-context-menu');
+    if (contextMenu) {
+        contextMenu.classList.remove('active');
+    }
+});

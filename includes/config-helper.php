@@ -349,4 +349,28 @@
             return false;
         }
     }
+
+    /**
+     * Add banner text to history
+     * @param string $text - Banner text
+     * @return bool - Success status
+     */
+    function addBannerTextToHistory($text) {
+        global $config;
+        
+        if ($config === null) {
+            return false;
+        }
+        
+        try {
+            $stmt = $config->prepare('INSERT INTO banner_texte (inhalt, datum) VALUES (:inhalt, :datum)');
+            $stmt->bindValue(':inhalt', $text, SQLITE3_TEXT);
+            $stmt->bindValue(':datum', date('Y-m-d H:i:s'), SQLITE3_TEXT);
+            $stmt->execute();
+            return true;
+        } catch (Exception $e) {
+            error_log("addBannerTextToHistory error: " . $e->getMessage());
+            return false;
+        }
+    }
 ?>

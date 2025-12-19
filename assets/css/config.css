@@ -48,6 +48,63 @@ p.info:hover .infotext{
     color: var(--primary-color);
     margin-right: 5px;
 }
+
+/* Context Menu */
+.context-menu {
+    position: fixed;
+    background: var(--bg-color);
+    color: var(--text-primary);
+    border: 1px solid var(--shadow-color);
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    padding: 0.5rem 0;
+    z-index: 99999 !important;
+    min-width: 180px;
+    display: none;
+    visibility: hidden;
+    opacity: 0;
+    transition: opacity 0.2s, visibility 0.2s;
+}
+.context-menu.active {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+.context-menu-item {
+    padding: 0.75rem 1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: background-color 0.2s;
+    user-select: none;
+}
+.context-menu-item:hover {
+    background-color: var(--lightgrey);
+}
+.context-menu-item.delete {
+    color: #d32f2f;
+}
+.context-menu-item .material-symbols-outlined {
+    font-size: 1.2rem;
+}
+.image-item-contextable {
+    cursor: context-menu;
+    position: relative;
+}
+.image-item-contextable::after {
+    content: '⋮';
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    font-size: 1.5rem;
+    opacity: 0;
+    transition: opacity 0.2s;
+    pointer-events: none;
+}
+.image-item-contextable:hover::after {
+    opacity: 0.5;
+}
 details[open] > summary .material-symbols-outlined{
     transform: rotate(180deg);
     transition: all 0.3s;
@@ -86,10 +143,9 @@ details > summary::-webkit-details-marker {
 .tabicon-item{
     padding: 0.5rem;
     max-width: 5rem;
-    height: 5rem;
+    min-height: 5rem;
     border: 1px solid var(--bg-color);
     border-radius: 5px;
-    overflow: hidden;
 }
 .tabicon-item img{
     max-width: 100%;
@@ -176,6 +232,8 @@ textarea{
     border-radius: 5px;
     font-size: 1rem;
     font-family: inherit;
+    background-color: var(--lightgrey);
+    color: var(--text-primary);
 }
 input[type="text"]{
     width: 100%;
@@ -187,6 +245,18 @@ input[type="color"]{
 }
 input[type="datetime-local"]{
     flex: 1;
+}
+input[type="datetime-local"]::selection{
+    background-color: var(--primary-color);
+    color: white;
+}
+input[type="datetime-local"]:focus,
+input[type="text"]:focus,
+input[type="color"]:focus,
+textarea:focus{
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 5px var(--primary-color);
 }
 textarea{
     width: 100%;
@@ -201,10 +271,10 @@ button{
     border-radius: 5px;
     cursor: pointer;
     font-size: 1rem;
-    transition: background-color 0.3s;
+    transition: all 0.3s;
 }
 button:hover{
-    background-color: var(--secondary-color, #0056b3);
+    filter: brightness(120%);
 }
 form.inline input[type="text"]{
     width: 75%;
@@ -387,5 +457,4 @@ input:checked + .slider:before {
     color: var(--text-secondary);
     font-style: italic;
     padding: 1rem;
-}
 }
