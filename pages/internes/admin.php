@@ -18,6 +18,17 @@ if (!hasAdminRole($userId)) {
     header("Location: dashboard.php");
     exit();
 }
+require_once '../../includes/config-helper.php';
+
+// Get config values
+$tabicon = getConfigValue('tabicon') ?? 'PL1.png';
+$logo = getConfigValue('logo') ?? 'logo.png';
+$bannerImage = getConfigValue('banner_image') ?? '';
+$bannerText = getConfigValue('banner_text') ?? 'Zwei Dörfer, eine Gemeinschaft';
+$primaryColor = getConfigValue('primary_color') ?? '#4a6fa5';
+$showGIF = filter_var(getConfigValue('show_gif'), FILTER_VALIDATE_BOOLEAN);
+$currentGIF = getConfigValue('current_gif');
+$version = getConfigValue('system_version');
 
 // Get user name for logging (needed before AJAX handlers)
 $userName = $_SESSION['name'] ?? 'Admin';
@@ -298,17 +309,30 @@ $actionStats = $pdo->query($actionQuery)->fetchAll(PDO::FETCH_ASSOC);
 // Get 404 errors grouped
 $error404Query = "
     SELECT 
-        SUBSTR(text, INSTR(text, 'versucht ') + 9, INSTR(text, ' aufzurufen') - INSTR(text, 'versucht ') - 9) as url,
+        text,
         COUNT(*) as count,
         MAX(timecode) as last_seen
     FROM logs
     WHERE action LIKE 'error-404%'
     AND datetime(timecode) >= datetime('now', '-{$filterDays} days')
-    GROUP BY url
+    AND text NOT LIKE '%favicon.ico%'
+    GROUP BY text
     ORDER BY count DESC
     LIMIT 20
 ";
 $error404Stats = $pdo->query($error404Query)->fetchAll(PDO::FETCH_ASSOC);
+
+// Extract URLs from text in PHP
+foreach ($error404Stats as &$error) {
+    // Try to extract URL from text like "Jan hat versucht /path aufzurufen"
+    if (preg_match('/versucht (.+?) aufzurufen/', $error['text'], $matches)) {
+        $error['url'] = $matches[1];
+    } else {
+        // Fallback: use the whole text
+        $error['url'] = $error['text'];
+    }
+}
+unset($error);
 
 // Get recent logs
 $logsQuery = "SELECT * FROM logs {$whereClause} ORDER BY timecode DESC LIMIT 100";
@@ -387,79 +411,86 @@ $blockedIPs = getBlockedIPs();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Log-Analyse | Plänitz-Leddin</title>
-        <link rel="stylesheet" href="../../assets/css/root.css">
-        <link rel="stylesheet" href="../../assets/css/main.css">
-        <link rel="stylesheet" href="../../assets/css/heading.css">
-        <link rel="stylesheet" href="../../assets/css/footer.css">
-        <link rel="stylesheet" href="../../assets/css/admin.css">
-        <link rel="stylesheet" href="../../assets/css/dashboard.css">
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" />
-        <script src="../../assets/js/admin-members.js" defer></script>
-        <script src="../../assets/js/block-IP.js" defer></script>
-        <script src="../../assets/js/log-deletion.js" defer></script>
-        <script>
-            // expose current user for logging and client-side helpers
-            window.currentUserId = <?php echo json_encode($userId); ?>;
-            window.currentUserName = <?php echo json_encode($userName); ?>;
-            window.currentUserIsAdmin = <?php echo json_encode(hasAdminRole($userId)); ?>;
-            window.currentUserIsVorstand = <?php echo json_encode(hasVorstandRole($userId)); ?>;
-            
-            // Global state for promote action
-            let pendingPromoteMemberId = null;
-            
-            // Show password popup for promote action
-            function showPromotePasswordPopup(memberId) {
-                pendingPromoteMemberId = memberId;
-                document.getElementById('promote-password-popup').style.display = 'flex';
-                document.getElementById('promote-temp-password').value = '';
-                document.getElementById('promote-temp-password-confirm').value = '';
-                document.getElementById('promote-temp-password').focus();
+    <link rel="stylesheet" href="../../assets/css/root.css">
+    <link rel="stylesheet" href="../../assets/css/main.css">
+    <link rel="stylesheet" href="../../assets/css/heading.css">
+    <link rel="stylesheet" href="../../assets/css/footer.css">
+    <link rel="stylesheet" href="../../assets/css/admin.css">
+    <link rel="stylesheet" href="../../assets/css/dashboard.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" />
+    <link rel="icon" type="image/x-icon" href="../../assets/icons/tabicons/<?php echo htmlspecialchars($tabicon); ?>">
+    <script src="../../assets/js/admin-members.js" defer></script>
+    <script src="../../assets/js/block-IP.js" defer></script>
+    <script src="../../assets/js/log-deletion.js" defer></script>
+    <script>
+        // expose current user for logging and client-side helpers
+        window.currentUserId = <?php echo json_encode($userId); ?>;
+        window.currentUserName = <?php echo json_encode($userName); ?>;
+        window.currentUserIsAdmin = <?php echo json_encode(hasAdminRole($userId)); ?>;
+        window.currentUserIsVorstand = <?php echo json_encode(hasVorstandRole($userId)); ?>;
+        
+        // Global state for promote action
+        let pendingPromoteMemberId = null;
+        
+        // Show password popup for promote action
+        function showPromotePasswordPopup(memberId) {
+            pendingPromoteMemberId = memberId;
+            document.getElementById('promote-password-popup').style.display = 'flex';
+            document.getElementById('promote-temp-password').value = '';
+            document.getElementById('promote-temp-password-confirm').value = '';
+            document.getElementById('promote-temp-password').focus();
+        }
+        
+        // Cancel promote action
+        function cancelPromote() {
+            pendingPromoteMemberId = null;
+            document.getElementById('promote-password-popup').style.display = 'none';
+        }
+        
+        // Confirm promote with password
+        function confirmPromote() {
+            const password = document.getElementById('promote-temp-password').value;
+            const passwordConfirm = document.getElementById('promote-temp-password-confirm').value;
+            if (!password || password.length < 8) {
+                alert('Das Passwort muss mindestens 8 Zeichen lang sein.');
+                return;
             }
-            
-            // Cancel promote action
-            function cancelPromote() {
-                pendingPromoteMemberId = null;
+            if (password !== passwordConfirm) {
+                alert('Die Passwörter stimmen nicht überein.');
+                return;
+            }
+            if (pendingPromoteMemberId && window.submitContextActionAjax) {
                 document.getElementById('promote-password-popup').style.display = 'none';
+                submitContextActionAjax('promote', pendingPromoteMemberId, password);
+                pendingPromoteMemberId = null;
             }
-            
-            // Confirm promote with password
-            function confirmPromote() {
-                const password = document.getElementById('promote-temp-password').value;
-                const passwordConfirm = document.getElementById('promote-temp-password-confirm').value;
-                if (!password || password.length < 8) {
-                    alert('Das Passwort muss mindestens 8 Zeichen lang sein.');
-                    return;
-                }
-                if (password !== passwordConfirm) {
-                    alert('Die Passwörter stimmen nicht überein.');
-                    return;
-                }
-                if (pendingPromoteMemberId && window.submitContextActionAjax) {
-                    document.getElementById('promote-password-popup').style.display = 'none';
-                    submitContextActionAjax('promote', pendingPromoteMemberId, password);
-                    pendingPromoteMemberId = null;
-                }
+        }
+        
+        // Wrapper function for context actions (needed by dashboard.js)
+        function submitContextAction(action, memberId) {
+            // For promote action, show password popup first
+            if (action === 'promote') {
+                showPromotePasswordPopup(memberId);
+                return;
             }
-            
-            // Wrapper function for context actions (needed by dashboard.js)
-            function submitContextAction(action, memberId) {
-                // For promote action, show password popup first
-                if (action === 'promote') {
-                    showPromotePasswordPopup(memberId);
-                    return;
-                }
-                // For other actions, use AJAX directly
-                if (window.submitContextActionAjax) {
-                    submitContextActionAjax(action, memberId);
-                }
+            // For other actions, use AJAX directly
+            if (window.submitContextActionAjax) {
+                submitContextActionAjax(action, memberId);
             }
-        </script>
+        }
+    </script>
+    <style>
+        :root{
+            --primary-color: <?php echo htmlspecialchars($primaryColor); ?>;
+        }
+    </style>
+
 </head>
 <body>
     <div id="heading">
         <div id="left">
             <a href="../../index.php">
-                <img src="../../assets/icons/logo.png" alt="">
+                <img src="../../assets/icons/logos/<?php echo htmlspecialchars($logo); ?>" alt="">
             </a>
         </div>
         <div id="right">
@@ -509,6 +540,10 @@ $blockedIPs = getBlockedIPs();
                 <h3>Zeitraum</h3>
                 <div class="value"><?php echo $filterDays === 0 ? 'Alle Zeit' : "Letzte {$filterDays} Tage"; ?></div>
             </div>
+            <a href="config.php" class="stat-card">
+                <h3>Zu den Einstellungen <span class="material-symbols-outlined" style="font-size: 24px;">arrow_forward</span></h3>
+                <div class="value"><span class="material-symbols-outlined" style="font-size: 32px;">settings</span></div>
+            </a>
         </div>
         
         <!-- Top Actions -->

@@ -334,7 +334,17 @@ if ($needsPasswordSetup && !isset($_GET['neu']) && !isset($_GET['change_pw']) &&
     header("Location: dashboard.php?neu=1");
     exit();
 }
+require_once '../../includes/config-helper.php';
 
+// Get config values
+$tabicon = getConfigValue('tabicon') ?? 'PL1.png';
+$logo = getConfigValue('logo') ?? 'logo.png';
+$bannerImage = getConfigValue('banner_image') ?? '';
+$bannerText = getConfigValue('banner_text') ?? 'Zwei Dörfer, eine Gemeinschaft';
+$primaryColor = getConfigValue('primary_color') ?? '#4a6fa5';
+$showGIF = filter_var(getConfigValue('show_gif'), FILTER_VALIDATE_BOOLEAN);
+$currentGIF = getConfigValue('current_gif');
+$version = getConfigValue('system_version');
 ?>
 <!DOCTYPE html>
 <html lang="de">
@@ -347,8 +357,12 @@ if ($needsPasswordSetup && !isset($_GET['neu']) && !isset($_GET['change_pw']) &&
     <link rel="stylesheet" href="../../assets/css/dashboard.css">
     <link rel="stylesheet" href="../../assets/css/heading.css">
     <link rel="stylesheet" href="../../assets/css/footer.css">
+    <link rel="icon" type="image/x-icon" href="../../assets/icons/tabicons/<?php echo htmlspecialchars($tabicon); ?>">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" />
     <style>
+        :root{
+            --primary-color: <?php echo htmlspecialchars($primaryColor); ?>;
+        }
         #heading{
             display: flex !important;
             flex-direction: row !important;
@@ -546,7 +560,7 @@ if ($needsPasswordSetup && !isset($_GET['neu']) && !isset($_GET['change_pw']) &&
             </a>
         </div>
     </div>
-    <div id="dashboard-container" class="banner">
+    <div id="dashboard-container" class="banner" style="background-image: url('../../assets/images/banner/<?php echo htmlspecialchars($bannerImage); ?>');">
         <h1>Willkommen zum Dashboard</h1>
     </div>
     <?php
@@ -680,6 +694,10 @@ if ($needsPasswordSetup && !isset($_GET['neu']) && !isset($_GET['change_pw']) &&
                 <h3>Aktivitätsrate</h3>
                 <div class="value"><?php echo $usersCount > 0 ? round(($activeUsers / $usersCount) * 100, 1) : 0; ?>%</div>
             </div>
+            <a href="config.php" class="stat-card">
+                <h3>Zu den Einstellungen <span class="material-symbols-outlined" style="font-size: 24px;">arrow_forward</span></h3>
+                <div class="value"><span class="material-symbols-outlined" style="font-size: 32px;">settings</span></div>
+            </a>
         </div>
         <div id="member-output">
             <div id="member-output-heading">

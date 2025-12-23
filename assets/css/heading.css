@@ -11,7 +11,8 @@
     top: 0;
     z-index: 10;
     user-select: none;
-    box-shadow: var(--shadow);
+    box-shadow: 0 5px 5px var(--shadow-color);
+    margin-top: 0;
 }
 #heading #right{
     display: flex;

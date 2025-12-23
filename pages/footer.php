@@ -1,6 +1,8 @@
+        <?php if ($showGIF && !empty($currentGIF)): ?>
         <div id="footer-gif">
-            <img src="../assets/GIFs/autumn.gif" alt="">
+            <img src="../assets/images/gifs/<?php echo htmlspecialchars($currentGIF); ?>" alt="">
         </div>
+        <?php endif; ?>
         <div id="left">
             <div id="mode-toggle">
                 <span class="material-symbols-outlined">light_mode</span>
@@ -32,7 +34,7 @@
         </div>
         <div id="middle">
             <span>&copy; 2025-<?php echo date("Y"); ?> Gemeinsam für Plänitz-Leddin.<br> Alle Rechte vorbehalten.</span>
-            <a href="https://github.com/jan-albrecht05/Plaenitz-Leddin/commits/main/">Version 0.9</a>
+            <a href="https://github.com/jan-albrecht05/Plaenitz-Leddin/commits/main/">Version <?php echo htmlspecialchars($version); ?></a>
         </div>
         <div id="right">
             <a href="../pages/kontakt.php">Kontakt<span class="material-symbols-outlined">open_in_new</span></a>

@@ -2,6 +2,9 @@ section{
     margin-bottom: 3rem;
     margin-top: 2rem;
 }
+body{
+    margin-top: -18px;
+}
 h3{
     display: flex;
     align-items: center;

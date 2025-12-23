@@ -73,6 +73,14 @@ startSecureSession();    // Include database helper functions
             exit();
         }
     }
+    require_once '../../includes/config-helper.php';
+
+    // Get config values
+    $tabicon = getConfigValue('tabicon') ?? 'PL1.png';
+    $logo = getConfigValue('logo') ?? 'logo.png';
+    $primaryColor = getConfigValue('primary_color') ?? '#4a6fa5';
+    $version = getConfigValue('system_version');
+
 ?>
 <!DOCTYPE html>
 <html lang="de">
@@ -85,7 +93,13 @@ startSecureSession();    // Include database helper functions
     <link rel="stylesheet" href="../../assets/css/login.css">
     <link rel="stylesheet" href="../../assets/css/heading.css">
     <link rel="stylesheet" href="../../assets/css/footer.css">
+    <link rel="icon" type="image/png" href="../../assets/icons/tabicons/<?php echo htmlspecialchars($tabicon); ?>">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" />
+    <style>
+        :root {
+            --primary-color: <?php echo htmlspecialchars($primaryColor); ?>;
+        }
+    </style>
 </head>
 <body>
     <div id="heading">
@@ -120,16 +134,18 @@ startSecureSession();    // Include database helper functions
             </button>
         </form>
     </div>
-    <div id="footer" class="center">
+    <div id="footer" class="center" style="flex-direction: column; gap: 10px;">
         <div id="mode-toggle">
-                <span class="material-symbols-outlined">light_mode</span>
-                <label class="switch">
-                    <input type="checkbox" id="toggle-checkbox">
-                    <span class="slider round"></span>
-                </label>
-                <span class="material-symbols-outlined">dark_mode</span>
-                <script src="../../assets/js/mode.js"></script>
-            </div>
+            <span class="material-symbols-outlined">light_mode</span>
+            <label class="switch">
+                <input type="checkbox" id="toggle-checkbox">
+                <span class="slider round"></span>
+            </label>
+            <span class="material-symbols-outlined">dark_mode</span>
+            <script src="../../assets/js/mode.js"></script>
+        </div>
+        <a href="https://github.com/jan-albrecht05/Plaenitz-Leddin/commits/main/" target="_blank" id="version">
+            Version <?php echo htmlspecialchars($version); ?>
         </div>
     </div>
 </body>

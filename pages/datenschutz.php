@@ -1,3 +1,15 @@
+<?php
+require_once '../includes/config-helper.php';
+// Get config values
+$tabicon = getConfigValue('tabicon') ?? 'PL1.png';
+$logo = getConfigValue('logo') ?? 'logo.png';
+$bannerImage = getConfigValue('banner_image') ?? '';
+$bannerText = getConfigValue('banner_text') ?? 'Zwei Dörfer, eine Gemeinschaft';
+$primaryColor = getConfigValue('primary_color') ?? '#4a6fa5';
+$showGIF = filter_var(getConfigValue('show_gif'), FILTER_VALIDATE_BOOLEAN);
+$currentGIF = getConfigValue('current_gif');
+$version = getConfigValue('system_version');
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -10,6 +22,9 @@
     <link rel="stylesheet" href="../assets/css/footer.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" />
     <style>
+        :root{
+            --primary-color: <?php echo htmlspecialchars($primaryColor); ?>;
+        }
         h2{
             border-left: 5px solid var(--primary-color);
             padding-left: 10px;
@@ -22,8 +37,8 @@
     <div id="heading">
         <?php include '../pages/heading.php'; ?>
     </div>
-    <div class="banner">
-        <h1>Zwei Dörfer, eine Gemeinschaft</h1>
+    <div class="banner" <?php if (!empty($bannerImage)): ?>style="background-image: url('../assets/images/banner/<?php echo htmlspecialchars($bannerImage); ?>');"<?php endif; ?>>
+        <h1><?php echo htmlspecialchars($bannerText); ?></h1>
     </div>
     <div id="main">
         <h1>Datenschutzerklärung</h1>

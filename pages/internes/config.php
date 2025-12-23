@@ -5,6 +5,10 @@
     // Include database helper functions
     require_once '../../includes/db_helper.php';
     require_once '../../includes/config-helper.php';
+
+    $showGIF = filter_var(getConfigValue('show_gif'), FILTER_VALIDATE_BOOLEAN);
+    $currentGIF = getConfigValue('current_gif');
+    $version = getConfigValue('system_version');
     
     // read config.db "vorstand_can_edit_UI" and "vorstand_can_edit_config"
     // Normalize config values to booleans (handles "0"/"1", "true"/"false", int/bool)
@@ -34,7 +38,6 @@
     // Final permission flags (admins always allowed, vorstand only when config allows)
     $canEditUI = hasAdminRole($userId) || (hasVorstandRole($userId) && $vorstandCanEditUI);
     $canEditConfig = hasAdminRole($userId) || (hasVorstandRole($userId) && $vorstandCanEditConfig);
-
 ?>
 <!DOCTYPE html>
 <html lang="de">
@@ -82,7 +85,7 @@
         </button>
         <h1>Internes Konfigurationsmenü</h1>
         <hr>
-        <div class="maintanance" style="height: auto; margin-bottom: 20px;">
+        <div class="maintenance" style="height: auto; margin-bottom: 20px;">
             <div class="mg-left center">
                 <span class="material-symbols-outlined">warning</span>
             </div>
@@ -442,7 +445,7 @@
             </details>
         </section>
         <section> <!-- Kosten pro Jahr -->
-            <h3>Mitgleidskosten pro Jahr</h3>
+            <h3>Mitgliedskosten pro Jahr</h3>
             <p>Aktuelle Kosten: <strong><?php echo htmlspecialchars(getConfigValue('kosten_pro_jahr').'€' ?? 'Unbekannt'); ?></strong></p>
             <form id="cost-form">
                 <input type="text" id="cost-input" placeholder="Neue Kosten eingeben...">

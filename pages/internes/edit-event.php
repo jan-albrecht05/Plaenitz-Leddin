@@ -214,9 +214,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $event_id !== null && !isset($_POST
         // fall through to re-render the form with submitted values and an error
     }
 }
-
 ?>
-
 <!DOCTYPE html>
 <html lang="de">
 <head>

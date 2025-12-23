@@ -1,4 +1,7 @@
 /* Stats grid and cards */
+a{
+    color: var(--text-color);
+}
 .stats-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));

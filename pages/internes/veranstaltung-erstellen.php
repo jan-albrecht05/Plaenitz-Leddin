@@ -110,9 +110,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     header("Location: ../veranstaltungen.php?success=" . urlencode("Veranstaltung erfolgreich erstellt."));
     exit();
 }
-
 ?>
-
 <!DOCTYPE html>
 <html lang="de">
 <head>

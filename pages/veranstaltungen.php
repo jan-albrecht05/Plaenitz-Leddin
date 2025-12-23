@@ -17,6 +17,17 @@
         $show_ended = ($_GET['show_ended'] === '1');
         //$show_ended = true;
     }
+    require_once '..//includes/config-helper.php';
+
+    // Get config values
+    $tabicon = getConfigValue('tabicon') ?? 'PL1.png';
+    $logo = getConfigValue('logo') ?? 'logo.png';
+    $bannerImage = getConfigValue('banner_image') ?? '';
+    $bannerText = getConfigValue('banner_text') ?? 'Zwei Dörfer, eine Gemeinschaft';
+    $primaryColor = getConfigValue('primary_color') ?? '#4a6fa5';
+    $showGIF = filter_var(getConfigValue('show_gif'), FILTER_VALIDATE_BOOLEAN);
+    $currentGIF = getConfigValue('current_gif');
+    $version = getConfigValue('system_version');
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -31,6 +42,9 @@
     <link rel="stylesheet" href="../assets/css/footer.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" />
     <style>
+        :root{
+            --primary-color: <?php echo htmlspecialchars($primaryColor); ?>;
+        }
         #veranstaltungen a{
             color: var(--primary-color);
         }
@@ -70,8 +84,8 @@
         <span id="success-message"></span>
         <span class="timeline" id="success-timeline"></span>
     </div>
-    <div class="banner">
-        <h1>Zwei Dörfer, eine Gemeinschaft</h1>
+    <div class="banner" <?php if (!empty($bannerImage)): ?>style="background-image: url('../assets/images/banner/<?php echo htmlspecialchars($bannerImage); ?>');"<?php endif; ?>>
+        <h1><?php echo htmlspecialchars($bannerText); ?></h1>
     </div>
     <div id="main">
         <div id="controls">

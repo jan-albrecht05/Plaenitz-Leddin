@@ -1,3 +1,18 @@
+<?php
+require_once '..//includes/config-helper.php';
+
+// Get config values
+$tabicon = getConfigValue('tabicon') ?? 'PL1.png';
+$logo = getConfigValue('logo') ?? 'logo.png';
+$bannerImage = getConfigValue('banner_image') ?? '';
+$bannerText = getConfigValue('banner_text') ?? 'Zwei Dörfer, eine Gemeinschaft';
+$primaryColor = getConfigValue('primary_color') ?? '#4a6fa5';
+$showNotification = filter_var(getConfigValue('show_notification'), FILTER_VALIDATE_BOOLEAN);
+$showError = filter_var(getConfigValue('show_error'), FILTER_VALIDATE_BOOLEAN);
+$showGIF = filter_var(getConfigValue('show_gif'), FILTER_VALIDATE_BOOLEAN);
+$currentGIF = getConfigValue('current_gif');
+$version = getConfigValue('system_version');
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -18,14 +33,17 @@
             background-color: var(--primary-color);
             width: 100%;
         }
+        :root{
+            --primary-color: <?php echo htmlspecialchars($primaryColor); ?>;
+        }
     </style>
 </head>
 <body>
     <div id="heading">
         <?php include '../pages/heading.php'; ?>
     </div>
-    <div class="banner">
-        <h1>Zwei Dörfer, eine Gemeinschaft</h1>
+    <div class="banner" <?php if (!empty($bannerImage)): ?>style="background-image: url('../assets/images/banner/<?php echo htmlspecialchars($bannerImage); ?>');"<?php endif; ?>>
+        <h1><?php echo htmlspecialchars($bannerText); ?></h1>
     </div>
     <div id="main">
         <p id="einführung">

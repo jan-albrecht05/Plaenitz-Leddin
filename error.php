@@ -1,3 +1,12 @@
+<?php
+require_once 'includes/config-helper.php';
+
+// Get config values
+$tabicon = getConfigValue('tabicon') ?? 'PL1.png';
+$logo = getConfigValue('logo') ?? 'logo.png';
+$primaryColor = getConfigValue('primary_color') ?? '#4a6fa5';
+$version = getConfigValue('system_version');
+?>
 <!DOCTYPE html>
 <html lang="de">
 <head>
@@ -8,8 +17,14 @@
     <link rel="stylesheet" href="assets/css/error.css">
     <link rel="stylesheet" href="assets/css/footer.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" />
+    <link rel="icon" type="image/x-icon" href="assets/icons/tabicons/<?php echo htmlspecialchars($tabicon); ?>">
     <script src="assets/js/mode.js" defer></script>
     <title>Fehler <?php echo htmlspecialchars($_GET['code'] ?? '500'); ?> | Plänitz-Leddin</title>
+    <style>
+        :root {
+            --primary-color: <?php echo htmlspecialchars($primaryColor); ?>;
+        }
+    </style>
 </head>
 <body>
     <div id="main" class="center">

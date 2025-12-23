@@ -94,7 +94,7 @@
     background-size: 400% 400%;
 }
 .wrapper img{
-    margin-top:-100%;
+    margin-top:-60%;
     transform: scale(.9);
     z-index: 60;
     border-radius: 120px 65% 30% 25%;

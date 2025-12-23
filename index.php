@@ -7,7 +7,7 @@ require_once 'includes/db_helper.php';
 require_once 'includes/config-helper.php';
 
 // Get config values
-$tabicon = getConfigValue('tabicon') ?? 'favicon.ico';
+$tabicon = getConfigValue('tabicon') ?? 'PL1.png';
 $logo = getConfigValue('logo') ?? 'logo.png';
 $bannerImage = getConfigValue('banner_image') ?? '';
 $bannerText = getConfigValue('banner_text') ?? 'Zwei Dörfer, eine Gemeinschaft';
@@ -101,8 +101,6 @@ if (!file_exists($dbPath)) {
     }
 }
 // render the page with config.db
-
-
 ?>
 <!DOCTYPE html>
 <html lang="de">
@@ -126,6 +124,9 @@ if (!file_exists($dbPath)) {
         #startseite .line{
             background-color: var(--primary-color);
             width: 100%;
+        }
+        body{
+            margin-top: -18px;
         }
     </style>
 </head>

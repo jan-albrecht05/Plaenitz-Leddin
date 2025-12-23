@@ -116,6 +116,17 @@ if ($event_id !== null) {
         }
     }
 }
+require_once '../includes/config-helper.php';
+
+// Get config values
+$tabicon = getConfigValue('tabicon') ?? 'PL1.png';
+$logo = getConfigValue('logo') ?? 'logo.png';
+$bannerImage = getConfigValue('banner_image') ?? '';
+$bannerText = getConfigValue('banner_text') ?? 'Zwei Dörfer, eine Gemeinschaft';
+$primaryColor = getConfigValue('primary_color') ?? '#4a6fa5';
+$showGIF = filter_var(getConfigValue('show_gif'), FILTER_VALIDATE_BOOLEAN);
+$currentGIF = getConfigValue('current_gif');
+$version = getConfigValue('system_version');
 
 // Ensure $event_title exists so the <title> tag won't throw a notice
 $event_title = $event['titel'] ?? 'Veranstaltung';
@@ -133,6 +144,9 @@ $event_title = $event['titel'] ?? 'Veranstaltung';
     <link rel="stylesheet" href="../assets/css/footer.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" />
     <style>
+        :root {
+            --primary-color: <?php echo htmlspecialchars($primaryColor); ?>;
+        }
         #veranstaltungen a{
             color: var(--primary-color);
         }
@@ -156,8 +170,8 @@ $event_title = $event['titel'] ?? 'Veranstaltung';
             $bannerStyle = 'style="background-image: url(' . htmlspecialchars($imgUrl) . '); background-size: cover; background-position: center;"';
         }
     ?>
-    <div class="banner" <?php echo $bannerStyle; ?>>
-        <h1><?php echo $bannerTitle; ?></h1>
+    <div class="banner" <?php if (!empty($bannerImage)): ?>style="background-image: url('../assets/images/banner/<?php echo htmlspecialchars($bannerImage); ?>');"<?php endif; ?>>
+        <h1><?php echo htmlspecialchars($bannerTitle); ?></h1>
     </div>
     <?php
         // Show success banner if redirected after deletion

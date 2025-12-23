@@ -1,6 +1,12 @@
 *{
     scrollbar-width: thin;
 }
+body{
+    margin-top: -18px !important;
+}
+a{
+    color: var(--text-color);
+}
 /* IP Context Menu Styles */
 .context-menu {
     position: absolute;

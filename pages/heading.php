@@ -1,6 +1,6 @@
 <div id="left">
             <a href="../index.php">
-                <img src="../assets/icons/logo.png" alt="">
+                <img src="../assets/icons/logos/<?php echo htmlspecialchars($logo); ?>" alt="">
             </a>
         </div>
         <div id="right">
@@ -153,3 +153,4 @@
         </div>
     </div>
 </div>
+<link rel="icon" type="image/png" href="../assets/icons/tabicons/<?php echo htmlspecialchars($tabicon); ?>"/>
